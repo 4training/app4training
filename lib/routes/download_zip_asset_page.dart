@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:four_training/utils/page_storage.dart';
 
+import 'assets_page.dart';
+
 class DownloadZipAssetPage extends StatefulWidget {
   const DownloadZipAssetPage(
       {super.key, required this.title, required this.storage});
@@ -19,7 +21,7 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
       DownloadAssetsController();
   String message = "Press the download to start download";
   bool downloaded = false;
-  var _angle = 0.0;
+  String state = "Initializing";
 
   Future<String>? _htmlData;
   final String _url =
@@ -30,7 +32,7 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
     super.initState();
 
     _init().then((value) {
-      _htmlData = _displayAssets();
+      _htmlData = _downloadAssets().then(_displayAssets()); // TODO
     });
   }
 
@@ -45,90 +47,90 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: <Widget>[
-          Padding(
-              padding: const EdgeInsets.only(right: 20.0),
-              child: GestureDetector(
-                onTap: _refresh,
-                child: Transform.rotate(
-                    angle: _angle,
-                    child: const Icon(
-                      Icons.refresh,
-                      size: 26.0,
-                    )),
-              )),
-        ],
-      ),
-      body: ListView(
-        children: [
-          FutureBuilder(
-              future: _htmlData,
-              initialData: "Loading",
-              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return  SizedBox( height: MediaQuery.of(context).size.height / 1.3, child: Center( child: CircularProgressIndicator()));
-                } else if (snapshot.connectionState == ConnectionState.done) {
-                  if (snapshot.hasError) {
-                    return Text(snapshot.error.toString());
-                  } else if (snapshot.hasData) {
-                    return SingleChildScrollView( child:Html(data: snapshot.data));
-                  } else {
-                    return const Text("Empty Data");
-                  }
-                } else {
-                  return Text("State: ${snapshot.connectionState}");
-                }
-              }),
-        ],
-      ),
-    );
+    return FutureBuilder(
+        future: _htmlData?.then((value) {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => AssetsPage(
+                    htmlContent: value.toString(),
+                    title: 'Assets Page',
+                  )));
+        }),
+        initialData: "Loading",
+        builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+          debugPrint(snapshot.connectionState.toString());
+
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+              return loadingAnimation("State: ${snapshot.connectionState}");
+            case ConnectionState.waiting:
+              return loadingAnimation("Loading $state");
+            case ConnectionState.active:
+              return loadingAnimation("State: ${snapshot.connectionState}");
+            case ConnectionState.done:
+              if (snapshot.hasError) {
+                return loadingAnimation(snapshot.error.toString());
+              } else if (snapshot.hasData) {
+                return loadingAnimation("Done");
+              } else {
+                return loadingAnimation(
+                    "Empty Data"); // TODO - why ist this showing up during launch?
+              }
+            default:
+              return loadingAnimation("State: ${snapshot.connectionState}");
+          }
+        });
   }
 
   Future _refresh() async {
-    debugPrint("refreshing assets (delete and display)");
+    state = "refreshing assets (delete and display)";
+    debugPrint(state);
     await downloadAssetsController.clearAssets();
     await _displayAssets();
   }
 
   Future _clear() async {
-    debugPrint("clearing assets");
+    state = "clearing assets";
+    debugPrint(state);
     await downloadAssetsController.clearAssets();
-
   }
 
   Future<String> _displayAssets() async {
-    debugPrint("displaying assets");
+    state = "displaying assets";
+    debugPrint(state);
     String htmlData = "";
 
     downloaded = await downloadAssetsController.assetsDirAlreadyExists();
     if (!downloaded) await _downloadAssets();
 
-    debugPrint("creating html data ...");
+    state = "Creating html data ...";
+    debugPrint(state);
 
     try {
-
       String path = "${downloadAssetsController.assetsDir}/test-html-en-main/";
 
       var dir = Directory(path);
 
       await for (var file in dir.list(recursive: false, followLinks: false)) {
-
-        if(file.statSync().type == FileSystemEntityType.file) {
-        htmlData += await File(file.path).readAsString();}
+        if (file.statSync().type == FileSystemEntityType.file) {
+          htmlData += await File(file.path).readAsString();
+        }
       }
 
+      state = "Finished creating html data";
+      debugPrint(state);
     } catch (e) {
       String msg = e.toString();
       htmlData = "<p>$msg</p>";
+
+      state = "Error creating html data";
+      debugPrint(state);
     }
     return htmlData;
   }
 
   Future _downloadAssets() async {
     debugPrint("downloading assets");
+    state = "downloading assets";
 
     bool assetsDownloaded =
         await downloadAssetsController.assetsDirAlreadyExists();
@@ -151,10 +153,11 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
             }
 
             // message = "Downloading - $progress";
-            _angle++;
             debugPrint(progress);
+            state = progress;
           } else {
             message = "Download completed";
+            state = "Download completed";
             debugPrint(message);
             downloaded = true;
           }
@@ -164,5 +167,30 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
       debugPrint(e.toString());
       downloaded = false;
     }
+  }
+
+  Widget loadingAnimation(String msg) {
+
+    return Scaffold(
+        body: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Expanded(
+          flex: 10,
+          child: Container(),
+        ),
+        const Expanded(child: CircularProgressIndicator()),
+        Expanded(child: Container()),
+        Expanded(child: Text(msg)),
+        Expanded(
+          flex: 10,
+          child: Container(),
+        ),
+      ],
+    ),
+    floatingActionButton: FloatingActionButton(
+    onPressed: _refresh,
+      child: Icon(Icons.delete),
+    ),);
   }
 }

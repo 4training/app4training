@@ -50,7 +50,9 @@ class _LocalStoragePageState extends State<LocalStoragePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+
       ),
+
       body: ListView(
         children: [
           Html(data: _htmlData),
@@ -60,4 +62,7 @@ class _LocalStoragePageState extends State<LocalStoragePage> {
       ),
     );
   }
+
+
+
 }
