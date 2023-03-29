@@ -10,24 +10,27 @@ import 'package:path_provider/path_provider.dart';
 // https://stackoverflow.com/questions/71431463/how-to-access-a-zip-file-asset-directly-without-storing-unpacked-file-temporari
 
 class LocalPageStorage {
+  // gets the local Path where documents are stored
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
 
     return directory.path;
   }
 
+  // gets a local stored file named "page.html"
   Future<File> get _localFile async {
     final path = await _localPath;
 
-    return File('$path/page.html');
+    return File('$path/page.html'); // TODO Error Message
   }
-
+  // gets a local stored file named "page2.html" thats been unzipped and downloaded
   Future<File> get _localUnzippedFile async {
     final path = await _localPath;
 
-    return File('$path/page2.html');
+    return File('$path/page2.html'); // TODO Error Message
   }
 
+  // reads a local stored file ("page.html")
   Future<String> readFile() async {
     try {
       final file = await _localFile;
@@ -41,7 +44,7 @@ class LocalPageStorage {
       return "No page found";
     }
   }
-
+  // reads a local stored file ("page2.html"), thats been unzipped and downloaded
   Future<String> readUnzippedFile() async {
     try {
       final file = await _localUnzippedFile;
@@ -56,12 +59,14 @@ class LocalPageStorage {
     }
   }
 
+  // Writes a local stored file
   Future<File> writeFile(String content) async {
     final file = await _localFile;
 
     return file.writeAsString(content);
   }
 
+  // loads local stored assets as archives
   Future<Archive> loadAssetAsArchive() async {
     final data =
         await rootBundle.load('assets/pages.zip').then((ByteData value) {
@@ -76,6 +81,7 @@ class LocalPageStorage {
     return data;
   }
 
+  // extracts a loaded archive and stores it locally
   Future<void> extractArchive() async {
     final archive = await loadAssetAsArchive();
 
