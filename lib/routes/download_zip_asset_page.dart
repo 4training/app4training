@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'package:download_assets/download_assets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
+import 'package:four_training/data/globals.dart';
 import 'package:four_training/utils/page_storage.dart';
+import 'package:four_training/widgets/loadingAnimation.dart';
 
 import 'assets_page.dart';
 
@@ -19,13 +20,14 @@ class DownloadZipAssetPage extends StatefulWidget {
 
 class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
   List<DownloadAssetsController> downloadAssetsControllers = [
-    DownloadAssetsController(), DownloadAssetsController()
+    DownloadAssetsController(),
+    DownloadAssetsController()
   ];
   String message = "Press the download to start download";
   List<bool> downloaded = [false, false];
   String state = "Initializing";
 
-  Future<String>? _htmlData;
+  Future<dynamic>? _htmlData;
   final List<String> _lang = ["en", "de"];
   final String _urlStart = "https://github.com/holybiber/test-html-";
   final String _urlEnd = "/archive/refs/heads/main.zip";
@@ -37,20 +39,32 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
     super.initState();
 
     _init().then((value) {
-      _htmlData = _downloadAssets().then((_) {
-        return _displayAssets();
+      _htmlData = _downloadAssets();
       });
-    });
   }
 
   Future _init() async {
     debugPrint("initializing");
+    // Setting the languagesPaths length to the number of languages
+    languagePaths.length = _lang.length;
+
+    // for each language we do the following ...
     for (int i = 0; i < downloadAssetsControllers.length; i++) {
+
+      // Initialize the downloadAssetsController with a custom assetsDir for each language
       String assetsDir = "assets-${_lang[i]}";
       await downloadAssetsControllers[i].init(assetDir: assetsDir);
+
+      // Then we check, if that dir already exists, meaning it is already donwloaded
       downloaded[i] =
-          await downloadAssetsControllers[i].assetsDirAlreadyExists();
+      await downloadAssetsControllers[i].assetsDirAlreadyExists();
       debugPrint("assets (${_lang[i]})loaded: ${downloaded[i]}");
+
+      // Now we store the full path to the language in the languagesPaths global
+      languagePaths[i] = downloadAssetsControllers[i].assetsDir! +
+          _pathStart +
+          _lang[i] +
+          _pathEnd;
     }
   }
 
@@ -60,7 +74,6 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
         future: _htmlData?.then((value) {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
               builder: (context) => AssetsPage(
-                    htmlContent: value.toString(),
                     title: 'Assets Page (${_lang[0]})',
                   )));
         }),
@@ -81,8 +94,7 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
               } else if (snapshot.hasData) {
                 return loadingAnimation("Done");
               } else {
-                return loadingAnimation(
-                    "Empty Data"); // TODO - why ist this showing up during launch?
+                return loadingAnimation("Empty Data");
               }
             default:
               return loadingAnimation("State: ${snapshot.connectionState}");
@@ -95,7 +107,6 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
     debugPrint(state);
     downloadAssetsControllers.forEach((controller) async {
       await controller.clearAssets();
-      await _displayAssets();
     });
   }
 
@@ -154,69 +165,5 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
     }
   }
 
-  Future<String> _displayAssets() async {
-    state = "displaying assets";
-    debugPrint(state);
-    String htmlData = "";
 
-    downloaded[0] = await downloadAssetsControllers[0].assetsDirAlreadyExists();
-    if (!downloaded[0]) {
-      debugPrint("re-downloading");
-      await _downloadAssets();
-    }
-
-    state = "Creating html data ...";
-    debugPrint(state);
-
-    try {
-      String path = downloadAssetsControllers[0].assetsDir! +
-          _pathStart +
-          _lang[0] +
-          _pathEnd;
-
-      debugPrint(path);
-      var dir = Directory(path);
-
-      await for (var file in dir.list(recursive: false, followLinks: false)) {
-        if (file.statSync().type == FileSystemEntityType.file) {
-          htmlData += await File(file.path).readAsString();
-        }
-      }
-
-      state = "Finished creating html data";
-      debugPrint(state);
-    } catch (e) {
-      String msg = e.toString();
-      htmlData = "<p>$msg</p>";
-
-      state = "Error creating html data";
-      debugPrint(state);
-    }
-    return htmlData;
-  }
-
-  Widget loadingAnimation(String msg) {
-    return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            flex: 10,
-            child: Container(),
-          ),
-          const Expanded(child: CircularProgressIndicator()),
-          Expanded(child: Container()),
-          Expanded(child: Text(msg)),
-          Expanded(
-            flex: 10,
-            child: Container(),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _refresh,
-        child: Icon(Icons.delete),
-      ),
-    );
-  }
 }
