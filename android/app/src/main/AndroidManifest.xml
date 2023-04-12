@@ -5,7 +5,7 @@
    <application
         android:label="four_training"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/for_training"
         android:requestLegacyExternalStorage = "true">
         <activity
             android:name=".MainActivity"

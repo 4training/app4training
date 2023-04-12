@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/data/languages.dart';
+import 'package:four_training/design/textthemes.dart';
 import 'package:four_training/utils/assets_handler.dart';
 
 import '../routes/assets_page.dart';

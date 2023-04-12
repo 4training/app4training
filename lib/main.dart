@@ -16,8 +16,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '4training',
-      darkTheme: customDarkTheme(),
-      theme: customLightTheme(),
+      darkTheme: darkTheme,
+      theme: lightTheme,
       themeMode: ThemeMode.system,
       home: const DownloadZipAssetPage(title: 'DownloadZipAsset'),
       //home: LocalStoragePage(title: 'LocalStorage', storage: LocalPageStorage()),
