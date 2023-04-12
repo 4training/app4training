@@ -1,4 +1,4 @@
-
+/*
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -17,7 +17,7 @@ class _LocalStoragePageState extends State<LocalStoragePage> {
   String _htmlData = "";
   String _unzippedHtmlData = "";
 
-  String _pageHtml =
+  final String _pageHtml =
       "<html> <h1>Startseite!</h1><p>Das ist die erste Seite</p></html>";
 
   @override
@@ -56,7 +56,7 @@ class _LocalStoragePageState extends State<LocalStoragePage> {
       body: ListView(
         children: [
           Html(data: _htmlData),
-          Divider(),
+          const Divider(),
           Html(data: _unzippedHtmlData)
         ],
       ),
@@ -65,4 +65,4 @@ class _LocalStoragePageState extends State<LocalStoragePage> {
 
 
 
-}
+}*/

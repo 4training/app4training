@@ -1,13 +1,10 @@
-import 'dart:async';
+/*import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:archive/archive_io.dart';
 import 'package:flutter/services.dart' show rootBundle;
-
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-
-// https://stackoverflow.com/questions/71431463/how-to-access-a-zip-file-asset-directly-without-storing-unpacked-file-temporari
 
 class LocalPageStorage {
   // gets the local Path where documents are stored
@@ -21,13 +18,13 @@ class LocalPageStorage {
   Future<File> get _localFile async {
     final path = await _localPath;
 
-    return File('$path/page.html'); // TODO Error Message
+    return File('$path/page.html');
   }
   // gets a local stored file named "page2.html" thats been unzipped and downloaded
   Future<File> get _localUnzippedFile async {
     final path = await _localPath;
 
-    return File('$path/page2.html'); // TODO Error Message
+    return File('$path/page2.html');
   }
 
   // reads a local stored file ("page.html")
@@ -99,4 +96,4 @@ class LocalPageStorage {
       }
     }
   }
-}
+}*/

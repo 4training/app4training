@@ -1,17 +1,16 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:four_training/widgets/mainDrawer.dart';
+import 'package:four_training/widgets/loading_animation.dart';
+import 'package:four_training/widgets/main_drawer.dart';
 
 import '../data/globals.dart';
+import '../data/languages.dart';
 
 class AssetsPage extends StatefulWidget {
-  const AssetsPage({Key? key, required this.title})
-      : super(key: key);
-
-
-  final String title;
+  const AssetsPage({Key? key}) : super(key: key);
 
   @override
   State<AssetsPage> createState() => _AssetsPageState();
@@ -19,12 +18,19 @@ class AssetsPage extends StatefulWidget {
 
 class _AssetsPageState extends State<AssetsPage> {
   String state = "";
+  late String title;
+
+  @override
+  void initState() {
+    super.initState();
+    title = "4training";
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(title),
       ),
       drawer: mainDrawer(context),
       //body: SingleChildScrollView(child: Html(data: widget.htmlContent)),
@@ -38,14 +44,16 @@ class _AssetsPageState extends State<AssetsPage> {
             case ConnectionState.none:
             case ConnectionState.waiting:
             case ConnectionState.active:
-              return Text("State: ${snapshot.connectionState}");
+              return loadingAnimation(
+                  "Loading content\n State: ${snapshot.connectionState}");
             case ConnectionState.done:
               if (snapshot.hasError) {
-                return Text(snapshot.error.toString());
+                debugPrint(snapshot.error.toString());
+                return Text("Couldn't find the content you are looking for.\nLanguage: ${currentLanguage?.lang}");
               } else if (snapshot.hasData) {
-                return SingleChildScrollView(child: Html(data: snapshot.data),);
+                return _pagesList(snapshot.data);
               } else {
-                return Text("Empty Data");
+                return loadingAnimation("Empty Data");
               }
             default:
               return Text("State: ${snapshot.connectionState}");
@@ -55,32 +63,51 @@ class _AssetsPageState extends State<AssetsPage> {
     );
   }
 
-  Future<String> _displayAssets(int lang) async {
+  Widget _pagesList(List<String> pages) {
+    return ListView.builder(
+      itemCount: pages.length,
+      itemBuilder: (context, index) {
+        return _page(pages[index]);
+      },
+    );
+  }
+
+  Widget _page(String content) {
+    return Column(
+      children: [Html(data: content), const Divider(), const Divider()],
+    );
+  }
+
+  Future<dynamic> _displayAssets(Language? language) async {
     state = "displaying assets";
     debugPrint(state);
-    String htmlData = "";
+    List<String> htmlData = [];
+
+    if (language == null) {
+      return Future.error("Language is null");
+    }
 
     try {
-      String path = languagePaths[lang]!;
-
-      debugPrint(path);
-      var dir = Directory(path);
+      debugPrint(language.path);
+      var dir = Directory(language.path);
 
       await for (var file in dir.list(recursive: false, followLinks: false)) {
         if (file.statSync().type == FileSystemEntityType.file) {
-          htmlData += await File(file.path).readAsString();
+          htmlData.add(await File(file.path).readAsString());
         }
       }
 
       state = "Finished creating html data";
       debugPrint(state);
+      return htmlData;
     } catch (e) {
       String msg = e.toString();
-      htmlData = "<p>$msg</p>";
 
-      state = "Error creating html data";
-      debugPrint(state);
+      state = "Error creating html data. ";
+      debugPrint(state + msg);
+      
+      return Future.error(msg);
     }
-    return htmlData;
+
   }
 }

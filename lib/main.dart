@@ -1,10 +1,8 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:four_training/routes/download_zip_asset_page.dart';
-import 'package:four_training/routes/local_storage_page.dart';
-import 'package:four_training/utils/page_storage.dart';
+
+import 'design/theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,10 +16,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '4training',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: DownloadZipAssetPage(title: 'DownloadZipAsset', storage: LocalPageStorage()),
+      darkTheme: customDarkTheme(),
+      theme: customLightTheme(),
+      themeMode: ThemeMode.system,
+      home: const DownloadZipAssetPage(title: 'DownloadZipAsset'),
       //home: LocalStoragePage(title: 'LocalStorage', storage: LocalPageStorage()),
     );
   }
