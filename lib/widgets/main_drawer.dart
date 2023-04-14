@@ -24,9 +24,37 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
     child: Text("4training"),
   ));
 
+  List<ListTile> allPages = [];
+
+  for(int i = 0; i < currentLanguage!.pages.length; i++) {
+    String title = currentLanguage!.pages.elementAt(i).toString();
+    title = title.replaceAll("_", " ");
+    title = title.replaceAll(".html", "");
+
+    allPages.add(ListTile(
+    title: Text(title),
+      onTap: () {
+        currentIndex = i;
+        Navigator.pop(ctx);
+        Navigator.of(ctx).pushReplacement(
+            MaterialPageRoute(builder: (context) => const AssetsPage()));
+      },
+    ));
+
+  }
+
+  tiles.add(ExpansionTile(
+    title: Text(currentLanguage!.lang.toUpperCase()),
+    children: allPages,
+  ));
+
+  List<ListTile> allLanguages = [];
+
   for (int i = 0; i < languages.length; i++) {
-    tiles.add(ListTile(
-      title: Text(languages[i].lang),
+    String title = languages[i].lang.toUpperCase();
+
+    allLanguages.add(ListTile(
+      title:  Text(title),
       onTap: () {
         currentLanguage = languages[i];
         Navigator.pop(ctx);
@@ -36,16 +64,21 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
     ));
   }
 
+  tiles.add(ExpansionTile(
+    title: const Text("Switch Language"),
+    children: allLanguages,
+  ));
+
   tiles.add(ListTile(
     title: const Text("Clear assets"),
     onTap: () async {
       await clearAssets();
       if (ctx.mounted) {
-              Navigator.pop(ctx);
-              Navigator.of(ctx).pushReplacement(MaterialPageRoute(
-                  builder: (context) =>
-                      const DownloadZipAssetPage(title: 'DownloadZipAsset')));
-            }
+        Navigator.pop(ctx);
+        Navigator.of(ctx).pushReplacement(MaterialPageRoute(
+            builder: (context) =>
+                const DownloadZipAssetPage(title: 'DownloadZipAsset')));
+      }
     },
   ));
 
