@@ -1,32 +1,26 @@
 import 'dart:io';
-
-import 'package:download_assets/download_assets.dart';
 import 'package:flutter/material.dart';
 import '../data/globals.dart';
 import '../data/languages.dart';
 
-class AssetsHandler {
-
-}
+class AssetsHandler {}
 // API Zugriff auf letzten Commit
 // https://api.github.com/repos/holybiber/test-html-de/commits?since=2022-04-09T09:23:14Z
 
 Future<dynamic> initAssets() async {
   debugPrint("Starting initAssets");
 
-  for (int i = 0; i < availiableLanguages.length; i++) {
-    Language language = Language(availiableLanguages[i]);
+  for (int i = 0; i < availableLanguages.length; i++) {
+    Language language = Language(availableLanguages[i]);
     await language.init();
     // Add the language to the list
     languages.add(language);
 
   }
-
-  currentLanguage = languages[0];
+  currentLanguage = languages[1];
   debugPrint("Finished initAssets");
   return "Done"; // We need to return something so the snapshot "hasData"
 }
-
 
 Future downloadAllLanguages(List<Language> langs) async {
   debugPrint("downloading all languages");

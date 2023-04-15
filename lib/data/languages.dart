@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:download_assets/download_assets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:four_training/data/globals.dart';
@@ -10,22 +9,22 @@ class Language {
   String lang;
   String src = "";
   String path = "";
-  String htmlData = "";
+  late Directory dir;
   bool downloaded = false;
   DownloadAssetsController controller = DownloadAssetsController();
-  List<dynamic> pages = [];
-  List<dynamic> resources = [];
+  List<List<String>> pages = [];
+  List<List<String>> resources = [];
   List<dynamic> structure = [];
 
   Language(this.lang);
 
   Future init() async {
-    // Initialize the downloadAssetsController with a custom assetsDir for each language
-    String assetsDir = "assets-$lang";
-    await controller.init(assetDir: assetsDir);
+    String assetDir = "assets-$lang";
+    await controller.init(assetDir: assetDir);
 
     // Now we store the full path to the language
     path = controller.assetsDir! + pathStart + lang + pathEnd;
+    dir = Directory(path);
     src = urlStart + lang + urlEnd;
 
     // Then we check, if that dir already exists, meaning it is already downloaded
@@ -36,7 +35,8 @@ class Language {
     pages = await initPages();
     structure = await initStructure();
     sortPages();
-    await initResources();
+    resources = await initResources();
+    fixHtml();
   }
 
   Future download() async {
@@ -46,8 +46,6 @@ class Language {
       debugPrint("$lang already downloaded. Continue ...");
       return;
     }
-
-    debugPrint("Start downloading $lang ...");
 
     try {
       await controller.startDownload(
@@ -64,7 +62,6 @@ class Language {
                 progress += ".";
               }
             }
-
             debugPrint(progress);
           } else {
             debugPrint("Download completed");
@@ -76,42 +73,39 @@ class Language {
       debugPrint(e.toString());
       downloaded = false;
     }
-
-    debugPrint("Done downloadLanguage: $lang ...");
   }
 
-  Future<List<dynamic>> initPages() async {
-    List<dynamic> fileNames = [];
+  Future<List<List<String>>> initPages() async {
+    debugPrint("init Pages: $lang");
+    List<List<String>> pageData = [];
 
     try {
-      var dir = Directory(path);
-
       await for (var file in dir.list(recursive: false, followLinks: false)) {
         if (file is File) {
           String fileName = basename(file.path);
-          fileNames.add(fileName);
+          String content = await file.readAsString();
+          List<String> page = [fileName, content];
+          pageData.add(page);
         }
       }
-      return fileNames;
+      return pageData;
     } catch (e) {
-      String msg = "Error creating fileNames: $e";
+      String msg = "Error creating pageData: $e";
       debugPrint(msg);
       return Future.error(msg);
     }
   }
 
   Future<List<dynamic>> initStructure() async {
+    debugPrint("init Structure: $lang");
     var data = [];
 
     try {
-      Directory dir = Directory(path);
-
       await for (var directory
           in dir.list(recursive: false, followLinks: false)) {
         if (directory is Directory) {
           String directoryName = basename(directory.path);
           if (directoryName == "structure") {
-            Directory d = directory;
             File structureFile = await directory.list().first as File;
             data = jsonDecode(structureFile.readAsStringSync());
           }
@@ -126,27 +120,46 @@ class Language {
   }
 
   void sortPages() {
-    if (structure.isEmpty) {
-      debugPrint("Structure List is empty.");
+    debugPrint("sort Pages: $lang");
+    if (structure.isEmpty || pages.isEmpty) {
+      debugPrint(
+          "Something is empty (true) --> Structure: ${structure.isEmpty} | Pages: ${pages.isEmpty}");
       return;
     }
 
-    if (pages.isEmpty) {
-      debugPrint("Pages List is empty.");
-      return;
-    }
-
-    List<dynamic> sortedPages = [];
+    List<List<String>> sortedPages = [];
 
     for (Map element in structure) {
       element.forEach((key, value) {
-        sortedPages.add(value);
+        String content = "";
+
+        for (int i = 0; i < pages.length; i++) {
+          String pageName = pages.elementAt(i).elementAt(0);
+
+          if (value == pageName) {
+            content = pages.elementAt(i).elementAt(1);
+            break;
+          }
+        }
+
+        List<String> sortedPage = [value, content];
+        sortedPages.add(sortedPage);
       });
     }
     bool allPagesFound = true;
-    for (var page in pages) {
-      bool contains = sortedPages.contains(page);
-      if (!contains) {
+
+    for (int i = 0; i < pages.length; i++) {
+      String pageName = pages.elementAt(i).elementAt(0);
+      bool pageNameFoundInSortedList = false;
+      for (int j = 0; j < sortedPages.length; j++) {
+        String sortedName = sortedPages.elementAt(j).elementAt(0);
+
+        if (pageName == sortedName) {
+          pageNameFoundInSortedList = true;
+          break;
+        }
+      }
+      if (!pageNameFoundInSortedList) {
         allPagesFound = false;
         break;
       }
@@ -159,34 +172,65 @@ class Language {
     }
   }
 
-  Future initResources() async {} // TODO
-
-  Future<dynamic> displayPage() async {
-    String htmlData = "";
-    String pageName = pages.elementAt(currentIndex);
-    debugPrint("Displaying the page '$pageName' (language: $lang, index: $currentIndex)");
+  Future<List<List<String>>> initResources() async {
+    debugPrint("init Resources: $lang");
+    List<List<String>> data = [];
 
     try {
-      var dir = Directory(path);
-
-      await for (var file in dir.list(recursive: false, followLinks: false)) {
-        if (file is File) {
-          String fileName = basename(file.path);
-          if(pageName == fileName) {
-            htmlData = await File(file.path).readAsString();
-            break;
+      await for (var directory
+          in dir.list(recursive: false, followLinks: false)) {
+        if (directory is Directory) {
+          if (basename(directory.path) == "files") {
+            debugPrint("found files");
+            await directory.list().forEach((element) {
+              String fileName = basename(element.path);
+              String imageData = imageToBase64(element as File);
+              var foo = [fileName, imageData];
+              data.add(foo);
+            });
           }
         }
       }
-
-      debugPrint("Finished creating html data");
-      return htmlData;
+      return data;
     } catch (e) {
-      String msg = e.toString();
-
-      debugPrint("Error creating html data. $msg");
-
+      String msg = "Error creating files:$e";
+      debugPrint(msg);
       return Future.error(msg);
     }
   }
+
+  void fixHtml() {
+    debugPrint("fix html: $lang");
+    List<List<String>> fixedPages = [];
+
+    for (int i = 0; i < pages.length; i++) {
+      String fileName = pages.elementAt(i).elementAt(0);
+      String content = pages.elementAt(i).elementAt(1);
+
+      for (int j = 0; j < resources.length; j++) {
+        String resourceName = resources.elementAt(j).elementAt(0);
+        String imageData = resources.elementAt(j).elementAt(1);
+
+        if (content.contains(resourceName)) {
+          content = content.replaceAll(
+              "files/$resourceName", "data:image/png;base64,$imageData");
+        }
+      }
+      fixedPages.add([fileName, content]);
+    }
+    pages = fixedPages;
+  }
+
+  Future<String> displayPage() async {
+    String pageName = pages.elementAt(currentIndex).elementAt(0);
+    String pageContent = pages.elementAt(currentIndex).elementAt(1);
+    debugPrint(
+        "Displaying page '$pageName' (lang: $lang, index: $currentIndex)");
+    return pageContent;
+  }
+}
+
+String imageToBase64(File image) {
+  List<int> imageBytes = image.readAsBytesSync();
+  return base64Encode(imageBytes);
 }

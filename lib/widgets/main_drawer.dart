@@ -19,20 +19,19 @@ Widget mainDrawer(BuildContext context) {
 List<Widget> _buildLanguagesTiles(BuildContext ctx) {
   List<Widget> tiles = [];
 
-  tiles.add(const DrawerHeader(
-    decoration: BoxDecoration(),
-    child: Text("4training"),
+  tiles.add( DrawerHeader(
+    child: Text("4training", style: Theme.of(ctx).textTheme.displaySmall,),
   ));
 
   List<ListTile> allPages = [];
 
-  for(int i = 0; i < currentLanguage!.pages.length; i++) {
-    String title = currentLanguage!.pages.elementAt(i).toString();
+  for (int i = 0; i < currentLanguage!.pages.length; i++) {
+    String title = currentLanguage!.pages.elementAt(i).elementAt(0);
     title = title.replaceAll("_", " ");
     title = title.replaceAll(".html", "");
 
     allPages.add(ListTile(
-    title: Text(title),
+      title: Text(title),
       onTap: () {
         currentIndex = i;
         Navigator.pop(ctx);
@@ -40,7 +39,6 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
             MaterialPageRoute(builder: (context) => const AssetsPage()));
       },
     ));
-
   }
 
   tiles.add(ExpansionTile(
@@ -54,7 +52,7 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
     String title = languages[i].lang.toUpperCase();
 
     allLanguages.add(ListTile(
-      title:  Text(title),
+      title: Text(title),
       onTap: () {
         currentLanguage = languages[i];
         Navigator.pop(ctx);

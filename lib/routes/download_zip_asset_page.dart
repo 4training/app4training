@@ -26,7 +26,7 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
   Widget build(BuildContext context) {
     return FutureBuilder(
         future: _data.then((value) => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => const AssetsPage()))),
+            .pushReplacement(MaterialPageRoute(builder: (context) => const AssetsPage()))),
         initialData: "Loading",
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           debugPrint(snapshot.connectionState.toString());
@@ -55,7 +55,7 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
   }
 
   Future<dynamic> init() async {
-    debugPrint("Download Asstes Page");
+    debugPrint("Download Assets Page");
     return await initAssets();
   }
 

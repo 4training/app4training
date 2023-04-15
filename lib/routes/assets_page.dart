@@ -7,7 +7,6 @@ import '../data/globals.dart';
 
 class AssetsPage extends StatefulWidget {
   const AssetsPage({Key? key}) : super(key: key);
-
   @override
   State<AssetsPage> createState() => _AssetsPageState();
 }
@@ -26,59 +25,82 @@ class _AssetsPageState extends State<AssetsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      drawer: mainDrawer(context),
-      body: FutureBuilder(
-        future: _htmlData,
-        initialData: "Loading",
-        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-          debugPrint(snapshot.connectionState.toString());
+    return  WillPopScope(
+        onWillPop: _onWillPop,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+          ),
+          drawer: mainDrawer(context),
+          body: FutureBuilder(
+            future: _htmlData,
+            initialData: "Loading",
+            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              debugPrint(snapshot.connectionState.toString());
 
-          switch (snapshot.connectionState) {
-            case ConnectionState.none:
-            case ConnectionState.waiting:
-            case ConnectionState.active:
-              return loadingAnimation(
-                  "Loading content\nState: ${snapshot.connectionState}");
-            case ConnectionState.done:
-              if (snapshot.hasError) {
-                return Text("Couldn't find the content you are looking for.\nLanguage: ${currentLanguage?.lang}");
-              } else if (snapshot.hasData) {
-                return _page(snapshot.data);
-              } else {
-                return loadingAnimation("Empty Data");
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                case ConnectionState.active:
+                  return loadingAnimation(
+                      "Loading content\nState: ${snapshot.connectionState}");
+                case ConnectionState.done:
+                  if (snapshot.hasError) {
+                    return Text("Couldn't find the content you are looking for.\nLanguage: ${currentLanguage?.lang}");
+                  } else if (snapshot.hasData) {
+                    return _page(snapshot.data, context);
+                  } else {
+                    return loadingAnimation("Empty Data");
+                  }
+                default:
+                  return Text("State: ${snapshot.connectionState}");
               }
-            default:
-              return Text("State: ${snapshot.connectionState}");
-          }
-        },
-      ),
-    );
+            },
+          ),
+        ));
   }
 
-  Widget _pagesList(List<String> pages) {
-    return ListView.builder(
-      itemCount: pages.length,
-      itemBuilder: (context, index) {
-        return _pageListElement(pages[index]);
-      },
-    );
-  }
-
-  Widget _pageListElement(String content) {
-    return Column(
-      children: [Html(data: content), const Divider(), const Divider()],
-    );
-  }
-
-  Widget _page(String content) {
+  Widget _page(String content, BuildContext ctx) {
     return SingleChildScrollView(child: Column(
-      children: [Html(data: content), const Divider(), const Divider()],
+      children: [Html(data: content, onAnchorTap: (url, context, attributes, element) {
+        //debugPrint("link tapped $url $context $attributes $element");
+        for (int i = 0; i < currentLanguage!.pages.length; i++) {
+          String pageName = currentLanguage!.pages.elementAt(i).elementAt(0);
+          pageName = pageName.replaceAll(".html", "");
+          pageName = pageName.replaceAll("/", ""); // TODO doe we need this or can we fix it in the html file?
+          url = url!.replaceAll("/", "");
+          url = url.replaceAll(".html", ""); // TODO doe we need this or can we fix it in the html file?
+          debugPrint("pageName $pageName url $url");
+
+          if(pageName == url) {
+            currentIndex = i;
+            Navigator.of(ctx).pushReplacement(
+                MaterialPageRoute(builder: (context) => const AssetsPage()));
+          }
+        }
+      } ,)],
     ));
   }
 
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+          title: const Text('Are you sure?'),
+          content: const Text('Do you want to exit the App'),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('No'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text('Yes'),
+        ),
+      ],
+    ),
+    )) ??
+    false;
+  }
 
 }
