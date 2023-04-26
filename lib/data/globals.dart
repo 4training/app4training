@@ -12,3 +12,4 @@ const String pathEnd = "-main";
 
 const String latestCommitsStart = "https://api.github.com/repos/holybiber/test-html-";
 const String latestCommitsEnd = "/commits?since=";
+bool newCommitsAvailable = false;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
 
-
 import '../routes/assets_page.dart';
 import '../routes/download_zip_asset_page.dart';
 
@@ -46,7 +45,6 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
     title: Text(currentLanguage!.lang.toUpperCase()),
     leading: const Icon(Icons.menu_book),
     children: allPages,
-
   ));
 
   List<ListTile> allLanguages = [];
@@ -69,9 +67,24 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
     children: allLanguages,
   ));
 
+  var settingsIcon;
+  if (newCommitsAvailable) {
+    settingsIcon = Stack(
+      children: const [
+        Icon(Icons.settings),
+        Positioned(
+            top: 0,
+            right: -0,
+            child: Icon(Icons.brightness_1, size: 10, color: Colors.red))
+      ],
+    );
+  } else {
+    settingsIcon = const Icon(Icons.settings);
+  }
+
   tiles.add(ListTile(
     title: const Text("Settings"),
-    leading: const Icon(Icons.settings),
+    leading: settingsIcon,
     onTap: () {
       Navigator.pop(ctx);
       Navigator.pushNamed(ctx, '/settings');

@@ -259,6 +259,7 @@ class Language {
       var data = json.decode(response.body);
       int commits = data.length;
       debugPrint("Found $commits new commits since download on $t ($lang)");
+      if(commits > 0) newCommitsAvailable = true;
       return commits;
     } else {
       return Future.error("Failed to fetch latest commits ${response.statusCode}");

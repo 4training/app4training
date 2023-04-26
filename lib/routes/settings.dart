@@ -61,19 +61,40 @@ class Settings extends StatelessWidget {
             "Languages will be updated automatically, when you open the app after 7 days, after you downloaded them. You can also manually update them any time.",
             style: Theme.of(ctx).textTheme.bodyMedium)));
 
-    widgets.add(Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        ElevatedButton(
-            child: const Text("Update"),
-            onPressed: () {
-              clearAssets().then((_) {
-                Navigator.pop(ctx);
-                Navigator.of(ctx).pushReplacementNamed('/');
-              });
-            })
-      ],
-    ));
+    if (newCommitsAvailable) {
+      widgets.add(Row(
+        children: [
+          const Padding(
+              padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+              child: Icon(Icons.brightness_1, size: 10, color: Colors.red)),
+          Text("Update available!", style: Theme.of(ctx).textTheme.bodyMedium),
+          const Spacer(),
+
+          ElevatedButton(
+              child: const Text("Update"),
+              onPressed: () {
+                clearAssets().then((_) {
+                  Navigator.pop(ctx);
+                  Navigator.of(ctx).pushReplacementNamed('/');
+                });
+              })
+        ],
+      ));
+    } else {
+      widgets.add(Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          ElevatedButton(
+              child: const Text("Update"),
+              onPressed: () {
+                clearAssets().then((_) {
+                  Navigator.pop(ctx);
+                  Navigator.of(ctx).pushReplacementNamed('/');
+                });
+              })
+        ],
+      ));
+    }
 
     return widgets;
   }
