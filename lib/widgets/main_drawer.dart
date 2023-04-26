@@ -17,7 +17,8 @@ Widget mainDrawer(BuildContext context) {
 List<Widget> _buildLanguagesTiles(BuildContext ctx) {
   List<Widget> tiles = [];
 
-  tiles.add(DrawerHeader(
+  tiles.add(Padding(
+    padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
     child: Text(
       "4training",
       style: Theme.of(ctx).textTheme.displaySmall,
