@@ -9,3 +9,6 @@ const String urlStart = "https://github.com/holybiber/test-html-";
 const String urlEnd = "/archive/refs/heads/main.zip";
 const String pathStart = "/test-html-";
 const String pathEnd = "-main";
+
+const String latestCommitsStart = "https://api.github.com/repos/holybiber/test-html-";
+const String latestCommitsEnd = "/commits?since=";

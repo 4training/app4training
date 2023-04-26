@@ -4,6 +4,7 @@ import 'package:download_assets/download_assets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:path/path.dart';
+import 'package:http/http.dart' as http;
 
 class Language {
   String lang;
@@ -16,6 +17,7 @@ class Language {
   List<List<String>> resources = [];
   List<dynamic> structure = [];
   late DateTime timestamp;
+  int commitsSinceDownload = 0;
 
   Language(this.lang);
 
@@ -34,6 +36,7 @@ class Language {
     if (!downloaded) await download();
 
     timestamp = await getTimestamp();
+    commitsSinceDownload = await fetchLatestCommits();
     pages = await initPages();
     structure = await initStructure();
     sortPages();
@@ -244,6 +247,22 @@ class Language {
     }
     debugPrint(timestamp.toString());
     return timestamp;
+  }
+
+  Future<int> fetchLatestCommits () async {
+    var t = timestamp.subtract(const Duration(days: 500)); // TODO just for testing, use timestamp instead
+    var uri = latestCommitsStart + lang + latestCommitsEnd + t.toIso8601String();
+    debugPrint(uri);
+    final response = await http.get(Uri.parse(uri));
+
+    if(response.statusCode == 200) { // = OK response
+      var data = json.decode(response.body);
+      int commits = data.length;
+      debugPrint("Found $commits new commits since download on $t ($lang)");
+      return commits;
+    } else {
+      return Future.error("Failed to fetch latest commits ${response.statusCode}");
+    }
   }
 }
 
