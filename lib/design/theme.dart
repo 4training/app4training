@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:four_training/design/colors.dart';
 import 'package:four_training/design/textthemes.dart';
 import 'appbar_theme.dart';
 import 'colorSchemes.dart';
@@ -12,6 +13,7 @@ ThemeData lightTheme = ThemeData(
   visualDensity: VisualDensity.adaptivePlatformDensity,
   brightness: Brightness.light,
   textTheme: lightTextTheme,
+  scaffoldBackgroundColor: lightBackground
 );
 
 ThemeData darkTheme = ThemeData(
@@ -22,6 +24,7 @@ ThemeData darkTheme = ThemeData(
   visualDensity: VisualDensity.adaptivePlatformDensity,
   brightness: Brightness.dark,
   textTheme: darkTextTheme,
+  scaffoldBackgroundColor: darkBackground
 );
 
 

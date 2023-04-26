@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:four_training/widgets/loading_animation.dart';
-import 'assets_page.dart';
 import 'package:four_training/utils/assets_handler.dart';
 
 class DownloadZipAssetPage extends StatefulWidget {
@@ -13,7 +12,6 @@ class DownloadZipAssetPage extends StatefulWidget {
 }
 
 class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
-
   late Future<dynamic> _data;
 
   @override
@@ -25,19 +23,16 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: _data.then((value) => Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (context) => const AssetsPage()))),
+        future: _data.then((v) => Navigator.pushReplacementNamed(context, "/asset")),
         initialData: "Loading",
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           debugPrint(snapshot.connectionState.toString());
 
           switch (snapshot.connectionState) {
             case ConnectionState.none:
-              return loadingAnimation("State: ${snapshot.connectionState}");
             case ConnectionState.waiting:
-              return loadingAnimation("Loading");
             case ConnectionState.active:
-              return loadingAnimation("State: ${snapshot.connectionState}");
+              return loadingAnimation("Loading: ${snapshot.connectionState}");
             case ConnectionState.done:
               if (snapshot.hasError) {
                 return loadingAnimation(snapshot.error.toString());
@@ -58,8 +53,4 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
     debugPrint("Download Assets Page");
     return await initAssets();
   }
-
-
-
-
 }

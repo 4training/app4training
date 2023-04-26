@@ -37,7 +37,7 @@ Future clearAssets() async {
     await lang.controller.clearAssets();
   }
 
-  languages.clear();
+  languages.clear(); // TODO
 
 }
 

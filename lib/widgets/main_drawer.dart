@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
-import 'package:four_training/data/languages.dart';
-import 'package:four_training/design/textthemes.dart';
-import 'package:four_training/utils/assets_handler.dart';
+
 
 import '../routes/assets_page.dart';
 import '../routes/download_zip_asset_page.dart';
@@ -19,8 +17,11 @@ Widget mainDrawer(BuildContext context) {
 List<Widget> _buildLanguagesTiles(BuildContext ctx) {
   List<Widget> tiles = [];
 
-  tiles.add( DrawerHeader(
-    child: Text("4training", style: Theme.of(ctx).textTheme.displaySmall,),
+  tiles.add(DrawerHeader(
+    child: Text(
+      "4training",
+      style: Theme.of(ctx).textTheme.displaySmall,
+    ),
   ));
 
   List<ListTile> allPages = [];
@@ -35,57 +36,45 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
       onTap: () {
         currentIndex = i;
         Navigator.pop(ctx);
-        Navigator.of(ctx).pushReplacement(
-            MaterialPageRoute(builder: (context) => const AssetsPage()));
+        Navigator.pushReplacementNamed(ctx, "/asset");
       },
     ));
   }
 
   tiles.add(ExpansionTile(
     title: Text(currentLanguage!.lang.toUpperCase()),
+    leading: const Icon(Icons.menu_book),
     children: allPages,
+
   ));
 
   List<ListTile> allLanguages = [];
 
   for (int i = 0; i < languages.length; i++) {
     String title = languages[i].lang.toUpperCase();
-
     allLanguages.add(ListTile(
       title: Text(title),
       onTap: () {
         currentLanguage = languages[i];
         Navigator.pop(ctx);
-        Navigator.of(ctx).pushReplacement(
-            MaterialPageRoute(builder: (context) => const AssetsPage()));
+        Navigator.pushReplacementNamed(ctx, "/asset");
       },
     ));
   }
 
   tiles.add(ExpansionTile(
-    title: const Text("Switch Language"),
+    title: const Text("Languages"),
+    leading: const Icon(Icons.language),
     children: allLanguages,
   ));
 
   tiles.add(ListTile(
-    title: const Text("Clear assets"),
-    onTap: () async {
-      await clearAssets();
-      if (ctx.mounted) {
-        Navigator.pop(ctx);
-        Navigator.of(ctx).pushReplacement(MaterialPageRoute(
-            builder: (context) =>
-                const DownloadZipAssetPage(title: 'DownloadZipAsset')));
-      }
-    },
-  ));
-
-  tiles.add(ListTile(
-    title: const Text("Close"),
+    title: const Text("Settings"),
+    leading: const Icon(Icons.settings),
     onTap: () {
       Navigator.pop(ctx);
+      Navigator.pushNamed(ctx, '/settings');
     },
   ));
-
   return tiles;
 }

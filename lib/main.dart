@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:four_training/routes/assets_page.dart';
 import 'package:four_training/routes/download_zip_asset_page.dart';
+import 'package:four_training/routes/settings.dart';
 import 'design/theme.dart';
 
 void main() {
@@ -17,8 +19,12 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       theme: lightTheme,
       themeMode: ThemeMode.system,
-      home: const DownloadZipAssetPage(title: 'DownloadZipAsset'),
-      //home: LocalStoragePage(title: 'LocalStorage', storage: LocalPageStorage()),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const DownloadZipAssetPage(title: 'DownloadZipAsset'),
+        '/asset' : (context) => const AssetsPage(),
+        '/settings' : (context) => const Settings(),
+      },
     );
   }
 }

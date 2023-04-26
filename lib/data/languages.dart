@@ -15,6 +15,7 @@ class Language {
   List<List<String>> pages = [];
   List<List<String>> resources = [];
   List<dynamic> structure = [];
+  late DateTime timestamp;
 
   Language(this.lang);
 
@@ -32,6 +33,7 @@ class Language {
     debugPrint("assets ($lang) loaded: $downloaded");
     if (!downloaded) await download();
 
+    timestamp = await getTimestamp();
     pages = await initPages();
     structure = await initStructure();
     sortPages();
@@ -51,18 +53,13 @@ class Language {
       await controller.startDownload(
         assetsUrl: src,
         onProgress: (progressValue) {
-          if (progressValue < 20) {
-            // The value goes for some reason only up to 18.7 or so ...
+          if (progressValue < 20) { // The value goes for some reason only up to 18.7 or so ...
             String progress = "Downloading $lang: ";
 
             for (int i = 0; i < 20; i++) {
-              if (i <= progressValue) {
-                progress += "|";
-              } else {
-                progress += ".";
-              }
+              progress += (i <= progressValue) ? "|" : ".";
             }
-            debugPrint(progress);
+            debugPrint("$progress ${progressValue.round()}");
           } else {
             debugPrint("Download completed");
             downloaded = true;
@@ -227,6 +224,26 @@ class Language {
     debugPrint(
         "Displaying page '$pageName' (lang: $lang, index: $currentIndex)");
     return pageContent;
+  }
+
+  Future<DateTime> getTimestamp() async {
+    DateTime timestamp = DateTime.now();
+
+    try {
+      await for (var file in dir.list(recursive: false, followLinks: false)) {
+        if (file is File) {
+          FileStat stat = await FileStat.stat(file.path);
+          timestamp = stat.changed;
+          break;
+        }
+      }
+    } catch (e) {
+      String msg = "Error getting timestamp: $e";
+      debugPrint(msg);
+      return Future.error(msg);
+    }
+    debugPrint(timestamp.toString());
+    return timestamp;
   }
 }
 
