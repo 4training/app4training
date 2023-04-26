@@ -59,7 +59,7 @@ class Language {
             for (int i = 0; i < 20; i++) {
               progress += (i <= progressValue) ? "|" : ".";
             }
-            debugPrint("$progress ${progressValue.round()}");
+            //debugPrint("$progress ${progressValue.round()}");
           } else {
             debugPrint("Download completed");
             downloaded = true;

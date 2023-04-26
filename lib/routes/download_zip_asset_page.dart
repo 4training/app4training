@@ -32,7 +32,7 @@ class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
             case ConnectionState.none:
             case ConnectionState.waiting:
             case ConnectionState.active:
-              return loadingAnimation("Loading: ${snapshot.connectionState}");
+              return loadingAnimation("Loading");
             case ConnectionState.done:
               if (snapshot.hasError) {
                 return loadingAnimation(snapshot.error.toString());

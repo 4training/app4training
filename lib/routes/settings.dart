@@ -67,9 +67,10 @@ class Settings extends StatelessWidget {
         ElevatedButton(
             child: const Text("Update"),
             onPressed: () {
-              clearAssets();
-              Navigator.pop(ctx);
-              Navigator.of(ctx).pushReplacementNamed('/');
+              clearAssets().then((_) {
+                Navigator.pop(ctx);
+                Navigator.of(ctx).pushReplacementNamed('/');
+              });
             })
       ],
     ));

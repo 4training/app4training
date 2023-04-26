@@ -13,10 +13,9 @@ Future<dynamic> initAssets() async {
   for (int i = 0; i < availableLanguages.length; i++) {
     Language language = Language(availableLanguages[i]);
     await language.init();
-    // Add the language to the list
     languages.add(language);
-
   }
+
   currentLanguage = languages[1];
   debugPrint("Finished initAssets");
   return "Done"; // We need to return something so the snapshot "hasData"
@@ -33,12 +32,9 @@ Future downloadAllLanguages(List<Language> langs) async {
 Future clearAssets() async {
   debugPrint("clearing assets");
   for (var lang in languages)  {
-
     await lang.controller.clearAssets();
   }
-
-  languages.clear(); // TODO
-
+  languages.clear();
 }
 
 Future<dynamic> displayAssets() async {
