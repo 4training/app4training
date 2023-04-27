@@ -24,8 +24,26 @@ class Settings extends StatelessWidget {
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(children: [
-          Text("Language", style: Theme.of(ctx).textTheme.titleLarge)
+          Text("Languages", style: Theme.of(ctx).textTheme.titleLarge)
         ])));
+
+    List<TableRow> rows = [];
+    rows.add(TableRow(children: [
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+            height: 32,
+            child: Text("Language", style: Theme.of(ctx).textTheme.labelLarge)),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+            height: 32,
+            child: Text("Downloaded on", style: Theme.of(ctx).textTheme.labelLarge)),
+      ),
+
+
+    ]));
 
     for (int i = 0; i < languages.length; i++) {
       String lang = languages.elementAt(i).lang;
@@ -35,19 +53,33 @@ class Settings extends StatelessWidget {
       String hour = languages.elementAt(i).timestamp.hour.toString();
       String minute = languages.elementAt(i).timestamp.minute.toString();
 
-      Widget tile = ListTile(
-        title:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text(
-            lang.toUpperCase(),
-            style: Theme.of(ctx).textTheme.labelLarge,
-          ),
-          Text("Downloaded on $day.$month.$year $hour:$minute")
-        ]),
-      );
+      rows.add(TableRow(children: [
 
-      widgets.add(tile);
+
+        TableCell(
+          verticalAlignment: TableCellVerticalAlignment.middle,
+          child: SizedBox(
+              height: 32,
+              child: Text(lang.toUpperCase(),
+              style: Theme.of(ctx).textTheme.labelLarge)),
+        ),
+        TableCell(
+          child: SizedBox(
+              height: 32,
+              child: Text("$day.$month.$year $hour:$minute",
+                  style: Theme.of(ctx).textTheme.bodyMedium)),
+        )
+      ]));
     }
+
+
+
+    widgets.add(Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Table(
+        children: rows,
+      ),
+    ));
 
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
@@ -69,7 +101,6 @@ class Settings extends StatelessWidget {
               child: Icon(Icons.brightness_1, size: 10, color: Colors.red)),
           Text("Update available!", style: Theme.of(ctx).textTheme.bodyMedium),
           const Spacer(),
-
           ElevatedButton(
               child: const Text("Update"),
               onPressed: () {

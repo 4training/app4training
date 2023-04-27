@@ -42,6 +42,8 @@ dependencies:
   download_assets: ^3.0.0
   path: ^1.8.2
   http: ^0.13.5
+  dio: ^4.0.0 # TODO change to ^5.0.0 one the download_assets package was updated (security leak!)
+
 
 dev_dependencies:
   flutter_test:
