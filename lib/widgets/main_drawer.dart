@@ -4,8 +4,7 @@ import 'package:four_training/widgets/upward_expansion_tile.dart';
 
 Widget mainDrawer(BuildContext context) {
   return Drawer(
-    child:  _buildDrawerElements(context),
-
+    child: _buildDrawerElements(context),
   );
 }
 
@@ -14,12 +13,15 @@ Column _buildDrawerElements(BuildContext ctx) {
 
   // Header
   elements.add(Padding(
-    padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-    child: Text(
-      "4training",
-      style: Theme.of(ctx).textTheme.displaySmall,
-    ),
+    padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 10),
+    child: Align(
+      alignment: Alignment.topLeft,
+        child: Container(
+            child: Text("Content",
+                style: Theme.of(ctx).textTheme.titleLarge))),
   ));
+
+
 
   List<ListTile> allPages = [];
 
@@ -30,6 +32,7 @@ Column _buildDrawerElements(BuildContext ctx) {
 
     allPages.add(ListTile(
       title: Text(title, style: Theme.of(ctx).textTheme.labelMedium),
+      // selected: i == currentIndex, // TODO not working
       onTap: () {
         currentIndex = i;
         Navigator.pop(ctx);
@@ -38,7 +41,7 @@ Column _buildDrawerElements(BuildContext ctx) {
     ));
   }
 
-  elements.add(Expanded( child: ListView(children: allPages)));
+  elements.add(Expanded(child: ListView(children: allPages)));
 
   List<ListTile> allLanguages = [];
 
@@ -58,11 +61,8 @@ Column _buildDrawerElements(BuildContext ctx) {
     title: Text("Languages", style: Theme.of(ctx).textTheme.labelLarge),
     leading: const Icon(Icons.language),
     expandedAlignment: Alignment.topCenter,
-
     children: allLanguages,
   ));
-
-
 
   return Column(children: elements);
 }
