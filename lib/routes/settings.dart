@@ -54,8 +54,6 @@ class Settings extends StatelessWidget {
       String minute = languages.elementAt(i).timestamp.minute.toString();
 
       rows.add(TableRow(children: [
-
-
         TableCell(
           verticalAlignment: TableCellVerticalAlignment.middle,
           child: SizedBox(
@@ -71,8 +69,6 @@ class Settings extends StatelessWidget {
         )
       ]));
     }
-
-
 
     widgets.add(Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -96,9 +92,9 @@ class Settings extends StatelessWidget {
     if (newCommitsAvailable) {
       widgets.add(Row(
         children: [
-          const Padding(
-              padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-              child: Icon(Icons.brightness_1, size: 10, color: Colors.red)),
+          Padding(
+              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+              child: Icon(Icons.brightness_1, size: 10, color: Theme.of(ctx).colorScheme.error,)),
           Text("Update available!", style: Theme.of(ctx).textTheme.bodyMedium),
           const Spacer(),
           ElevatedButton(

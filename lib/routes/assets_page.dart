@@ -4,6 +4,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:four_training/widgets/loading_animation.dart';
 import 'package:four_training/widgets/main_drawer.dart';
 import '../data/globals.dart';
+import '../widgets/settings_btn.dart';
 
 class AssetsPage extends StatefulWidget {
   const AssetsPage({Key? key}) : super(key: key);
@@ -30,6 +31,7 @@ class _AssetsPageState extends State<AssetsPage> {
         child: Scaffold(
           appBar: AppBar(
             title: Text(title),
+            actions: [settingsTile(context)],
           ),
           drawer: mainDrawer(context),
           body: FutureBuilder(

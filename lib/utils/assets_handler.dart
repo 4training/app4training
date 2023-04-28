@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import '../data/globals.dart';
 import '../data/languages.dart';
 
-class AssetsHandler {}
-// API Zugriff auf letzten Commit
-// https://api.github.com/repos/holybiber/test-html-de/commits?since=2022-04-09T09:23:14Z
 
 Future<dynamic> initAssets() async {
   debugPrint("Starting initAssets");

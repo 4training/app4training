@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:four_training/widgets/loading_animation.dart';
 import 'package:four_training/utils/assets_handler.dart';
 
-class DownloadZipAssetPage extends StatefulWidget {
-  const DownloadZipAssetPage({super.key, required this.title});
+class StartupPage extends StatefulWidget {
+  const StartupPage({super.key, required this.title});
   final String title;
 
   @override
-  State<DownloadZipAssetPage> createState() => _DownloadZipAssetPageState();
+  State<StartupPage> createState() => _StartupPageState();
 }
 
-class _DownloadZipAssetPageState extends State<DownloadZipAssetPage> {
+class _StartupPageState extends State<StartupPage> {
   late Future<dynamic> _data;
 
   @override

@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
-
-import '../routes/assets_page.dart';
-import '../routes/download_zip_asset_page.dart';
+import 'package:four_training/widgets/upward_expansion_tile.dart';
 
 Widget mainDrawer(BuildContext context) {
   return Drawer(
-    child: ListView(
-      padding: EdgeInsets.zero,
-      children: _buildLanguagesTiles(context),
-    ),
+    child:  _buildDrawerElements(context),
+
   );
 }
 
-List<Widget> _buildLanguagesTiles(BuildContext ctx) {
-  List<Widget> tiles = [];
+Column _buildDrawerElements(BuildContext ctx) {
+  List<Widget> elements = [];
 
-  tiles.add(Padding(
+  // Header
+  elements.add(Padding(
     padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
     child: Text(
       "4training",
@@ -32,7 +29,7 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
     title = title.replaceAll(".html", "");
 
     allPages.add(ListTile(
-      title: Text(title),
+      title: Text(title, style: Theme.of(ctx).textTheme.labelMedium),
       onTap: () {
         currentIndex = i;
         Navigator.pop(ctx);
@@ -41,18 +38,14 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
     ));
   }
 
-  tiles.add(ExpansionTile(
-    title: Text(currentLanguage!.lang.toUpperCase()),
-    leading: const Icon(Icons.menu_book),
-    children: allPages,
-  ));
+  elements.add(Expanded( child: ListView(children: allPages)));
 
   List<ListTile> allLanguages = [];
 
   for (int i = 0; i < languages.length; i++) {
     String title = languages[i].lang.toUpperCase();
     allLanguages.add(ListTile(
-      title: Text(title),
+      title: Text(title, style: Theme.of(ctx).textTheme.labelMedium),
       onTap: () {
         currentLanguage = languages[i];
         Navigator.pop(ctx);
@@ -61,34 +54,15 @@ List<Widget> _buildLanguagesTiles(BuildContext ctx) {
     ));
   }
 
-  tiles.add(ExpansionTile(
-    title: const Text("Languages"),
+  elements.add(UpwardExpansionTile(
+    title: Text("Languages", style: Theme.of(ctx).textTheme.labelLarge),
     leading: const Icon(Icons.language),
+    expandedAlignment: Alignment.topCenter,
+
     children: allLanguages,
   ));
 
-  var settingsIcon;
-  if (newCommitsAvailable) {
-    settingsIcon = Stack(
-      children: const [
-        Icon(Icons.settings),
-        Positioned(
-            top: 0,
-            right: -0,
-            child: Icon(Icons.brightness_1, size: 10, color: Colors.red))
-      ],
-    );
-  } else {
-    settingsIcon = const Icon(Icons.settings);
-  }
 
-  tiles.add(ListTile(
-    title: const Text("Settings"),
-    leading: settingsIcon,
-    onTap: () {
-      Navigator.pop(ctx);
-      Navigator.pushNamed(ctx, '/settings');
-    },
-  ));
-  return tiles;
+
+  return Column(children: elements);
 }

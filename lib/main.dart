@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/routes/assets_page.dart';
-import 'package:four_training/routes/download_zip_asset_page.dart';
+import 'package:four_training/routes/startup_page.dart';
 import 'package:four_training/routes/settings.dart';
 import 'design/theme.dart';
 
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: '/',
       routes: {
-        '/': (context) => const DownloadZipAssetPage(title: 'DownloadZipAsset'),
+        '/': (context) => const StartupPage(title: 'DownloadZipAsset'),
         '/asset' : (context) => const AssetsPage(),
         '/settings' : (context) => const Settings(),
       },

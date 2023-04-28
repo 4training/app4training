@@ -2,12 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-Color lightPrimary = Colors.red;
+Color lightPrimary = Colors.red[900]!;
 Color lightPrimaryVariant = Colors.redAccent;
 Color lightOnPrimary = Colors.white;
-Color lightSecondary = Colors.purple;
-Color lightSecondaryVariant = Colors.deepPurpleAccent;
-Color lightOnSecondary = Colors.deepPurple;
+Color lightSecondary = Colors.white10;
+Color lightSecondaryVariant = Colors.white30;
+Color lightOnSecondary = Colors.white;
 Color lightError = Colors.orange;
 Color lightOnError = Colors.orangeAccent;
 Color lightBackground = Colors.white;
