@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../data/globals.dart';
 import '../data/languages.dart';
 
-
 Future<dynamic> initAssets() async {
   debugPrint("Starting initAssets");
 
@@ -13,7 +12,14 @@ Future<dynamic> initAssets() async {
     languages.add(language);
   }
 
-  currentLanguage = languages[1];
+  // Set the language to the local device language
+  // or english, if local language is not available
+  currentLanguage = languages
+      .firstWhere((element) => element.lang == localLanguage, orElse: () {
+    return languages[0];
+  });
+  debugPrint("Current language set to ${currentLanguage?.lang}");
+
   debugPrint("Finished initAssets");
   return "Done"; // We need to return something so the snapshot "hasData"
 }
@@ -28,14 +34,14 @@ Future downloadAllLanguages(List<Language> langs) async {
 
 Future clearAssets() async {
   debugPrint("clearing assets");
-  for (var lang in languages)  {
+  for (var lang in languages) {
     await lang.controller.clearAssets();
   }
   languages.clear();
 }
 
 Future<dynamic> displayAssets() async {
-  debugPrint( "displaying assets $currentLanguage, all Pages");
+  debugPrint("displaying assets $currentLanguage, all Pages");
 
   List<String> htmlData = [];
 
@@ -60,5 +66,4 @@ Future<dynamic> displayAssets() async {
     debugPrint("Error creating html data. $msg");
     return Future.error(msg);
   }
-
 }

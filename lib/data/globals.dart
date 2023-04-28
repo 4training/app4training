@@ -4,6 +4,7 @@ List<Language> languages = [];
 Language? currentLanguage;
 int currentIndex = 0;
 final List<String> availableLanguages = ["en", "de"];
+String localLanguage = "";
 
 const String urlStart = "https://github.com/holybiber/test-html-";
 const String urlEnd = "/archive/refs/heads/main.zip";
