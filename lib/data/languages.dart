@@ -54,9 +54,10 @@ class Language {
 
     try {
       await controller.startDownload(
-        assetsUrl: src,
+        assetsUrls: [src],
         onProgress: (progressValue) {
-          if (progressValue < 20) { // The value goes for some reason only up to 18.7 or so ...
+          if (progressValue < 20) {
+            // The value goes for some reason only up to 18.7 or so ...
             String progress = "Downloading $lang: ";
 
             for (int i = 0; i < 20; i++) {
@@ -249,20 +250,24 @@ class Language {
     return timestamp;
   }
 
-  Future<int> fetchLatestCommits () async {
-    var t = timestamp.subtract(const Duration(days: 500)); // TODO just for testing, use timestamp instead
-    var uri = latestCommitsStart + lang + latestCommitsEnd + t.toIso8601String();
+  Future<int> fetchLatestCommits() async {
+    var t = timestamp.subtract(const Duration(
+        days: 500)); // TODO just for testing, use timestamp instead
+    var uri =
+        latestCommitsStart + lang + latestCommitsEnd + t.toIso8601String();
     debugPrint(uri);
     final response = await http.get(Uri.parse(uri));
 
-    if(response.statusCode == 200) { // = OK response
+    if (response.statusCode == 200) {
+      // = OK response
       var data = json.decode(response.body);
       int commits = data.length;
       debugPrint("Found $commits new commits since download on $t ($lang)");
-      if(commits > 0) newCommitsAvailable = true;
+      if (commits > 0) newCommitsAvailable = true;
       return commits;
     } else {
-      return Future.error("Failed to fetch latest commits ${response.statusCode}");
+      return Future.error(
+          "Failed to fetch latest commits ${response.statusCode}");
     }
   }
 }
