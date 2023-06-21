@@ -5,8 +5,7 @@ import 'package:four_training/widgets/loading_animation.dart';
 import 'package:four_training/utils/assets_handler.dart';
 
 class StartupPage extends StatefulWidget {
-  const StartupPage({super.key, required this.title});
-  final String title;
+  const StartupPage({super.key});
 
   @override
   State<StartupPage> createState() => _StartupPageState();
@@ -28,7 +27,8 @@ class _StartupPageState extends State<StartupPage> {
     debugPrint(mylocale.languageCode);
 
     return FutureBuilder(
-        future: _data.then((v) => Navigator.pushReplacementNamed(context, "/asset")),
+        future: _data
+            .then((v) => Navigator.pushReplacementNamed(context, "/asset")),
         initialData: "Loading",
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           debugPrint(snapshot.connectionState.toString());

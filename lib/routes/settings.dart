@@ -6,7 +6,7 @@ import '../utils/assets_handler.dart';
 // TODO add option to set standard language manually
 
 class Settings extends StatelessWidget {
-  const Settings({Key? key}) : super(key: key);
+  const Settings({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,10 +41,9 @@ class Settings extends StatelessWidget {
         verticalAlignment: TableCellVerticalAlignment.middle,
         child: SizedBox(
             height: 32,
-            child: Text("Downloaded on", style: Theme.of(ctx).textTheme.labelLarge)),
+            child: Text("Downloaded on",
+                style: Theme.of(ctx).textTheme.labelLarge)),
       ),
-
-
     ]));
 
     for (int i = 0; i < languages.length; i++) {
@@ -61,7 +60,7 @@ class Settings extends StatelessWidget {
           child: SizedBox(
               height: 32,
               child: Text(lang.toUpperCase(),
-              style: Theme.of(ctx).textTheme.labelLarge)),
+                  style: Theme.of(ctx).textTheme.labelLarge)),
         ),
         TableCell(
           child: SizedBox(
@@ -96,7 +95,11 @@ class Settings extends StatelessWidget {
         children: [
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-              child: Icon(Icons.brightness_1, size: 10, color: Theme.of(ctx).colorScheme.error,)),
+              child: Icon(
+                Icons.brightness_1,
+                size: 10,
+                color: Theme.of(ctx).colorScheme.error,
+              )),
           Text("Update available!", style: Theme.of(ctx).textTheme.bodyMedium),
           const Spacer(),
           ElevatedButton(

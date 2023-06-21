@@ -14,7 +14,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       title: '4training',
       darkTheme: darkTheme,
@@ -22,9 +21,9 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: '/',
       routes: {
-        '/': (context) => const StartupPage(title: 'DownloadZipAsset'),
-        '/asset' : (context) => const AssetsPage(),
-        '/settings' : (context) => const Settings(),
+        '/': (context) => const StartupPage(),
+        '/asset': (context) => const AssetsPage(),
+        '/settings': (context) => const Settings(),
       },
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

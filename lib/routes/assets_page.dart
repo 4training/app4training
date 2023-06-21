@@ -7,13 +7,12 @@ import '../data/globals.dart';
 import '../widgets/settings_btn.dart';
 
 class AssetsPage extends StatefulWidget {
-  const AssetsPage({Key? key}) : super(key: key);
+  const AssetsPage({super.key});
   @override
   State<AssetsPage> createState() => _AssetsPageState();
 }
 
 class _AssetsPageState extends State<AssetsPage> {
-  String state = "";
   late String title;
   late Future<dynamic> _htmlData;
 
