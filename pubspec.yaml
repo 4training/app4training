@@ -39,7 +39,7 @@ dependencies:
   flutter_html: ^3.0.0-beta.2
   archive: ^3.3.5  # obsolet
   path_provider: ^2.0.11
-  download_assets: ^3.0.0
+  download_assets: ^3.1.0
   path: ^1.8.2
   http: ^1.0.0
   dio: ^5.0.0
