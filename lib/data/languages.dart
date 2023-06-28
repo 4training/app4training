@@ -6,11 +6,19 @@ import 'package:four_training/data/globals.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 
+class Worksheet {
+  String page; // English worksheet name
+  String title; // translated title
+  String? content; // HTML code of this worksheet (loaded on demand)
+  Worksheet(this.page, this.title);
+  //  String version;
+}
+
 class Language {
-  String lang;
-  String src = "";
-  String path = "";
-  late Directory dir;
+  final String languageCode;
+  final String remoteUrl; // URL of the zip file to be downloaded
+  late final String path; // full local path to directory holding all content
+  late final Directory dir; // Directory object of path
   bool downloaded = false;
   DownloadAssetsController controller = DownloadAssetsController();
   List<List<String>> pages = [];
@@ -19,20 +27,19 @@ class Language {
   late DateTime timestamp;
   int commitsSinceDownload = 0;
 
-  Language(this.lang);
+  Language(this.languageCode) : remoteUrl = urlStart + languageCode + urlEnd;
 
   Future init() async {
-    String assetDir = "assets-$lang";
-    await controller.init(assetDir: assetDir);
+    await controller.init(assetDir: "assets-$languageCode");
 
     // Now we store the full path to the language
-    path = controller.assetsDir! + pathStart + lang + pathEnd;
+    path = controller.assetsDir! + pathStart + languageCode + pathEnd;
     dir = Directory(path);
-    src = urlStart + lang + urlEnd;
+    debugPrint("Path: $path");
 
     // Then we check, if that dir already exists, meaning it is already downloaded
     downloaded = await controller.assetsDirAlreadyExists();
-    debugPrint("assets ($lang) loaded: $downloaded");
+    debugPrint("assets ($languageCode) loaded: $downloaded");
     if (!downloaded) await download();
 
     timestamp = await getTimestamp();
@@ -45,20 +52,20 @@ class Language {
   }
 
   Future download() async {
-    debugPrint("Starting downloadLanguage: $lang ...");
+    debugPrint("Starting downloadLanguage: $languageCode ...");
 
     if (downloaded) {
-      debugPrint("$lang already downloaded. Continue ...");
+      debugPrint("$languageCode already downloaded. Continue ...");
       return;
     }
 
     try {
       await controller.startDownload(
-        assetsUrls: [src],
+        assetsUrls: [remoteUrl],
         onProgress: (progressValue) {
           if (progressValue < 20) {
             // The value goes for some reason only up to 18.7 or so ...
-            String progress = "Downloading $lang: ";
+            String progress = "Downloading $languageCode: ";
 
             for (int i = 0; i < 20; i++) {
               progress += (i <= progressValue) ? "|" : ".";
@@ -77,7 +84,7 @@ class Language {
   }
 
   Future<List<List<String>>> initPages() async {
-    debugPrint("init Pages: $lang");
+    debugPrint("init Pages: $languageCode");
     List<List<String>> pageData = [];
 
     try {
@@ -98,7 +105,7 @@ class Language {
   }
 
   Future<List<dynamic>> initStructure() async {
-    debugPrint("init Structure: $lang");
+    debugPrint("init Structure: $languageCode");
     var data = [];
 
     try {
@@ -121,7 +128,7 @@ class Language {
   }
 
   void sortPages() {
-    debugPrint("sort Pages: $lang");
+    debugPrint("sort Pages: $languageCode");
     if (structure.isEmpty || pages.isEmpty) {
       debugPrint(
           "Something is empty (true) --> Structure: ${structure.isEmpty} | Pages: ${pages.isEmpty}");
@@ -174,7 +181,7 @@ class Language {
   }
 
   Future<List<List<String>>> initResources() async {
-    debugPrint("init Resources: $lang");
+    debugPrint("init Resources: $languageCode");
     List<List<String>> data = [];
 
     try {
@@ -201,7 +208,7 @@ class Language {
   }
 
   void fixHtml() {
-    debugPrint("fix html: $lang");
+    debugPrint("fix html: $languageCode");
     List<List<String>> fixedPages = [];
 
     for (int i = 0; i < pages.length; i++) {
@@ -226,7 +233,7 @@ class Language {
     String pageName = pages.elementAt(currentIndex).elementAt(0);
     String pageContent = pages.elementAt(currentIndex).elementAt(1);
     debugPrint(
-        "Displaying page '$pageName' (lang: $lang, index: $currentIndex)");
+        "Displaying page '$pageName' (lang: $languageCode, index: $currentIndex)");
     return pageContent;
   }
 
@@ -253,8 +260,10 @@ class Language {
   Future<int> fetchLatestCommits() async {
     var t = timestamp.subtract(const Duration(
         days: 500)); // TODO just for testing, use timestamp instead
-    var uri =
-        latestCommitsStart + lang + latestCommitsEnd + t.toIso8601String();
+    var uri = latestCommitsStart +
+        languageCode +
+        latestCommitsEnd +
+        t.toIso8601String();
     debugPrint(uri);
     final response = await http.get(Uri.parse(uri));
 
@@ -262,7 +271,8 @@ class Language {
       // = OK response
       var data = json.decode(response.body);
       int commits = data.length;
-      debugPrint("Found $commits new commits since download on $t ($lang)");
+      debugPrint(
+          "Found $commits new commits since download on $t ($languageCode)");
       if (commits > 0) newCommitsAvailable = true;
       return commits;
     } else {

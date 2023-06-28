@@ -48,7 +48,7 @@ class _AssetsPageState extends State<AssetsPage> {
                 case ConnectionState.done:
                   if (snapshot.hasError) {
                     return Text(
-                        "Couldn't find the content you are looking for.\nLanguage: ${currentLanguage?.lang}");
+                        "Couldn't find the content you are looking for.\nLanguage: ${currentLanguage?.languageCode}");
                   } else if (snapshot.hasData) {
                     return _page(snapshot.data, context);
                   } else {

@@ -15,13 +15,10 @@ Column _buildDrawerElements(BuildContext ctx) {
   elements.add(Padding(
     padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 10),
     child: Align(
-      alignment: Alignment.topLeft,
+        alignment: Alignment.topLeft,
         child: Container(
-            child: Text("Content",
-                style: Theme.of(ctx).textTheme.titleLarge))),
+            child: Text("Content", style: Theme.of(ctx).textTheme.titleLarge))),
   ));
-
-
 
   List<ListTile> allPages = [];
 
@@ -46,7 +43,7 @@ Column _buildDrawerElements(BuildContext ctx) {
   List<ListTile> allLanguages = [];
 
   for (int i = 0; i < languages.length; i++) {
-    String title = languages[i].lang.toUpperCase();
+    String title = languages[i].languageCode.toUpperCase();
     allLanguages.add(ListTile(
       title: Text(title, style: Theme.of(ctx).textTheme.labelMedium),
       onTap: () {

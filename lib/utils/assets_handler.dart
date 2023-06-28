@@ -14,11 +14,11 @@ Future<dynamic> initAssets() async {
 
   // Set the language to the local device language
   // or english, if local language is not available
-  currentLanguage = languages
-      .firstWhere((element) => element.lang == localLanguage, orElse: () {
+  currentLanguage = languages.firstWhere(
+      (element) => element.languageCode == localLanguage, orElse: () {
     return languages[0];
   });
-  debugPrint("Current language set to ${currentLanguage?.lang}");
+  debugPrint("Current language set to ${currentLanguage?.languageCode}");
 
   debugPrint("Finished initAssets");
   return "Done"; // We need to return something so the snapshot "hasData"
