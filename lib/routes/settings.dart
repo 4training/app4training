@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
 import '../utils/assets_handler.dart';
 
-// TODO make Setting persistent between app starts
+// TODO make Setting persistent between app starts (see https://docs.flutter.dev/cookbook/persistence/key-value)
 // TODO add option to set standard language manually
 
 class Settings extends StatelessWidget {

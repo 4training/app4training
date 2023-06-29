@@ -20,9 +20,10 @@ Column _buildDrawerElements(BuildContext ctx) {
   ));
 
   List<ListTile> allPages = [];
+  List<String> allTitles = currentLanguage!.getPageTitles();
 
-  for (int i = 0; i < currentLanguage!.pages.length; i++) {
-    String title = currentLanguage!.pages.elementAt(i).elementAt(0);
+  for (int i = 0; i < allTitles.length; i++) {
+    String title = allTitles.elementAt(i);
     title = title.replaceAll("_", " ");
     title = title.replaceAll(".html", "");
 

@@ -49,18 +49,18 @@ class Language {
     downloaded = await _controller.assetsDirAlreadyExists();
     debugPrint("assets ($languageCode) loaded: $downloaded");
     // TODO properly check whether we already downloaded the assets
-    await download();
+    await _download();
 
-    _timestamp = await getTimestamp();
-    commitsSinceDownload = await fetchLatestCommits();
-    pages = await initPages();
-    structure = await initStructure();
-    sortPages();
-    resources = await initResources();
-    fixHtml();
+    _timestamp = await _getTimestamp();
+    commitsSinceDownload = await _fetchLatestCommits();
+    pages = await _initPages();
+    structure = await _initStructure();
+    _sortPages();
+    resources = await _initResources();
+    _fixHtml();
   }
 
-  Future download() async {
+  Future _download() async {
     debugPrint("Starting downloadLanguage: $languageCode ...");
 
 /*    if (downloaded) {
@@ -96,7 +96,7 @@ class Language {
     await _controller.clearAssets();
   }
 
-  Future<List<List<String>>> initPages() async {
+  Future<List<List<String>>> _initPages() async {
     debugPrint("init Pages: $languageCode");
     List<List<String>> pageData = [];
 
@@ -117,7 +117,7 @@ class Language {
     }
   }
 
-  Future<List<dynamic>> initStructure() async {
+  Future<List<dynamic>> _initStructure() async {
     debugPrint("init Structure: $languageCode");
     var data = [];
 
@@ -140,7 +140,7 @@ class Language {
     }
   }
 
-  void sortPages() {
+  void _sortPages() {
     debugPrint("sort Pages: $languageCode");
     if (structure.isEmpty || pages.isEmpty) {
       debugPrint(
@@ -193,7 +193,7 @@ class Language {
     }
   }
 
-  Future<List<List<String>>> initResources() async {
+  Future<List<List<String>>> _initResources() async {
     debugPrint("init Resources: $languageCode");
     List<List<String>> data = [];
 
@@ -220,7 +220,7 @@ class Language {
     }
   }
 
-  void fixHtml() {
+  void _fixHtml() {
     debugPrint("fix html: $languageCode");
     List<List<String>> fixedPages = [];
 
@@ -242,15 +242,7 @@ class Language {
     pages = fixedPages;
   }
 
-  Future<String> displayPage() async {
-    String pageName = pages.elementAt(currentIndex).elementAt(0);
-    String pageContent = pages.elementAt(currentIndex).elementAt(1);
-    debugPrint(
-        "Displaying page '$pageName' (lang: $languageCode, index: $currentIndex)");
-    return pageContent;
-  }
-
-  Future<DateTime> getTimestamp() async {
+  Future<DateTime> _getTimestamp() async {
     DateTime timestamp = DateTime.now();
 
     try {
@@ -276,7 +268,7 @@ class Language {
     return DateFormat('yyyy-MM-dd HH:mm').format(_timestamp!);
   }
 
-  Future<int> fetchLatestCommits() async {
+  Future<int> _fetchLatestCommits() async {
     if (_timestamp == null) {
       return Future.error("TODO");
     }
@@ -301,6 +293,37 @@ class Language {
       return Future.error(
           "Failed to fetch latest commits ${response.statusCode}");
     }
+  }
+
+  /// Return the HTML code of the page identified by [index]
+  /// TODO error handling / select by name instead of index?
+  Future<String> getPageContent(int index) async {
+    String pageName = pages.elementAt(index).elementAt(0);
+    String pageContent = pages.elementAt(index).elementAt(1);
+    debugPrint(
+        "Displaying page '$pageName' (lang: $languageCode, index: $index)");
+    return pageContent;
+  }
+
+  /// Returns a list with all the worksheet titles available.
+  /// They are the names of the HTML files, e.g. "Hearing_from_God.html"
+  List<String> getPageTitles() {
+    List<String> titles = [];
+    for (int i = 0; i < pages.length; i++) {
+      titles.add(pages.elementAt(i).elementAt(0));
+    }
+    return titles;
+  }
+
+  /// Get the worksheet index for a given title.
+  /// Returns null if it couldn't be found. Index starts with 0.
+  int? getIndexByTitle(String title) {
+    for (int i = 0; i < pages.length; i++) {
+      if (pages.elementAt(i).elementAt(0) == title) {
+        return i;
+      }
+    }
+    return null;
   }
 }
 

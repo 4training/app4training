@@ -20,7 +20,7 @@ class _AssetsPageState extends State<AssetsPage> {
   void initState() {
     super.initState();
     title = "4training";
-    _htmlData = currentLanguage!.displayPage();
+    _htmlData = currentLanguage!.getPageContent(currentIndex);
   }
 
   @override
@@ -70,21 +70,14 @@ class _AssetsPageState extends State<AssetsPage> {
           data: content,
           onAnchorTap: (url, context, attributes) {
             debugPrint("link tapped $url $context $attributes");
-            for (int i = 0; i < currentLanguage!.pages.length; i++) {
-              String pageName =
-                  currentLanguage!.pages.elementAt(i).elementAt(0);
-              pageName = pageName.replaceAll(".html", "");
-              pageName = pageName.replaceAll("/",
-                  ""); // TODO doe we need this or can we fix it in the html file?
-              url = url!.replaceAll("/", "");
-              url = url.replaceAll(".html",
-                  ""); // TODO doe we need this or can we fix it in the html file?
-              debugPrint("pageName $pageName url $url");
-
-              if (pageName == url) {
-                currentIndex = i;
+            if (url != null) {
+              int? newIndex = currentLanguage!.getIndexByTitle(url);
+              if (newIndex != null) {
+                currentIndex = newIndex;
                 Navigator.of(ctx).pushReplacement(MaterialPageRoute(
                     builder: (context) => const AssetsPage()));
+              } else {
+                debugPrint("TODO Error couldn't find link destination");
               }
             }
           },
