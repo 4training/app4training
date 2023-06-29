@@ -16,8 +16,7 @@ Column _buildDrawerElements(BuildContext ctx) {
     padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 10),
     child: Align(
         alignment: Alignment.topLeft,
-        child: Container(
-            child: Text("Content", style: Theme.of(ctx).textTheme.titleLarge))),
+        child: Text("Content", style: Theme.of(ctx).textTheme.titleLarge)),
   ));
 
   List<ListTile> allPages = [];

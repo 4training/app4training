@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../data/globals.dart';
 import '../data/languages.dart';
@@ -24,46 +23,10 @@ Future<dynamic> initAssets() async {
   return "Done"; // We need to return something so the snapshot "hasData"
 }
 
-Future downloadAllLanguages(List<Language> langs) async {
-  debugPrint("downloading all languages");
-
-  for (var lang in langs) {
-    lang.download();
-  }
-}
-
 Future clearAssets() async {
   debugPrint("clearing assets");
   for (var lang in languages) {
     await lang.removeAssets();
   }
   languages.clear();
-}
-
-Future<dynamic> displayAssets() async {
-  debugPrint("displaying assets $currentLanguage, all Pages");
-
-  List<String> htmlData = [];
-
-  if (currentLanguage == null) {
-    return Future.error("Language is null");
-  }
-
-  try {
-    debugPrint(currentLanguage!.path);
-    var dir = Directory(currentLanguage!.path);
-
-    await for (var file in dir.list(recursive: false, followLinks: false)) {
-      if (file.statSync().type == FileSystemEntityType.file) {
-        htmlData.add(await File(file.path).readAsString());
-      }
-    }
-
-    debugPrint("Finished creating html data");
-    return htmlData;
-  } catch (e) {
-    String msg = e.toString();
-    debugPrint("Error creating html data. $msg");
-    return Future.error(msg);
-  }
 }

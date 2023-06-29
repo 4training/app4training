@@ -106,7 +106,7 @@ class _AssetsPageState extends State<AssetsPage> {
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: Text('Yes'),
+                child: const Text('Yes'),
               ),
             ],
           ),
