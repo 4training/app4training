@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:download_assets/download_assets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:four_training/data/globals.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,33 +17,41 @@ class Worksheet {
 
 class Language {
   final String languageCode;
-  final String remoteUrl; // URL of the zip file to be downloaded
-  late final String path; // full local path to directory holding all content
-  late final Directory dir; // Directory object of path
+
+  /// URL of the zip file to be downloaded
+  final String remoteUrl;
+
+  /// full local path to directory holding all content
+  late final String path;
+
+  /// Directory object of path
+  late final Directory _dir;
+
   bool downloaded = false;
-  DownloadAssetsController controller = DownloadAssetsController();
   List<List<String>> pages = [];
   List<List<String>> resources = [];
   List<dynamic> structure = [];
-  late DateTime timestamp;
+  DateTime? _timestamp;
   int commitsSinceDownload = 0;
+  final DownloadAssetsController _controller = DownloadAssetsController();
 
   Language(this.languageCode) : remoteUrl = urlStart + languageCode + urlEnd;
 
   Future init() async {
-    await controller.init(assetDir: "assets-$languageCode");
+    await _controller.init(assetDir: "assets-$languageCode");
 
     // Now we store the full path to the language
-    path = controller.assetsDir! + pathStart + languageCode + pathEnd;
-    dir = Directory(path);
+    path = _controller.assetsDir! + pathStart + languageCode + pathEnd;
+    _dir = Directory(path);
     debugPrint("Path: $path");
 
     // Then we check, if that dir already exists, meaning it is already downloaded
-    downloaded = await controller.assetsDirAlreadyExists();
+    downloaded = await _controller.assetsDirAlreadyExists();
     debugPrint("assets ($languageCode) loaded: $downloaded");
-    if (!downloaded) await download();
+    // TODO properly check whether we already downloaded the assets
+    await download();
 
-    timestamp = await getTimestamp();
+    _timestamp = await getTimestamp();
     commitsSinceDownload = await fetchLatestCommits();
     pages = await initPages();
     structure = await initStructure();
@@ -54,13 +63,13 @@ class Language {
   Future download() async {
     debugPrint("Starting downloadLanguage: $languageCode ...");
 
-    if (downloaded) {
+/*    if (downloaded) {
       debugPrint("$languageCode already downloaded. Continue ...");
       return;
-    }
+    }*/
 
     try {
-      await controller.startDownload(
+      await _controller.startDownload(
         assetsUrls: [remoteUrl],
         onProgress: (progressValue) {
           if (progressValue < 20) {
@@ -83,12 +92,16 @@ class Language {
     }
   }
 
+  Future<void> removeAssets() async {
+    await _controller.clearAssets();
+  }
+
   Future<List<List<String>>> initPages() async {
     debugPrint("init Pages: $languageCode");
     List<List<String>> pageData = [];
 
     try {
-      await for (var file in dir.list(recursive: false, followLinks: false)) {
+      await for (var file in _dir.list(recursive: false, followLinks: false)) {
         if (file is File) {
           String fileName = basename(file.path);
           String content = await file.readAsString();
@@ -110,7 +123,7 @@ class Language {
 
     try {
       await for (var directory
-          in dir.list(recursive: false, followLinks: false)) {
+          in _dir.list(recursive: false, followLinks: false)) {
         if (directory is Directory) {
           String directoryName = basename(directory.path);
           if (directoryName == "structure") {
@@ -186,7 +199,7 @@ class Language {
 
     try {
       await for (var directory
-          in dir.list(recursive: false, followLinks: false)) {
+          in _dir.list(recursive: false, followLinks: false)) {
         if (directory is Directory) {
           if (basename(directory.path) == "files") {
             debugPrint("found files");
@@ -241,7 +254,7 @@ class Language {
     DateTime timestamp = DateTime.now();
 
     try {
-      await for (var file in dir.list(recursive: false, followLinks: false)) {
+      await for (var file in _dir.list(recursive: false, followLinks: false)) {
         if (file is File) {
           FileStat stat = await FileStat.stat(file.path);
           timestamp = stat.changed;
@@ -257,8 +270,17 @@ class Language {
     return timestamp;
   }
 
+  /// Returns the timestamp in a human readable string. If we don't have a timestamp, an empty string is returned.
+  String formatTimestamp() {
+    if (_timestamp == null) return "";
+    return DateFormat('yyyy-MM-dd HH:mm').format(_timestamp!);
+  }
+
   Future<int> fetchLatestCommits() async {
-    var t = timestamp.subtract(const Duration(
+    if (_timestamp == null) {
+      return Future.error("TODO");
+    }
+    var t = _timestamp!.subtract(const Duration(
         days: 500)); // TODO just for testing, use timestamp instead
     var uri = latestCommitsStart +
         languageCode +

@@ -69,7 +69,7 @@ class _AssetsPageState extends State<AssetsPage> {
         Html(
           data: content,
           onAnchorTap: (url, context, attributes) {
-            //debugPrint("link tapped $url $context $attributes $element");
+            debugPrint("link tapped $url $context $attributes");
             for (int i = 0; i < currentLanguage!.pages.length; i++) {
               String pageName =
                   currentLanguage!.pages.elementAt(i).elementAt(0);

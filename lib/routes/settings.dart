@@ -48,11 +48,6 @@ class Settings extends StatelessWidget {
 
     for (int i = 0; i < languages.length; i++) {
       String lang = languages.elementAt(i).languageCode;
-      String day = languages.elementAt(i).timestamp.day.toString();
-      String month = languages.elementAt(i).timestamp.month.toString();
-      String year = languages.elementAt(i).timestamp.year.toString();
-      String hour = languages.elementAt(i).timestamp.hour.toString();
-      String minute = languages.elementAt(i).timestamp.minute.toString();
 
       rows.add(TableRow(children: [
         TableCell(
@@ -65,7 +60,7 @@ class Settings extends StatelessWidget {
         TableCell(
           child: SizedBox(
               height: 32,
-              child: Text("$day.$month.$year $hour:$minute",
+              child: Text(languages.elementAt(i).formatTimestamp(),
                   style: Theme.of(ctx).textTheme.bodyMedium)),
         )
       ]));

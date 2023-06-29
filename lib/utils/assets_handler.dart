@@ -35,7 +35,7 @@ Future downloadAllLanguages(List<Language> langs) async {
 Future clearAssets() async {
   debugPrint("clearing assets");
   for (var lang in languages) {
-    await lang.controller.clearAssets();
+    await lang.removeAssets();
   }
   languages.clear();
 }
