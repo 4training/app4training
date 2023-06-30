@@ -7,12 +7,28 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 
-class Worksheet {
-  String page; // English worksheet name
-  String title; // translated title
-  String? content; // HTML code of this worksheet (loaded on demand)
-  Worksheet(this.page, this.title);
-  //  String version;
+/// A page with HTML code: content is loaded on demand
+class Page {
+  /// English identifier
+  final String name;
+
+  /// (translated) Name of the HTML file
+  final String fileName;
+
+  /// HTML code of this page or null if not yet loaded
+  String? content;
+
+  Page(this.name, this.fileName);
+}
+
+/// Images to be used in pages: content is loaded on demand
+class Image {
+  final String name;
+
+  /// Base64 encoded image content or null if not yet loaded
+  String? data;
+
+  Image(this.name);
 }
 
 class Language {
@@ -28,11 +44,18 @@ class Language {
   late final Directory _dir;
 
   bool downloaded = false;
-  List<List<String>> pages = [];
-  List<List<String>> resources = [];
-  List<dynamic> structure = [];
-  DateTime? _timestamp;
-  int commitsSinceDownload = 0;
+
+  /// Holds our pages identified by their English name (e.g. "Hearing_from_God")
+  Map<String, Page> _pages = {};
+
+  /// Define the order of pages in the menu: List of page names
+  /// Not all pages must be in the menu, so every item in this list must be
+  /// in _pages, but not every item of _pages must be in this list
+  List<String> _pageIndex = [];
+
+  Map<String, Image> _images = {};
+  DateTime? _timestamp; // TODO
+  int _commitsSinceDownload = 0; // TODO
   final DownloadAssetsController _controller = DownloadAssetsController();
 
   Language(this.languageCode) : remoteUrl = urlStart + languageCode + urlEnd;
@@ -40,33 +63,77 @@ class Language {
   Future init() async {
     await _controller.init(assetDir: "assets-$languageCode");
 
-    // Now we store the full path to the language
-    path = _controller.assetsDir! + pathStart + languageCode + pathEnd;
-    _dir = Directory(path);
-    debugPrint("Path: $path");
+    try {
+      // Now we store the full path to the language
+      path = _controller.assetsDir! + pathStart + languageCode + pathEnd;
+      debugPrint("Path: $path");
+      _dir = Directory(path);
 
-    // Then we check, if that dir already exists, meaning it is already downloaded
-    downloaded = await _controller.assetsDirAlreadyExists();
-    debugPrint("assets ($languageCode) loaded: $downloaded");
-    // TODO properly check whether we already downloaded the assets
-    await _download();
+      downloaded = await _controller.assetsDirAlreadyExists();
+      // TODO check that in every unexpected behavior the folder gets deleted and downloaded is false
+      debugPrint("assets ($languageCode) loaded: $downloaded");
+      if (!downloaded) await _download();
 
-    _timestamp = await _getTimestamp();
-    commitsSinceDownload = await _fetchLatestCommits();
-    pages = await _initPages();
-    structure = await _initStructure();
-    _sortPages();
-    resources = await _initResources();
-    _fixHtml();
+      _timestamp = await _getTimestamp();
+      _commitsSinceDownload = await _fetchLatestCommits();
+
+      // Read structure/contents.json as our source of truth:
+      // Which pages are available, what is the order in the menu
+      var structure = jsonDecode(
+          File(join(path, 'structure', 'contents.json')).readAsStringSync());
+
+      for (Map element in structure) {
+        element.forEach((key, value) {
+          _pageIndex.add(key);
+          _pages[key] = Page(key, value);
+        });
+      }
+
+      _check_consistency();
+
+      // Register available images
+      await for (var file in Directory(join(path, 'files'))
+          .list(recursive: false, followLinks: false)) {
+        if (file is File) {
+          _images[basename(file.path)] = Image(basename(file.path));
+        } else {
+          debugPrint("Found unexpected element $file in files/ directory");
+        }
+      }
+    } catch (e) {
+      String msg = "Error initializing data structure: $e";
+      debugPrint(msg);
+      // Delete the whole folder (TODO make sure this is called in every unexpected situation)
+      downloaded = false;
+      _controller.clearAssets();
+      return Future.error(msg);
+    }
+  }
+
+  /// Check whether all files mentioned in structure/contents.json are present
+  /// and whether there is no extra file present
+  ///
+  /// TODO maybe remove this function on startup. Rather implement gracious
+  /// error handling if a page we expect to be there can't be loaded because
+  /// a HTML file is missing...
+  Future<void> _check_consistency() async {
+    Set<String> files = {};
+    await for (var file in _dir.list(recursive: false, followLinks: false)) {
+      if (file is File) {
+        files.add(basename(file.path));
+      }
+    }
+    _pages.forEach((key, page) {
+      if (!files.remove(page.fileName)) {
+        debugPrint(
+            "Warning: Structure mentions ${page.fileName} but the file is missing");
+      }
+    });
+    if (files.isNotEmpty) debugPrint("Warning: Found orphaned files $files");
   }
 
   Future _download() async {
     debugPrint("Starting downloadLanguage: $languageCode ...");
-
-/*    if (downloaded) {
-      debugPrint("$languageCode already downloaded. Continue ...");
-      return;
-    }*/
 
     try {
       await _controller.startDownload(
@@ -94,152 +161,6 @@ class Language {
 
   Future<void> removeAssets() async {
     await _controller.clearAssets();
-  }
-
-  Future<List<List<String>>> _initPages() async {
-    debugPrint("init Pages: $languageCode");
-    List<List<String>> pageData = [];
-
-    try {
-      await for (var file in _dir.list(recursive: false, followLinks: false)) {
-        if (file is File) {
-          String fileName = basename(file.path);
-          String content = await file.readAsString();
-          List<String> page = [fileName, content];
-          pageData.add(page);
-        }
-      }
-      return pageData;
-    } catch (e) {
-      String msg = "Error creating pageData: $e";
-      debugPrint(msg);
-      return Future.error(msg);
-    }
-  }
-
-  Future<List<dynamic>> _initStructure() async {
-    debugPrint("init Structure: $languageCode");
-    var data = [];
-
-    try {
-      await for (var directory
-          in _dir.list(recursive: false, followLinks: false)) {
-        if (directory is Directory) {
-          String directoryName = basename(directory.path);
-          if (directoryName == "structure") {
-            File structureFile = await directory.list().first as File;
-            data = jsonDecode(structureFile.readAsStringSync());
-          }
-        }
-      }
-      return data;
-    } catch (e) {
-      String msg = "Error creating structure:$e";
-      debugPrint(msg);
-      return Future.error(msg);
-    }
-  }
-
-  void _sortPages() {
-    debugPrint("sort Pages: $languageCode");
-    if (structure.isEmpty || pages.isEmpty) {
-      debugPrint(
-          "Something is empty (true) --> Structure: ${structure.isEmpty} | Pages: ${pages.isEmpty}");
-      return;
-    }
-
-    List<List<String>> sortedPages = [];
-
-    for (Map element in structure) {
-      element.forEach((key, value) {
-        String content = "";
-
-        for (int i = 0; i < pages.length; i++) {
-          String pageName = pages.elementAt(i).elementAt(0);
-
-          if (value == pageName) {
-            content = pages.elementAt(i).elementAt(1);
-            break;
-          }
-        }
-
-        List<String> sortedPage = [value, content];
-        sortedPages.add(sortedPage);
-      });
-    }
-    bool allPagesFound = true;
-
-    for (int i = 0; i < pages.length; i++) {
-      String pageName = pages.elementAt(i).elementAt(0);
-      bool pageNameFoundInSortedList = false;
-      for (int j = 0; j < sortedPages.length; j++) {
-        String sortedName = sortedPages.elementAt(j).elementAt(0);
-
-        if (pageName == sortedName) {
-          pageNameFoundInSortedList = true;
-          break;
-        }
-      }
-      if (!pageNameFoundInSortedList) {
-        allPagesFound = false;
-        break;
-      }
-    }
-
-    if (allPagesFound) {
-      pages = sortedPages;
-    } else {
-      debugPrint("pages and sortedPages do not match");
-    }
-  }
-
-  Future<List<List<String>>> _initResources() async {
-    debugPrint("init Resources: $languageCode");
-    List<List<String>> data = [];
-
-    try {
-      await for (var directory
-          in _dir.list(recursive: false, followLinks: false)) {
-        if (directory is Directory) {
-          if (basename(directory.path) == "files") {
-            debugPrint("found files");
-            await directory.list().forEach((element) {
-              String fileName = basename(element.path);
-              String imageData = imageToBase64(element as File);
-              var foo = [fileName, imageData];
-              data.add(foo);
-            });
-          }
-        }
-      }
-      return data;
-    } catch (e) {
-      String msg = "Error creating files:$e";
-      debugPrint(msg);
-      return Future.error(msg);
-    }
-  }
-
-  void _fixHtml() {
-    debugPrint("fix html: $languageCode");
-    List<List<String>> fixedPages = [];
-
-    for (int i = 0; i < pages.length; i++) {
-      String fileName = pages.elementAt(i).elementAt(0);
-      String content = pages.elementAt(i).elementAt(1);
-
-      for (int j = 0; j < resources.length; j++) {
-        String resourceName = resources.elementAt(j).elementAt(0);
-        String imageData = resources.elementAt(j).elementAt(1);
-
-        if (content.contains(resourceName)) {
-          content = content.replaceAll(
-              "files/$resourceName", "data:image/png;base64,$imageData");
-        }
-      }
-      fixedPages.add([fileName, content]);
-    }
-    pages = fixedPages;
   }
 
   Future<DateTime> _getTimestamp() async {
@@ -296,33 +217,58 @@ class Language {
   }
 
   /// Return the HTML code of the page identified by [index]
+  /// If we don't have it already cached in memory, we read it from the file in our local storage.
   /// TODO error handling / select by name instead of index?
   Future<String> getPageContent(int index) async {
-    String pageName = pages.elementAt(index).elementAt(0);
-    String pageContent = pages.elementAt(index).elementAt(1);
-    debugPrint(
-        "Displaying page '$pageName' (lang: $languageCode, index: $index)");
-    return pageContent;
+    assert(index >= 0);
+    assert(index < _pages.length);
+    Page? page = _pages[_pageIndex[index]];
+    if (page == null) {
+      debugPrint("Internal error: Couldn't find page with index $index");
+      return "";
+    }
+    if (page.content == null) {
+      debugPrint(
+          "Fetching content of '${page.name}' (lang: $languageCode, index: $index)...");
+      page.content = await File(join(path, page.fileName)).readAsString();
+
+      // Load images if necessary
+      for (var image in _images.values) {
+        if (page.content!.contains(image.name)) {
+          if (image.data == null) {
+            // Load image data. TODO move this into the Image class?
+            image.data = imageToBase64(File(join(path, 'files', image.name)));
+            debugPrint("Successfully loaded ${image.name}");
+          }
+          page.content = page.content!.replaceAll(
+              "files/${image.name}", "data:image/png;base64,${image.data}");
+        }
+      }
+    }
+    return page.content!;
   }
 
   /// Returns a list with all the worksheet titles available.
   /// They are the names of the HTML files, e.g. "Hearing_from_God.html"
   List<String> getPageTitles() {
     List<String> titles = [];
-    for (int i = 0; i < pages.length; i++) {
-      titles.add(pages.elementAt(i).elementAt(0));
+    for (var page in _pages.values) {
+      titles.add(page.fileName);
     }
     return titles;
   }
 
-  /// Get the worksheet index for a given title.
+  /// Get the worksheet index for a given title (HTML file name)
   /// Returns null if it couldn't be found. Index starts with 0.
   int? getIndexByTitle(String title) {
-    for (int i = 0; i < pages.length; i++) {
-      if (pages.elementAt(i).elementAt(0) == title) {
-        return i;
+    for (Page page in _pages.values) {
+      if (page.fileName == title) {
+        int index = _pageIndex.indexOf(page.name);
+        if (index >= 0) return index;
       }
     }
+
+    debugPrint("Warning: Couldn't find index for page $title");
     return null;
   }
 }
