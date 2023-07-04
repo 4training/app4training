@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:four_training/routes/assets_page.dart';
 import 'package:four_training/routes/startup_page.dart';
-import 'package:four_training/routes/settings.dart';
+import 'package:four_training/routes/settings_page.dart';
 import 'design/theme.dart';
 
 void main() async {
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const StartupPage(),
         '/asset': (context) => const AssetsPage(),
-        '/settings': (context) => const Settings(),
+        '/settings': (context) => const SettingsPage(),
       },
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

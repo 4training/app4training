@@ -46,14 +46,14 @@ class Language {
   bool downloaded = false;
 
   /// Holds our pages identified by their English name (e.g. "Hearing_from_God")
-  Map<String, Page> _pages = {};
+  final Map<String, Page> _pages = {};
 
   /// Define the order of pages in the menu: List of page names
   /// Not all pages must be in the menu, so every item in this list must be
   /// in _pages, but not every item of _pages must be in this list
-  List<String> _pageIndex = [];
+  final List<String> _pageIndex = [];
 
-  Map<String, Image> _images = {};
+  final Map<String, Image> _images = {};
   DateTime? _timestamp; // TODO
   int _commitsSinceDownload = 0; // TODO
   final DownloadAssetsController _controller = DownloadAssetsController();
@@ -89,7 +89,7 @@ class Language {
         });
       }
 
-      _check_consistency();
+      _checkConsistency();
 
       // Register available images
       await for (var file in Directory(join(path, 'files'))
@@ -116,7 +116,7 @@ class Language {
   /// TODO maybe remove this function on startup. Rather implement gracious
   /// error handling if a page we expect to be there can't be loaded because
   /// a HTML file is missing...
-  Future<void> _check_consistency() async {
+  Future<void> _checkConsistency() async {
     Set<String> files = {};
     await for (var file in _dir.list(recursive: false, followLinks: false)) {
       if (file is File) {

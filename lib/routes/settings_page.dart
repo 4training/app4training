@@ -5,8 +5,8 @@ import '../utils/assets_handler.dart';
 // TODO make Setting persistent between app starts (see https://docs.flutter.dev/cookbook/persistence/key-value)
 // TODO add option to set standard language manually
 
-class Settings extends StatelessWidget {
-  const Settings({super.key});
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
