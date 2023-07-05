@@ -46,6 +46,8 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
+  test: ^1.24.1
+  mocktail: ^0.3.0
 
 
 dev_dependencies:

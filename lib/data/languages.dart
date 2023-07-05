@@ -31,6 +31,7 @@ class Image {
   Image(this.name);
 }
 
+/// late members will be initialized after calling init()
 class Language {
   final String languageCode;
 
@@ -56,9 +57,14 @@ class Language {
   final Map<String, Image> _images = {};
   DateTime? _timestamp; // TODO
   int _commitsSinceDownload = 0; // TODO
-  final DownloadAssetsController _controller = DownloadAssetsController();
 
-  Language(this.languageCode) : remoteUrl = urlStart + languageCode + urlEnd;
+  final DownloadAssetsController _controller;
+
+  /// We use dependency injection (optional parameter [assetsController])
+  /// so that we can test the class well
+  Language(this.languageCode, {DownloadAssetsController? assetsController})
+      : remoteUrl = urlStart + languageCode + urlEnd,
+        _controller = assetsController ?? DownloadAssetsController();
 
   Future init() async {
     await _controller.init(assetDir: "assets-$languageCode");
@@ -106,7 +112,7 @@ class Language {
       // Delete the whole folder (TODO make sure this is called in every unexpected situation)
       downloaded = false;
       _controller.clearAssets();
-      return Future.error(msg);
+      throw Exception(msg);
     }
   }
 
