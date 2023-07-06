@@ -1,4 +1,4 @@
-<a href="https://github.com/holybiber/forTraining/actions"><img src="https://github.com/holybiber/forTraining/workflows/test-my-app/badge.svg" alt="Build Status"></a>
+<a href="https://github.com/holybiber/forTraining/actions"><img src="https://github.com/holybiber/forTraining/actions/workflows/main.yaml/badge.svg" alt="Tests Status"></a>
 # 4training
 This app is an offline version of the website [4training.net](www.4training.net).
 
