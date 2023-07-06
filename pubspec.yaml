@@ -48,6 +48,7 @@ dependencies:
   intl: any
   test: ^1.24.1
   mocktail: ^0.3.0
+  file: ^6.1.4
 
 
 dev_dependencies:

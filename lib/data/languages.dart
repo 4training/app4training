@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:download_assets/download_assets.dart';
+import 'package:file/local.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:four_training/data/globals.dart';
+import 'package:file/file.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
@@ -59,12 +60,15 @@ class Language {
   int _commitsSinceDownload = 0; // TODO
 
   final DownloadAssetsController _controller;
+  final FileSystem _fs;
 
-  /// We use dependency injection (optional parameter [assetsController])
-  /// so that we can test the class well
-  Language(this.languageCode, {DownloadAssetsController? assetsController})
+  /// We use dependency injection (optional parameters [assetsController] and
+  /// [fileSystem]) so that we can test the class well
+  Language(this.languageCode,
+      {DownloadAssetsController? assetsController, FileSystem? fileSystem})
       : remoteUrl = urlStart + languageCode + urlEnd,
-        _controller = assetsController ?? DownloadAssetsController();
+        _controller = assetsController ?? DownloadAssetsController(),
+        _fs = fileSystem ?? const LocalFileSystem();
 
   Future init() async {
     await _controller.init(assetDir: "assets-$languageCode");
@@ -73,7 +77,7 @@ class Language {
       // Now we store the full path to the language
       path = _controller.assetsDir! + pathStart + languageCode + pathEnd;
       debugPrint("Path: $path");
-      _dir = Directory(path);
+      _dir = _fs.directory(path);
 
       downloaded = await _controller.assetsDirAlreadyExists();
       // TODO check that in every unexpected behavior the folder gets deleted and downloaded is false
@@ -85,8 +89,9 @@ class Language {
 
       // Read structure/contents.json as our source of truth:
       // Which pages are available, what is the order in the menu
-      var structure = jsonDecode(
-          File(join(path, 'structure', 'contents.json')).readAsStringSync());
+      var structure = jsonDecode(_fs
+          .file(join(path, 'structure', 'contents.json'))
+          .readAsStringSync());
 
       for (Map element in structure) {
         element.forEach((key, value) {
@@ -98,7 +103,8 @@ class Language {
       _checkConsistency();
 
       // Register available images
-      await for (var file in Directory(join(path, 'files'))
+      await for (var file in _fs
+          .directory(join(path, 'files'))
           .list(recursive: false, followLinks: false)) {
         if (file is File) {
           _images[basename(file.path)] = Image(basename(file.path));
@@ -236,14 +242,15 @@ class Language {
     if (page.content == null) {
       debugPrint(
           "Fetching content of '${page.name}' (lang: $languageCode, index: $index)...");
-      page.content = await File(join(path, page.fileName)).readAsString();
+      page.content = await _fs.file(join(path, page.fileName)).readAsString();
 
       // Load images if necessary
       for (var image in _images.values) {
         if (page.content!.contains(image.name)) {
           if (image.data == null) {
             // Load image data. TODO move this into the Image class?
-            image.data = imageToBase64(File(join(path, 'files', image.name)));
+            image.data =
+                imageToBase64(_fs.file(join(path, 'files', image.name)));
             debugPrint("Successfully loaded ${image.name}");
           }
           page.content = page.content!.replaceAll(
