@@ -168,6 +168,7 @@ class Language {
     } on DownloadAssetsException catch (e) {
       debugPrint(e.toString());
       downloaded = false;
+      _controller.clearAssets();
     }
   }
 
