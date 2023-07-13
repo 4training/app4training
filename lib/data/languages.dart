@@ -245,19 +245,22 @@ class Language {
           "Fetching content of '${page.name}' (lang: $languageCode, index: $index)...");
       page.content = await _fs.file(join(path, page.fileName)).readAsString();
 
-      // Load images if necessary
-      for (var image in _images.values) {
-        if (page.content!.contains(image.name)) {
-          if (image.data == null) {
-            // Load image data. TODO move this into the Image class?
-            image.data =
-                imageToBase64(_fs.file(join(path, 'files', image.name)));
-            debugPrint("Successfully loaded ${image.name}");
-          }
-          page.content = page.content!.replaceAll(
-              "files/${image.name}", "data:image/png;base64,${image.data}");
+      // Load images directly into the HTML:
+      // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
+      page.content = page.content!
+          .replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'), (match) {
+        var image = _images[match.group(1)!];
+        if (image == null) {
+          debugPrint(
+              'Warning: image ${match.group(1)} missing (in ${page.fileName})');
+          return match.group(0)!;
+        } else if (image.data == null) {
+          // Load image data. TODO move this into the Image class?
+          image.data = imageToBase64(_fs.file(join(path, 'files', image.name)));
+          debugPrint("Successfully loaded ${image.name}");
         }
-      }
+        return 'src="data:image/png;base64,${image.data}"';
+      });
     }
     return page.content!;
   }

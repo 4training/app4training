@@ -134,6 +134,7 @@ void main() {
       expect(content, startsWith('<h1>Gottes Geschichte'));
       // The link of this image should have been replaced with image content
       expect(content, isNot(contains('src="files/Hand_4.png"')));
+      expect(content, contains('src="data:image/png;base64,'));
       // This should still be there as the image file is missing
       expect(content, contains('src="files/Hand_5.png"'));
 
