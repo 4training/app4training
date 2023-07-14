@@ -14,6 +14,39 @@ class ViewPage extends StatefulWidget {
   State<ViewPage> createState() => _ViewPageState();
 }
 
+/// Scrollable display of HTML content, filling most of the screen.
+/// Uses the flutter_html package.
+class MainHtmlView extends StatelessWidget {
+  /// HTML code to display
+  final String content;
+  const MainHtmlView(this.content, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+        child: Column(
+      children: [
+        Html(
+          data: content,
+          onAnchorTap: (url, _, __) {
+            debugPrint("Link tapped: $url");
+            if (url != null) {
+              int? newIndex = currentLanguage!.getIndexByTitle(url);
+              if (newIndex != null) {
+                currentIndex = newIndex;
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const ViewPage()));
+              } else {
+                debugPrint("TODO Error couldn't find link destination");
+              }
+            }
+          },
+        )
+      ],
+    ));
+  }
+}
+
 class _ViewPageState extends State<ViewPage> {
   static const title = "4training";
   late Future<dynamic> _htmlData;
@@ -33,7 +66,7 @@ class _ViewPageState extends State<ViewPage> {
             title: const Text(title),
             actions: [settingsButton(context)],
           ),
-          drawer: mainDrawer(context),
+          drawer: const MainDrawer(),
           body: FutureBuilder(
             future: _htmlData,
             initialData: "Loading",
@@ -51,7 +84,7 @@ class _ViewPageState extends State<ViewPage> {
                     return Text(
                         "Couldn't find the content you are looking for.\nLanguage: ${currentLanguage?.languageCode}");
                   } else if (snapshot.hasData) {
-                    return _page(snapshot.data, context);
+                    return MainHtmlView(snapshot.data);
                   } else {
                     return loadingAnimation("Empty Data");
                   }
@@ -61,30 +94,6 @@ class _ViewPageState extends State<ViewPage> {
             },
           ),
         ));
-  }
-
-  Widget _page(String content, BuildContext ctx) {
-    return SingleChildScrollView(
-        child: Column(
-      children: [
-        Html(
-          data: content,
-          onAnchorTap: (url, context, attributes) {
-            debugPrint("link tapped $url $context $attributes");
-            if (url != null) {
-              int? newIndex = currentLanguage!.getIndexByTitle(url);
-              if (newIndex != null) {
-                currentIndex = newIndex;
-                Navigator.of(ctx).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const ViewPage()));
-              } else {
-                debugPrint("TODO Error couldn't find link destination");
-              }
-            }
-          },
-        )
-      ],
-    ));
   }
 
   Future<bool> _onWillPop() async {
