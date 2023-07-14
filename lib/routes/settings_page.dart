@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
-import '../utils/assets_handler.dart';
+import 'package:four_training/data/resources_handler.dart';
 
 // TODO make Setting persistent between app starts (see https://docs.flutter.dev/cookbook/persistence/key-value)
 // TODO add option to set standard language manually
@@ -100,7 +100,7 @@ class SettingsPage extends StatelessWidget {
           ElevatedButton(
               child: const Text("Update"),
               onPressed: () {
-                clearAssets().then((_) {
+                clearResources().then((_) {
                   Navigator.pop(ctx);
                   Navigator.of(ctx).pushReplacementNamed('/');
                 });
@@ -114,7 +114,7 @@ class SettingsPage extends StatelessWidget {
           ElevatedButton(
               child: const Text("Update"),
               onPressed: () {
-                clearAssets().then((_) {
+                clearResources().then((_) {
                   Navigator.pop(ctx);
                   Navigator.of(ctx).pushReplacementNamed('/');
                 });

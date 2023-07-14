@@ -172,7 +172,7 @@ class Language {
     }
   }
 
-  Future<void> removeAssets() async {
+  Future<void> removeResources() async {
     await _controller.clearAssets();
   }
 
@@ -190,7 +190,7 @@ class Language {
     } catch (e) {
       String msg = "Error getting timestamp: $e";
       debugPrint(msg);
-      return Future.error(msg);
+      throw Exception(msg);
     }
     debugPrint(timestamp.toString());
     return timestamp;
@@ -202,9 +202,11 @@ class Language {
     return DateFormat('yyyy-MM-dd HH:mm').format(_timestamp!);
   }
 
+  /// returns 0 if there was some error
   Future<int> _fetchLatestCommits() async {
+    // TODO this should be rewritten a bit: what exactly do we return here?
     if (_timestamp == null) {
-      return Future.error("TODO");
+      return 0;
     }
     var t = _timestamp!.subtract(const Duration(
         days: 500)); // TODO just for testing, use timestamp instead
@@ -224,8 +226,8 @@ class Language {
       if (commits > 0) newCommitsAvailable = true;
       return commits;
     } else {
-      return Future.error(
-          "Failed to fetch latest commits ${response.statusCode}");
+      debugPrint("Failed to fetch latest commits ${response.statusCode}");
+      return 0;
     }
   }
 

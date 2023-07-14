@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:four_training/data/globals.dart';
 
-import '../data/globals.dart';
-
-Widget settingsTile(BuildContext ctx) {
+Widget settingsButton(BuildContext ctx) {
   Widget settingsIcon = Icon(
     Icons.settings,
     color: Theme.of(ctx).colorScheme.onPrimary,

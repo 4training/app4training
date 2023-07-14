@@ -3,23 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:four_training/widgets/loading_animation.dart';
 import 'package:four_training/widgets/main_drawer.dart';
-import '../data/globals.dart';
-import '../widgets/settings_btn.dart';
+import 'package:four_training/data/globals.dart';
+import 'package:four_training/widgets/settings_button.dart';
 
-class AssetsPage extends StatefulWidget {
-  const AssetsPage({super.key});
+/// The standard view of this app:
+/// Show a page (worksheet)
+class ViewPage extends StatefulWidget {
+  const ViewPage({super.key});
   @override
-  State<AssetsPage> createState() => _AssetsPageState();
+  State<ViewPage> createState() => _ViewPageState();
 }
 
-class _AssetsPageState extends State<AssetsPage> {
-  late String title;
+class _ViewPageState extends State<ViewPage> {
+  static const title = "4training";
   late Future<dynamic> _htmlData;
 
   @override
   void initState() {
     super.initState();
-    title = "4training";
     _htmlData = currentLanguage!.getPageContent(currentIndex);
   }
 
@@ -29,8 +30,8 @@ class _AssetsPageState extends State<AssetsPage> {
         onWillPop: _onWillPop,
         child: Scaffold(
           appBar: AppBar(
-            title: Text(title),
-            actions: [settingsTile(context)],
+            title: const Text(title),
+            actions: [settingsButton(context)],
           ),
           drawer: mainDrawer(context),
           body: FutureBuilder(
@@ -74,8 +75,8 @@ class _AssetsPageState extends State<AssetsPage> {
               int? newIndex = currentLanguage!.getIndexByTitle(url);
               if (newIndex != null) {
                 currentIndex = newIndex;
-                Navigator.of(ctx).pushReplacement(MaterialPageRoute(
-                    builder: (context) => const AssetsPage()));
+                Navigator.of(ctx).pushReplacement(
+                    MaterialPageRoute(builder: (context) => const ViewPage()));
               } else {
                 debugPrint("TODO Error couldn't find link destination");
               }

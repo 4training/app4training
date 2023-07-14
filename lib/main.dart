@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:four_training/routes/assets_page.dart';
-import 'package:four_training/routes/startup_page.dart';
-import 'package:four_training/routes/settings_page.dart';
+import 'package:four_training/routes/routes.dart';
 import 'design/theme.dart';
 
 void main() async {
@@ -20,11 +18,7 @@ class MyApp extends StatelessWidget {
       theme: lightTheme,
       themeMode: ThemeMode.system,
       initialRoute: '/',
-      routes: {
-        '/': (context) => const StartupPage(),
-        '/asset': (context) => const AssetsPage(),
-        '/settings': (context) => const SettingsPage(),
-      },
+      onGenerateRoute: generateRoutes,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

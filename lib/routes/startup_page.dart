@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
+import 'package:four_training/data/resources_handler.dart';
 import 'package:four_training/widgets/loading_animation.dart';
-import 'package:four_training/utils/assets_handler.dart';
 
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
@@ -28,7 +28,7 @@ class _StartupPageState extends State<StartupPage> {
 
     return FutureBuilder(
         future: _data
-            .then((v) => Navigator.pushReplacementNamed(context, "/asset")),
+            .then((v) => Navigator.pushReplacementNamed(context, "/view/")),
         initialData: "Loading",
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           debugPrint(snapshot.connectionState.toString());
@@ -57,6 +57,6 @@ class _StartupPageState extends State<StartupPage> {
   Future<dynamic> init() async {
     debugPrint("Startup Page");
 
-    return await initAssets();
+    return await initResources();
   }
 }

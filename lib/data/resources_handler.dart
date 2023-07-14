@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import '../data/globals.dart';
-import '../data/languages.dart';
+import 'package:four_training/data/globals.dart';
+import 'package:four_training/data/languages.dart';
 
-Future<dynamic> initAssets() async {
-  debugPrint("Starting initAssets");
+/// Make sure we have all the resources downloaded in the languages we want
+/// and load the structure
+Future<dynamic> initResources() async {
+  debugPrint("Starting initResources");
 
   for (int i = 0; i < availableLanguages.length; i++) {
     Language language = Language(availableLanguages[i]);
@@ -19,14 +21,14 @@ Future<dynamic> initAssets() async {
   });
   debugPrint("Current language set to ${currentLanguage?.languageCode}");
 
-  debugPrint("Finished initAssets");
+  debugPrint("Finished initResources");
   return "Done"; // We need to return something so the snapshot "hasData"
 }
 
-Future clearAssets() async {
-  debugPrint("clearing assets");
+Future clearResources() async {
+  debugPrint("clearing resources");
   for (var lang in languages) {
-    await lang.removeAssets();
+    await lang.removeResources();
   }
   languages.clear();
 }

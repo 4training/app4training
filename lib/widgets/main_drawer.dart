@@ -33,7 +33,7 @@ Column _buildDrawerElements(BuildContext ctx) {
       onTap: () {
         currentIndex = i;
         Navigator.pop(ctx);
-        Navigator.pushReplacementNamed(ctx, "/asset");
+        Navigator.pushReplacementNamed(ctx, "/view/");
       },
     ));
   }
@@ -49,7 +49,7 @@ Column _buildDrawerElements(BuildContext ctx) {
       onTap: () {
         currentLanguage = languages[i];
         Navigator.pop(ctx);
-        Navigator.pushReplacementNamed(ctx, "/asset");
+        Navigator.pushReplacementNamed(ctx, "/view/");
       },
     ));
   }
