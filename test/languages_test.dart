@@ -129,7 +129,8 @@ void main() {
       await deTest.init();
 
       // Loads Gottes_Geschichte_(fünf_Finger).html
-      String content = await deTest.getPageContent(0);
+      String content =
+          await deTest.getPageContent("God's_Story_(five_fingers)");
 
       expect(content, startsWith('<h1>Gottes Geschichte'));
       // The link of this image should have been replaced with image content
@@ -138,16 +139,12 @@ void main() {
       // This should still be there as the image file is missing
       expect(content, contains('src="files/Hand_5.png"'));
 
-      // Test Languages.getIndexByTitle()
-      expect(deTest.getIndexByTitle('Umgang_mit_Geld.html'), null);
-      expect(deTest.getIndexByTitle('Schritte_der_Vergebung.html'), 1);
-
       // Test Languages.getPageTitles()
       expect(
-          deTest.getPageTitles(),
+          deTest.getPageTitles().values,
           orderedEquals(const [
-            'Gottes_Geschichte_(fünf_Finger).html',
-            'Schritte_der_Vergebung.html'
+            'Gottes Geschichte (fünf Finger)',
+            'Schritte der Vergebung'
           ]));
     });
   });

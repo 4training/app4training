@@ -9,7 +9,9 @@ import 'package:four_training/widgets/settings_button.dart';
 /// The standard view of this app:
 /// Show a page (worksheet)
 class ViewPage extends StatefulWidget {
-  const ViewPage({super.key});
+  final String page;
+  final String langCode;
+  const ViewPage(this.page, this.langCode, {super.key});
   @override
   State<ViewPage> createState() => _ViewPageState();
 }
@@ -27,21 +29,15 @@ class MainHtmlView extends StatelessWidget {
         child: Column(
       children: [
         Html(
-          data: content,
-          onAnchorTap: (url, _, __) {
-            debugPrint("Link tapped: $url");
-            if (url != null) {
-              int? newIndex = currentLanguage!.getIndexByTitle(url);
-              if (newIndex != null) {
-                currentIndex = newIndex;
-                Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const ViewPage()));
-              } else {
-                debugPrint("TODO Error couldn't find link destination");
+            data: content,
+            onAnchorTap: (url, _, __) {
+              debugPrint("Link tapped: $url");
+              if (url != null) {
+                // TODO make this more robust
+//                currentPage = url.split('/')[1];
+                Navigator.pushReplacementNamed(context, '/view$url');
               }
-            }
-          },
-        )
+            })
       ],
     ));
   }
@@ -49,12 +45,10 @@ class MainHtmlView extends StatelessWidget {
 
 class _ViewPageState extends State<ViewPage> {
   static const title = "4training";
-  late Future<dynamic> _htmlData;
 
   @override
   void initState() {
     super.initState();
-    _htmlData = currentLanguage!.getPageContent(currentIndex);
   }
 
   @override
@@ -68,7 +62,7 @@ class _ViewPageState extends State<ViewPage> {
           ),
           drawer: const MainDrawer(),
           body: FutureBuilder(
-            future: _htmlData,
+            future: currentLanguage!.getPageContent(widget.page),
             initialData: "Loading",
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
               debugPrint(snapshot.connectionState.toString());
@@ -115,5 +109,11 @@ class _ViewPageState extends State<ViewPage> {
           ),
         )) ??
         false;
+  }
+
+  @override
+  void dispose() {
+    debugPrint('Disposing the whole ViewPage widget');
+    super.dispose();
   }
 }

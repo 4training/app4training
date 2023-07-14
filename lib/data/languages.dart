@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'package:download_assets/download_assets.dart';
 import 'package:file/local.dart';
@@ -13,13 +14,18 @@ class Page {
   /// English identifier
   final String name;
 
+  /// (translated) Title
+  final String title;
+
   /// (translated) Name of the HTML file
   final String fileName;
+
+  final String version;
 
   /// HTML code of this page or null if not yet loaded
   String? content;
 
-  Page(this.name, this.fileName);
+  Page(this.name, this.title, this.fileName, this.version);
 }
 
 /// Images to be used in pages: content is loaded on demand
@@ -93,11 +99,11 @@ class Language {
           .file(join(path, 'structure', 'contents.json'))
           .readAsStringSync());
 
-      for (Map element in structure) {
-        element.forEach((key, value) {
-          _pageIndex.add(key);
-          _pages[key] = Page(key, value);
-        });
+      for (var element in structure["worksheets"]) {
+        // TODO add error handling
+        _pageIndex.add(element['page']);
+        _pages[element['page']] = Page(element['page'], element['title'],
+            element['filename'], element['version']);
       }
 
       _checkConsistency();
@@ -233,18 +239,16 @@ class Language {
 
   /// Return the HTML code of the page identified by [index]
   /// If we don't have it already cached in memory, we read it from the file in our local storage.
-  /// TODO error handling / select by name instead of index?
-  Future<String> getPageContent(int index) async {
-    assert(index >= 0);
-    assert(index < _pages.length);
-    Page? page = _pages[_pageIndex[index]];
+  /// TODO error handling
+  Future<String> getPageContent(String pageName) async {
+    Page? page = _pages[pageName];
     if (page == null) {
-      debugPrint("Internal error: Couldn't find page with index $index");
+      debugPrint("Internal error: Couldn't find page $pageName");
       return "";
     }
     if (page.content == null) {
       debugPrint(
-          "Fetching content of '${page.name}' (lang: $languageCode, index: $index)...");
+          "Fetching content of '$pageName' in language '$languageCode'...");
       page.content = await _fs.file(join(path, page.fileName)).readAsString();
 
       // Load images directly into the HTML:
@@ -267,28 +271,14 @@ class Language {
     return page.content!;
   }
 
-  /// Returns a list with all the worksheet titles available.
-  /// They are the names of the HTML files, e.g. "Hearing_from_God.html"
-  List<String> getPageTitles() {
-    List<String> titles = [];
-    for (var page in _pages.values) {
-      titles.add(page.fileName);
+  /// Returns an list with all the worksheet titles in the menu.
+  /// The list is ordered as identifier -> translated title
+  LinkedHashMap<String, String> getPageTitles() {
+    LinkedHashMap<String, String> titles = LinkedHashMap<String, String>();
+    for (int i = 0; i < _pageIndex.length; i++) {
+      titles[_pageIndex[i]] = _pages[_pageIndex[i]]!.title;
     }
     return titles;
-  }
-
-  /// Get the worksheet index for a given title (HTML file name)
-  /// Returns null if it couldn't be found. Index starts with 0.
-  int? getIndexByTitle(String title) {
-    for (Page page in _pages.values) {
-      if (page.fileName == title) {
-        int index = _pageIndex.indexOf(page.name);
-        if (index >= 0) return index;
-      }
-    }
-
-    debugPrint("Warning: Couldn't find index for page $title");
-    return null;
   }
 }
 

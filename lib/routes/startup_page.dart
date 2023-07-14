@@ -27,8 +27,8 @@ class _StartupPageState extends State<StartupPage> {
     debugPrint(mylocale.languageCode);
 
     return FutureBuilder(
-        future: _data
-            .then((v) => Navigator.pushReplacementNamed(context, "/view/")),
+        future:
+            _data.then((v) => Navigator.pushReplacementNamed(context, "/view")),
         initialData: "Loading",
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           debugPrint(snapshot.connectionState.toString());

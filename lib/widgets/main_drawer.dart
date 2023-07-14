@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/widgets/upward_expansion_tile.dart';
@@ -27,24 +29,20 @@ class MainDrawer extends StatelessWidget {
 
   /// Return ListTiles for the ListView of all pages in the selected language
   List<ListTile> _buildPageList(BuildContext context) {
-    List<String> allTitles = currentLanguage!.getPageTitles();
+    LinkedHashMap<String, String> allTitles = currentLanguage!.getPageTitles();
     List<ListTile> allPages = [];
 
-    for (int i = 0; i < allTitles.length; i++) {
-      String title = allTitles.elementAt(i);
-      title = title.replaceAll("_", " ");
-      title = title.replaceAll(".html", "");
-
+    allTitles.forEach((englishName, translatedName) {
       allPages.add(ListTile(
-        title: Text(title, style: Theme.of(context).textTheme.labelMedium),
-        // selected: i == currentIndex, // TODO not working
+        title: Text(translatedName,
+            style: Theme.of(context).textTheme.labelMedium),
         onTap: () {
-          currentIndex = i;
           Navigator.pop(context);
-          Navigator.pushReplacementNamed(context, "/view/");
+          Navigator.pushReplacementNamed(
+              context, '/view/$englishName/${currentLanguage!.languageCode}');
         },
       ));
-    }
+    });
     return allPages;
   }
 
@@ -59,7 +57,8 @@ class MainDrawer extends StatelessWidget {
         onTap: () {
           currentLanguage = languages[i];
           Navigator.pop(context);
-          Navigator.pushReplacementNamed(context, "/view/");
+          Navigator.pushReplacementNamed(
+              context, "/view/$currentPage/${currentLanguage!.languageCode}");
         },
       ));
     }
