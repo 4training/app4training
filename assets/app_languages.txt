@@ -1,0 +1,54 @@
+{
+    "languages": [
+        {
+            "languageCode": "en",
+            "pages": [
+                {
+                    "title": "Settings",
+                    "appearance" : "Appearance",
+                    "appLanguage" : "App language",
+                    "theme" : "Theme",
+                    "light" : "light",
+                    "dark" : "dark",
+                    "update" : "Update",
+                    "update_text" : "How often should the app check for updates?",
+                    "daily" : "daily",
+                    "weekly" : "weekly",
+                    "monthly" : "monthly",
+                    "last_time" : " Last check:",
+                    "update_now" : "Update now",
+                    "languages" : "Languages",
+                    "languages_text" : "These are the languages available. You can choose which languages you want to download and keep updated.",
+                    "language" : "Language",
+                    "uptodate" : "Uptodate?",
+                    "disk_usage" : "Disk usage"
+                }
+            ]
+        },
+        {
+            "languageCode": "de",
+            "pages": [
+                {
+                    "title": "Einstellungen",
+                    "appearance" : "Darstellung",
+                    "appLanguage" : "App Sprache",
+                    "theme" : "Design",
+                    "light" : "hell",
+                    "dark" : "dunkel",
+                    "update" : "Aktualisierung",
+                    "update_text" : "Wie oft soll die App nach Updates suchen?",
+                    "daily" : "täglich",
+                    "weekly" : "wöchentlich",
+                    "monthly" : "monatlich",
+                    "last_time" : "Letzte Überprüfung",
+                    "update_now" : "Jetzt aktualisieren",
+                    "languages" : "Sprachen",
+                    "languages_text" : "Dies sind die verfügbaren Sprachen. Wähle, welche Sprachen du downloaden und aktualiseren möchtest.",
+                    "language" : "Sprache",
+                    "uptodate" : "Aktuell?",
+                    "disk_usage" : "Speicherverbrauch"
+                }
+            ]
+        }
+    ]
+}

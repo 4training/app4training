@@ -4,6 +4,8 @@ import 'package:four_training/data/globals.dart';
 import 'package:four_training/data/resources_handler.dart';
 import 'package:four_training/widgets/loading_animation.dart';
 
+import '../data/app_language_handler.dart';
+
 class StartupPage extends StatefulWidget {
   const StartupPage({super.key});
 
@@ -22,9 +24,8 @@ class _StartupPageState extends State<StartupPage> {
 
   @override
   Widget build(BuildContext context) {
-    Locale mylocale = Localizations.localeOf(context);
-    localLanguage = mylocale.languageCode;
-    debugPrint(mylocale.languageCode);
+    // Get the local language
+    localLanguageCode = Localizations.localeOf(context).languageCode;
 
     return FutureBuilder(
         future:
@@ -57,6 +58,9 @@ class _StartupPageState extends State<StartupPage> {
   Future<dynamic> init() async {
     debugPrint("Startup Page");
 
-    return await initResources();
+    await initResources();
+    await initAppLanguages();
+
+    return "Done"; // We need to return something so the snapshot "hasData"
   }
 }

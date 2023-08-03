@@ -51,6 +51,9 @@ class Language {
   /// Directory object of path
   late final Directory _dir;
 
+  /// The size of the downloaded directory
+  late final int sizeInBytes;
+
   bool downloaded = false;
 
   /// Holds our pages identified by their English name (e.g. "Hearing_from_God")
@@ -63,7 +66,7 @@ class Language {
 
   final Map<String, Image> _images = {};
   DateTime? _timestamp; // TODO
-  int _commitsSinceDownload = 0; // TODO
+  int commitsSinceDownload = 0; // TODO
 
   final DownloadAssetsController _controller;
   final FileSystem _fs;
@@ -90,8 +93,11 @@ class Language {
       debugPrint("assets ($languageCode) loaded: $downloaded");
       if (!downloaded) await _download();
 
+      // Store the size of the downloaded directory
+      sizeInBytes = await _getDirSize(path);
+
       _timestamp = await _getTimestamp();
-      _commitsSinceDownload = await _fetchLatestCommits();
+      commitsSinceDownload = await _fetchLatestCommits();
 
       // Read structure/contents.json as our source of truth:
       // Which pages are available, what is the order in the menu
@@ -215,7 +221,7 @@ class Language {
       return 0;
     }
     var t = _timestamp!.subtract(const Duration(
-        days: 500)); // TODO just for testing, use timestamp instead
+        days: 0)); // TODO just for testing, use timestamp instead
     var uri = latestCommitsStart +
         languageCode +
         latestCommitsEnd +
@@ -280,6 +286,15 @@ class Language {
     }
     return titles;
   }
+
+  Future<int> _getDirSize(String path) async {
+    Directory dir = _fs.directory(path);
+    var files = await dir.list(recursive: true).toList();
+    var dirSize = files.fold(0, (int sum, file) => sum + file.statSync().size);
+    return dirSize;
+  }
+
+
 }
 
 String imageToBase64(File image) {

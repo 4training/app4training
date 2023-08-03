@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/data/languages.dart';
 
+
 /// Make sure we have all the resources downloaded in the languages we want
 /// and load the structure
 Future<dynamic> initResources() async {
@@ -16,13 +17,16 @@ Future<dynamic> initResources() async {
   // Set the language to the local device language
   // or english, if local language is not available
   currentLanguage = languages.firstWhere(
-      (element) => element.languageCode == localLanguage, orElse: () {
+      (element) => element.languageCode == localLanguageCode, orElse: () {
     return languages[0];
   });
+
   debugPrint("Current language set to ${currentLanguage?.languageCode}");
 
+
+
   debugPrint("Finished initResources");
-  return "Done"; // We need to return something so the snapshot "hasData"
+  return;
 }
 
 Future clearResources() async {
@@ -32,3 +36,17 @@ Future clearResources() async {
   }
   languages.clear();
 }
+
+int getResourcesSizeInBytes()  {
+
+  int size = 0;
+  for (var lang in languages) {
+    if(lang.downloaded) size += lang.sizeInBytes;
+  }
+  return size;
+}
+
+
+
+
+

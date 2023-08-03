@@ -1,12 +1,16 @@
 import 'package:four_training/data/languages.dart';
+import 'app_language.dart';
 
 List<Language> languages = [];
+List<String> availableAppLanguages = ["system", "en", "de"]; // TODO get the list from the repository - maybe create applanguage class
+List<AppLanguage> appLanguages = [];
+String appLanguageCode = "en";  // TODO Do we want this variable or only use the value stored in prefs? How do we handle prefs? Load on startup?
 Language? currentLanguage;
 // The currently selected page (without language code)
 String currentPage = "";
 final List<String> availableLanguages = ["en", "de"];
 // TODO this is not consistently set to the currently active language...
-String localLanguage = "";
+String localLanguageCode = "";
 
 /// Which page is loaded after startup?
 const String defaultPage = "God's_Story_(five_fingers)";
