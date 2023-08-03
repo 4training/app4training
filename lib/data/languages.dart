@@ -209,9 +209,34 @@ class Language {
   }
 
   /// Returns the timestamp in a human readable string. If we don't have a timestamp, an empty string is returned.
-  String formatTimestamp() {
+  String formatTimestamp({required String style, required bool adjustToTimeZone}) {
     if (_timestamp == null) return "";
-    return DateFormat('yyyy-MM-dd HH:mm').format(_timestamp!);
+
+    DateTime timestamp = _timestamp!;
+
+    if (adjustToTimeZone) {
+      DateTime dateTime = DateTime.now();
+      Duration offset = dateTime.timeZoneOffset;
+      timestamp.add(offset);
+    }
+
+    String format = "";
+    switch (style) {
+      case 'date':
+        format = 'yyyy-MM-dd';
+        break;
+      case 'time':
+        format = 'HH:mm';
+        break;
+      case 'full':
+        format = 'yyyy-MM-dd HH:mm';
+        break;
+      default:
+        format = 'yyyy-MM-dd HH:mm';
+        break;
+    }
+
+    return DateFormat(format).format(timestamp);
   }
 
   /// returns 0 if there was some error
@@ -293,8 +318,6 @@ class Language {
     var dirSize = files.fold(0, (int sum, file) => sum + file.statSync().size);
     return dirSize;
   }
-
-
 }
 
 String imageToBase64(File image) {

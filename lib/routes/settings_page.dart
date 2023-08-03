@@ -6,8 +6,6 @@ import '../widgets/dropdownbutton_theme.dart';
 import '../widgets/dropdownbutton_update_routine.dart';
 import '../widgets/tablerow_download_language.dart';
 
-// TODO add option to set standard language manually
-
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -150,7 +148,7 @@ class _SettingsPageState extends State<SettingsPage> {
           Text(
               languages
                   .elementAt(0)
-                  .formatTimestamp(), // TODO adjust timestamp to timezone
+                  .formatTimestamp(style: 'full', adjustToTimeZone: true),
               style: Theme.of(ctx).textTheme.bodyMedium)
         ])));
 
