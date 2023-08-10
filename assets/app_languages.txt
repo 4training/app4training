@@ -18,9 +18,9 @@
                     "last_time" : " Last check:",
                     "update_now" : "Update now",
                     "languages" : "Languages",
-                    "languages_text" : "These are the languages available. You can choose which languages you want to download and keep updated.",
+                    "languages_text" : "These are the languages available. You can download, delete or update them manually. Use the checkbox to set which languages should be updated automatically by the app.",
                     "language" : "Language",
-                    "uptodate" : "Uptodate?",
+                    "state" : "State",
                     "disk_usage" : "Disk usage"
                 }
             ]
@@ -43,9 +43,9 @@
                     "last_time" : "Letzte Überprüfung",
                     "update_now" : "Jetzt aktualisieren",
                     "languages" : "Sprachen",
-                    "languages_text" : "Dies sind die verfügbaren Sprachen. Wähle, welche Sprachen du downloaden und aktualiseren möchtest.",
+                    "languages_text" : "Dies sind die verfügbaren Sprachen. Du kannst sie manuell herunterladen, löschen und aktualieren. Nutze das Häkchen, um einzustellen, welche Sprachen von der app automatisch aktualisiert werden sollen..",
                     "language" : "Sprache",
-                    "uptodate" : "Aktuell?",
+                    "state" : "Status",
                     "disk_usage" : "Speicherverbrauch"
                 }
             ]

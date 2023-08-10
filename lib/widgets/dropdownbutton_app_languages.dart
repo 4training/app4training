@@ -66,13 +66,13 @@ class _DropDownButtonAppLanguageState extends State<DropDownButtonAppLanguage> {
           }
 
           setState(() {
-
             // Set the app language for the dropdown field
             _appLanguage = value;
             // Save the app language in preferences
             _setAppLanguage(selectedLanguageCode);
           });
 
+          // That's the callback for the parent widget to update the text on the page
           callback();
         });
   }

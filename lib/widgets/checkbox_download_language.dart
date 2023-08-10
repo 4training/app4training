@@ -3,9 +3,9 @@ import 'package:four_training/data/languages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CheckBoxDownloadLanguage extends StatefulWidget {
-  final Language language;
+  final String languageCode;
 
-  const CheckBoxDownloadLanguage({Key? key, required this.language})
+  const CheckBoxDownloadLanguage({Key? key, required this.languageCode})
       : super(key: key);
 
   @override
@@ -26,7 +26,7 @@ class _CheckBoxDownloadLanguageState extends State<CheckBoxDownloadLanguage> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _download =
-          (prefs.getBool('download${widget.language.languageCode}') ?? true);
+          (prefs.getBool('download${widget.languageCode}') ?? true);
     });
   }
 
@@ -34,7 +34,7 @@ class _CheckBoxDownloadLanguageState extends State<CheckBoxDownloadLanguage> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       prefs.setBool(
-          'download${widget.language.languageCode}', (checkboxValue ?? true));
+          'download${widget.languageCode}', (checkboxValue ?? true));
     });
   }
 

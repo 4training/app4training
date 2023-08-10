@@ -185,6 +185,7 @@ class Language {
   }
 
   Future<void> removeResources() async {
+    downloaded = false;
     await _controller.clearAssets();
   }
 

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/data/resources_handler.dart';
+import '../data/languages.dart';
+import '../widgets/checkbox_download_language.dart';
 import '../widgets/dropdownbutton_app_languages.dart';
 import '../widgets/dropdownbutton_theme.dart';
 import '../widgets/dropdownbutton_update_routine.dart';
-import '../widgets/tablerow_download_language.dart';
+import '../widgets/tablerow_download_language_buttons.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -25,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String _languages = "";
   String _languagesText = "";
   String _language = "";
-  String _uptodate = "";
+  String _state = "";
   String _diskUsage = "";
 
   @override
@@ -63,10 +65,17 @@ class _SettingsPageState extends State<SettingsPage> {
           _languages = page['languages'] ?? "Error";
           _languagesText = page['languages_text'] ?? "Error";
           _language = page['language'] ?? "Error";
-          _uptodate = page['uptodate'] ?? "Error";
+          _state = page['state'] ?? "Error";
           _diskUsage = page['disk_usage'] ?? "Error";
         }
       }
+    });
+  }
+
+  void _updateTableRows() {
+
+    setState(() {
+
     });
   }
 
@@ -188,7 +197,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     List<TableRow> rows = [];
-
+    /*
     // Add the header of the table
     rows.add(TableRow(children: [
       Container(
@@ -203,16 +212,50 @@ class _SettingsPageState extends State<SettingsPage> {
       Container(
           height: 32,
           alignment: Alignment.centerLeft,
-          child: Text(_uptodate, style: Theme.of(ctx).textTheme.labelLarge)),
+          child: Text(_state, style: Theme.of(ctx).textTheme.labelLarge)),
       Container(
           height: 32,
           alignment: Alignment.centerLeft,
           child: Text("", style: Theme.of(ctx).textTheme.labelLarge)),
-    ]));
+    ])); */
 
     // Add a table row for each language
-    for (var element in languages) {
-      rows.add(tableRowDownloadLanguage(element, ctx));
+    for (var languageCode in availableLanguages) {
+
+      Language? language;
+      late Widget downloadOrDeleteButton;
+
+      for (Language element in languages) {
+        if (element.languageCode == languageCode) language = element;
+      }
+
+      if (language == null) { // means it is not downloaded
+        // we need to download it with the language code
+        downloadOrDeleteButton = downloadLanguageButton(ctx, languageCode, _updateTableRows); // TODO
+      } else {
+        // If we have a language, we can hand it down to the delete Function
+        downloadOrDeleteButton = deleteLanguageButton(ctx, language, _updateTableRows);
+      }
+
+      rows.add(TableRow(children: [
+        Container(
+            height: 32,
+            alignment: Alignment.center,
+            child: CheckBoxDownloadLanguage(languageCode: languageCode)),
+        Container(
+            height: 32,
+            alignment: Alignment.centerLeft,
+            child: Text(languageCode.toUpperCase(),
+                style: Theme.of(ctx).textTheme.bodyMedium)),
+        Container(
+            height: 32,
+            alignment: Alignment.centerLeft,
+            child: updateLanguageButton(ctx, language, _updateTableRows)),
+        Container(
+            height: 32,
+            alignment: Alignment.centerLeft,
+            child: downloadOrDeleteButton),
+      ]));
     }
 
     // Add the table to the widget tree

@@ -50,12 +50,13 @@ class MainDrawer extends StatelessWidget {
   UpwardExpansionTile _buildLanguageSelection(BuildContext context) {
     List<ListTile> allLanguages = [];
 
-    for (int i = 0; i < languages.length; i++) {
-      String title = languages[i].languageCode.toUpperCase();
+    for (var language in languages) {
+      if(!language.downloaded) continue;
+      String title = language.languageCode.toUpperCase();
       allLanguages.add(ListTile(
         title: Text(title, style: Theme.of(context).textTheme.labelMedium),
         onTap: () {
-          currentLanguage = languages[i];
+          currentLanguage = language;
           Navigator.pop(context);
           Navigator.pushReplacementNamed(
               context, "/view/$currentPage/${currentLanguage!.languageCode}");
