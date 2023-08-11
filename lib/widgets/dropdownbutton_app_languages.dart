@@ -47,7 +47,7 @@ class _DropDownButtonAppLanguageState extends State<DropDownButtonAppLanguage> {
             availableAppLanguages.map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
-            child: Text(value),
+            child: Text(value.toUpperCase()),
           );
         }).toList(),
         onChanged: (String? value) {

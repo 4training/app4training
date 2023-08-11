@@ -19,22 +19,22 @@ class _CheckBoxDownloadLanguageState extends State<CheckBoxDownloadLanguage> {
   @override
   void initState() {
     super.initState();
-    _getDownload();
+    _getUpdate();
   }
 
-  Future<void> _getDownload() async {
+  Future<void> _getUpdate() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _download =
-          (prefs.getBool('download${widget.languageCode}') ?? true);
+          (prefs.getBool('update_${widget.languageCode}') ?? true);
     });
   }
 
-  Future<void> _setDownload(bool? checkboxValue) async {
+  Future<void> _setUpdate(bool? checkboxValue) async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       prefs.setBool(
-          'download${widget.languageCode}', (checkboxValue ?? true));
+          'update_${widget.languageCode}', (checkboxValue ?? true));
     });
   }
 
@@ -46,7 +46,7 @@ class _CheckBoxDownloadLanguageState extends State<CheckBoxDownloadLanguage> {
         onChanged: (bool? value) {
           setState(() {
             _download = value!;
-            _setDownload(value);
+            _setUpdate(value);
           });
         });
   }

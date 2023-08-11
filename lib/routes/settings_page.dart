@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/data/resources_handler.dart';
+import 'package:four_training/widgets/update_now_button.dart';
 import '../data/languages.dart';
 import '../widgets/checkbox_download_language.dart';
 import '../widgets/dropdownbutton_app_languages.dart';
@@ -72,11 +73,8 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  void _updateTableRows() {
-
-    setState(() {
-
-    });
+  void _updateUICallback() {
+    setState(() {});
   }
 
   List<Widget> _getContent(BuildContext ctx) {
@@ -164,14 +162,7 @@ class _SettingsPageState extends State<SettingsPage> {
     widgets.add(Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        ElevatedButton(
-            child: Text(_updateNow),
-            onPressed: () {
-              clearResources().then((_) {
-                Navigator.pop(ctx);
-                Navigator.of(ctx).pushReplacementNamed('/');
-              });
-            })
+        UpdateNowButton(buttonText: _updateNow, callback: _updateUICallback)
       ],
     ));
 
@@ -221,7 +212,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
     // Add a table row for each language
     for (var languageCode in availableLanguages) {
-
       Language? language;
       late Widget downloadOrDeleteButton;
 
@@ -229,12 +219,15 @@ class _SettingsPageState extends State<SettingsPage> {
         if (element.languageCode == languageCode) language = element;
       }
 
-      if (language == null) { // means it is not downloaded
+      if (language == null) {
+        // means it is not downloaded
         // we need to download it with the language code
-        downloadOrDeleteButton = downloadLanguageButton(ctx, languageCode, _updateTableRows); // TODO
+        downloadOrDeleteButton =
+            downloadLanguageButton(ctx, languageCode, _updateUICallback);
       } else {
         // If we have a language, we can hand it down to the delete Function
-        downloadOrDeleteButton = deleteLanguageButton(ctx, language, _updateTableRows);
+        downloadOrDeleteButton =
+            deleteLanguageButton(ctx, language, _updateUICallback);
       }
 
       rows.add(TableRow(children: [
@@ -250,7 +243,7 @@ class _SettingsPageState extends State<SettingsPage> {
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child: updateLanguageButton(ctx, language, _updateTableRows)),
+            child: updateLanguageButton(ctx, language, _updateUICallback)),
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
