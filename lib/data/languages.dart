@@ -51,10 +51,13 @@ class Language {
   /// Directory object of path
   late final Directory _dir;
 
-  /// The size of the downloaded directory
-  late final int sizeInBytes;
+  /// The size of the downloaded directory (kB = kilobytes)
+  int _sizeInKB = 0;
+  int get sizeInKB => downloaded ? _sizeInKB : 0;
 
-  bool downloaded = false;
+  /// Did we download all content?
+  bool _downloaded = false;
+  bool get downloaded => _downloaded;
 
   /// Holds our pages identified by their English name (e.g. "Hearing_from_God")
   final Map<String, Page> _pages = {};
@@ -88,13 +91,13 @@ class Language {
       debugPrint("Path: $path");
       _dir = _fs.directory(path);
 
-      downloaded = await _controller.assetsDirAlreadyExists();
+      _downloaded = await _controller.assetsDirAlreadyExists();
       // TODO check that in every unexpected behavior the folder gets deleted and downloaded is false
       debugPrint("assets ($languageCode) loaded: $downloaded");
-      if (!downloaded) await _download();
+      if (!_downloaded) await _download();
 
       // Store the size of the downloaded directory
-      sizeInBytes = await _getDirSize(path);
+      _sizeInKB = await _calculateMemoryUsage();
 
       _timestamp = await _getTimestamp();
       commitsSinceDownload = await _fetchLatestCommits();
@@ -128,7 +131,7 @@ class Language {
       String msg = "Error initializing data structure: $e";
       debugPrint(msg);
       // Delete the whole folder (TODO make sure this is called in every unexpected situation)
-      downloaded = false;
+      _downloaded = false;
       _controller.clearAssets();
       throw Exception(msg);
     }
@@ -173,19 +176,19 @@ class Language {
             //debugPrint("$progress ${progressValue.round()}");
           } else {
             debugPrint("Download completed");
-            downloaded = true;
+            _downloaded = true;
           }
         },
       );
     } on DownloadAssetsException catch (e) {
       debugPrint(e.toString());
-      downloaded = false;
+      _downloaded = false;
       _controller.clearAssets();
     }
   }
 
   Future<void> removeResources() async {
-    downloaded = false;
+    _downloaded = false;
     await _controller.clearAssets();
   }
 
@@ -210,7 +213,8 @@ class Language {
   }
 
   /// Returns the timestamp in a human readable string. If we don't have a timestamp, an empty string is returned.
-  String formatTimestamp({required String style, required bool adjustToTimeZone}) {
+  String formatTimestamp(
+      {required String style, required bool adjustToTimeZone}) {
     if (_timestamp == null) return "";
 
     DateTime timestamp = _timestamp!;
@@ -313,11 +317,12 @@ class Language {
     return titles;
   }
 
-  Future<int> _getDirSize(String path) async {
-    Directory dir = _fs.directory(path);
-    var files = await dir.list(recursive: true).toList();
-    var dirSize = files.fold(0, (int sum, file) => sum + file.statSync().size);
-    return dirSize;
+  /// Return the total size of all files in our directory in kB
+  Future<int> _calculateMemoryUsage() async {
+    var files = await _dir.list(recursive: true).toList();
+    var sizeInBytes =
+        files.fold(0, (int sum, file) => sum + file.statSync().size);
+    return (sizeInBytes / 1000).ceil(); // let's never round down
   }
 }
 

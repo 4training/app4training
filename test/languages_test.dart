@@ -93,9 +93,9 @@ void main() {
             assetsController: mock, fileSystem: MemoryFileSystem());
         try {
           await deTest.init();
-          fail('Test.init() should throw an exception during _getTimestamp()');
+          fail('Test.init() should throw a FileSystemException');
         } catch (e) {
-          expect(e.toString(), contains('Error getting timestamp'));
+          expect(e.toString(), contains('No such file or directory'));
         }
         expect(deTest.downloaded, false);
         expect(deTest.path, equals('assets-de/test-html-de-main'));
@@ -146,6 +146,7 @@ void main() {
             'Gottes Geschichte (fünf Finger)',
             'Schritte der Vergebung'
           ]));
+      expect(deTest.sizeInKB, 79);
     });
   });
 }

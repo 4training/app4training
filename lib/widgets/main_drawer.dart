@@ -51,7 +51,7 @@ class MainDrawer extends StatelessWidget {
     List<ListTile> allLanguages = [];
 
     for (var language in languages) {
-      if(!language.downloaded) continue;
+      if (!language.downloaded) continue;
       String title = language.languageCode.toUpperCase();
       allLanguages.add(ListTile(
         title: Text(title, style: Theme.of(context).textTheme.labelMedium),

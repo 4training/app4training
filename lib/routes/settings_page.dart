@@ -266,14 +266,11 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     ));
 
-    var size = getResourcesSizeInBytes();
-    var sizeKB = size / 1000;
-
     widgets.add(
       Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Text(
-            "$_diskUsage: $sizeKB KB",
+            "$_diskUsage: ${getResourcesSizeInKB()} kB",
             style: Theme.of(ctx).textTheme.bodyMedium,
           )),
     );
