@@ -6,12 +6,14 @@ import 'package:four_training/routes/view_page.dart';
 
 /// TODO get rid of that page or change it in a way that it's not a dead end anymore
 class ErrorPage extends StatelessWidget {
-  const ErrorPage({super.key});
+  final String message;
+  const ErrorPage(this.message, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Error')),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Error')),
+      body: Center(child: Text(message)),
     );
   }
 }
@@ -20,7 +22,9 @@ Route<Object?> generateRoutes(RouteSettings settings) {
   debugPrint('Handling route "${settings.name}"');
   if ((settings.name == null) || (settings.name == '/')) {
     return MaterialPageRoute<void>(
-      builder: (_) => const StartupPage(),
+      builder: (_) => const StartupPage(
+        initFunction: globalInit,
+      ),
     );
   } else if (settings.name!.startsWith('/view')) {
     // route should be /view/pageName/langCode - deep linking is possible
@@ -39,6 +43,6 @@ Route<Object?> generateRoutes(RouteSettings settings) {
 
   debugPrint('Warning: unknown route ${settings.name}');
   return MaterialPageRoute<void>(
-    builder: (_) => const ErrorPage(),
+    builder: (_) => ErrorPage('Warning: unknown route ${settings.name}'),
   );
 }

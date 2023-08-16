@@ -1,5 +1,7 @@
 import 'package:four_training/data/languages.dart';
+import 'package:four_training/data/resources_handler.dart';
 import 'app_language.dart';
+import 'app_language_handler.dart';
 
 /// Content Languages
 List<Language> languages = [];
@@ -33,3 +35,9 @@ const String latestCommitsStart =
     "https://api.github.com/repos/holybiber/test-html-";
 const String latestCommitsEnd = "/commits?since=";
 bool newCommitsAvailable = false;
+
+Future<dynamic> globalInit() async {
+  await initResources();
+  await initAppLanguages();
+  return "Done"; // We need to return something so the snapshot "hasData"
+}

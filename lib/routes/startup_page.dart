@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
-import 'package:four_training/data/resources_handler.dart';
+import 'package:four_training/routes/routes.dart';
 import 'package:four_training/widgets/loading_animation.dart';
 
-import '../data/app_language_handler.dart';
-
 class StartupPage extends StatefulWidget {
-  const StartupPage({super.key});
+  final Function initFunction;
+  // The optional parameter initFunction is for testing
+  const StartupPage({super.key, this.initFunction = globalInit});
 
   @override
   State<StartupPage> createState() => _StartupPageState();
@@ -19,7 +19,7 @@ class _StartupPageState extends State<StartupPage> {
   @override
   void initState() {
     super.initState();
-    _data = init();
+    _data = widget.initFunction();
   }
 
   @override
@@ -40,27 +40,16 @@ class _StartupPageState extends State<StartupPage> {
             case ConnectionState.active:
               return loadingAnimation("Loading");
             case ConnectionState.done:
+              debugPrint(
+                  'Done, hasData: ${snapshot.hasData}, Error: ${snapshot.hasError}');
               if (snapshot.hasError) {
-                return loadingAnimation(snapshot.error.toString());
-              } else if (snapshot.hasData) {
-                return loadingAnimation("Redirecting ...");
+                // TODO do something more helpful for the user
+                return ErrorPage(snapshot.error.toString());
               } else {
-                debugPrint(snapshot.data);
-                debugPrint(snapshot.error.toString());
-                return loadingAnimation("Empty Data");
+                // This is actually never called because of the new route...
+                return loadingAnimation("Redirecting ...");
               }
-            default:
-              return loadingAnimation("State: ${snapshot.connectionState}");
           }
         });
-  }
-
-  Future<dynamic> init() async {
-    debugPrint("Startup Page");
-
-    await initResources();
-    await initAppLanguages();
-
-    return "Done"; // We need to return something so the snapshot "hasData"
   }
 }
