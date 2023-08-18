@@ -3,7 +3,6 @@ import 'package:four_training/data/languages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/globals.dart';
 
-
 class UpdateNowButton extends StatefulWidget {
   const UpdateNowButton(
       {Key? key, required this.buttonText, required this.callback})
@@ -24,7 +23,7 @@ class _UpdateNowButtonState extends State<UpdateNowButton> {
   Future<void> _getUpdate() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      for (String languageCode in availableLanguages) {
+      for (String languageCode in GlobalData.availableLanguages) {
         bool update = prefs.getBool('update_$languageCode') ?? false;
         if (update) _updateList.add(languageCode);
       }
@@ -43,7 +42,6 @@ class _UpdateNowButtonState extends State<UpdateNowButton> {
         style: ElevatedButton.styleFrom(
             shape: const StadiumBorder(), fixedSize: const Size(150, 36)),
         onPressed: () async {
-
           // Loading animation while loading
           setState(() {
             _isLoading = true;
@@ -51,14 +49,15 @@ class _UpdateNowButtonState extends State<UpdateNowButton> {
 
           // Each language in the list first gets deleted and then initialized again
           for (String languageCode in _updateList) {
-            Language language = languages
+            Language language = context.global.languages
                 .firstWhere((element) => element.languageCode == languageCode);
             await language.removeResources();
-            languages.remove(language);
+            // TODO fix warning Don't use BuildContext across async gaps
+            context.global.languages.remove(language);
 
             Language newLanguage = Language(languageCode);
             await newLanguage.init();
-            languages.add(newLanguage);
+            context.global.languages.add(newLanguage);
           }
 
           setState(() {

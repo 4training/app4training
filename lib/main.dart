@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:four_training/routes/routes.dart';
+import 'data/globals.dart';
 import 'design/theme.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
-  runApp(const MyApp());
+  // The InheritedWidget holding our global state
+  // needs to be at the root of the widget tree
+  runApp(GlobalData(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -12,22 +15,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '4training',
-      darkTheme: darkTheme,
-      theme: lightTheme,
-      themeMode: ThemeMode.system,
-      initialRoute: '/',
-      onGenerateRoute: generateRoutes,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en', ''), // english, no country code
-        Locale('de', ''), // german, no country code
-      ],
-    );
+    return ListenableBuilder(
+        // rebuild when locale changes
+        listenable: context.global.appLanguageCode,
+        builder: (context, child) {
+          return MaterialApp(
+            title: '4training',
+            darkTheme: darkTheme,
+            theme: lightTheme,
+            themeMode: ThemeMode.system,
+            initialRoute: '/',
+            onGenerateRoute: (settings) => generateRoutes(settings, context),
+            locale: context.global.appLanguageCode.value,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          );
+        });
   }
 }

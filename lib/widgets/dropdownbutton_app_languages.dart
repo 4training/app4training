@@ -44,23 +44,25 @@ class _DropDownButtonAppLanguageState extends State<DropDownButtonAppLanguage> {
     return DropdownButton(
         value: _appLanguage,
         items: // TODO
-            availableAppLanguages.map<DropdownMenuItem<String>>((String value) {
+            GlobalData.availableAppLanguages
+                .map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
             child: Text(value.toUpperCase()),
           );
         }).toList(),
         onChanged: (String? value) {
-
           String selectedLanguageCode = value!;
 
           // If the selected language is system, set the value to the local language
-          selectedLanguageCode = selectedLanguageCode == 'system' ? localLanguageCode : selectedLanguageCode;
+          selectedLanguageCode = selectedLanguageCode == 'system'
+              ? context.global.localLanguageCode
+              : selectedLanguageCode;
 
           // Set the app language
-          for (var element in availableAppLanguages) {
+          for (var element in GlobalData.availableAppLanguages) {
             if (element == selectedLanguageCode) {
-              appLanguageCode = element;
+              context.global.appLanguageCode.value = Locale(element);
               break;
             }
           }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
-import 'package:four_training/data/resources_handler.dart';
+import 'package:four_training/l10n/l10n.dart';
 import 'package:four_training/widgets/update_now_button.dart';
 import '../data/languages.dart';
 import '../widgets/checkbox_download_language.dart';
@@ -17,29 +17,10 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  String _title = "";
-  String _appearance = "";
-  String _appLanguage = "";
-  String _theme = "";
-  String _update = "";
-  String _updateText = "";
-  String _lastUpdate = "";
-  String _updateNow = "";
-  String _languages = "";
-  String _languagesText = "";
-  String _language = "";
-  String _state = "";
-  String _diskUsage = "";
-
-  @override
-  initState() {
-    _getText();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_title)),
+      appBar: AppBar(title: Text(context.l10n.title)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
@@ -48,29 +29,6 @@ class _SettingsPageState extends State<SettingsPage> {
         )),
       ),
     );
-  }
-
-  void _getText() {
-    setState(() {
-      for (var element in appLanguages) {
-        if (element.languageCode == appLanguageCode) {
-          var page = element.pages[0] as Map<String, dynamic>;
-          _title = page['title'] ?? "Error";
-          _appearance = page['appearance'] ?? "Error";
-          _appLanguage = page['appLanguage'] ?? "Error";
-          _theme = page['theme'] ?? "Error";
-          _update = page['update'] ?? "Error";
-          _updateText = page['update_text'] ?? "Error";
-          _lastUpdate = page['last_time'] ?? "Error";
-          _updateNow = page['update_now'] ?? "Error";
-          _languages = page['languages'] ?? "Error";
-          _languagesText = page['languages_text'] ?? "Error";
-          _language = page['language'] ?? "Error";
-          _state = page['state'] ?? "Error";
-          _diskUsage = page['disk_usage'] ?? "Error";
-        }
-      }
-    });
   }
 
   void _updateUICallback() {
@@ -94,7 +52,8 @@ class _SettingsPageState extends State<SettingsPage> {
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(children: [
-          Text(_appearance, style: Theme.of(ctx).textTheme.titleLarge)
+          Text(context.l10n.appearance,
+              style: Theme.of(ctx).textTheme.titleLarge)
         ])));
 
     widgets.add(Padding(
@@ -102,8 +61,9 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(_appLanguage, style: Theme.of(ctx).textTheme.bodyMedium),
-            DropDownButtonAppLanguage(callback: _getText),
+            Text(context.l10n.appLanguage,
+                style: Theme.of(ctx).textTheme.bodyMedium),
+            DropDownButtonAppLanguage(callback: _updateUICallback),
           ],
         )));
 
@@ -112,7 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(_theme, style: Theme.of(ctx).textTheme.bodyMedium),
+            Text(context.l10n.theme, style: Theme.of(ctx).textTheme.bodyMedium),
             const DropDownButtonTheme(),
           ],
         )));
@@ -126,7 +86,7 @@ class _SettingsPageState extends State<SettingsPage> {
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(children: [
-          Text(_update, style: Theme.of(ctx).textTheme.titleLarge)
+          Text(context.l10n.update, style: Theme.of(ctx).textTheme.titleLarge)
         ])));
 
     widgets.add(Padding(
@@ -134,7 +94,8 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(_updateText, style: Theme.of(ctx).textTheme.bodyMedium),
+            Text(context.l10n.updateText,
+                style: Theme.of(ctx).textTheme.bodyMedium),
           ],
         )));
 
@@ -151,9 +112,10 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.only(bottom: 10),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text("$_lastUpdate ", style: Theme.of(ctx).textTheme.bodyMedium),
+          Text("${context.l10n.lastTime} ",
+              style: Theme.of(ctx).textTheme.bodyMedium),
           Text(
-              languages
+              context.global.languages
                   .elementAt(0)
                   .formatTimestamp(style: 'full', adjustToTimeZone: true),
               style: Theme.of(ctx).textTheme.bodyMedium)
@@ -162,7 +124,8 @@ class _SettingsPageState extends State<SettingsPage> {
     widgets.add(Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        UpdateNowButton(buttonText: _updateNow, callback: _updateUICallback)
+        UpdateNowButton(
+            buttonText: context.l10n.updateNow, callback: _updateUICallback)
       ],
     ));
 
@@ -175,14 +138,15 @@ class _SettingsPageState extends State<SettingsPage> {
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(children: [
-          Text(_languages, style: Theme.of(ctx).textTheme.titleLarge)
+          Text(context.l10n.languages,
+              style: Theme.of(ctx).textTheme.titleLarge)
         ])));
 
     widgets.add(
       Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Text(
-            _languagesText,
+            context.l10n.languagesText,
             style: Theme.of(ctx).textTheme.bodyMedium,
           )),
     );
@@ -211,11 +175,11 @@ class _SettingsPageState extends State<SettingsPage> {
     ])); */
 
     // Add a table row for each language
-    for (var languageCode in availableLanguages) {
+    for (var languageCode in GlobalData.availableLanguages) {
       Language? language;
       late Widget downloadOrDeleteButton;
 
-      for (Language element in languages) {
+      for (Language element in context.global.languages) {
         if (element.languageCode == languageCode) language = element;
       }
 
@@ -270,7 +234,7 @@ class _SettingsPageState extends State<SettingsPage> {
       Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Text(
-            "$_diskUsage: ${getResourcesSizeInKB()} kB",
+            "${context.l10n.diskUsage}: ${context.global.getResourcesSizeInKB()} kB",
             style: Theme.of(ctx).textTheme.bodyMedium,
           )),
     );

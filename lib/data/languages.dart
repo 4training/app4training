@@ -78,7 +78,7 @@ class Language {
   /// [fileSystem]) so that we can test the class well
   Language(this.languageCode,
       {DownloadAssetsController? assetsController, FileSystem? fileSystem})
-      : remoteUrl = urlStart + languageCode + urlEnd,
+      : remoteUrl = GlobalData.urlStart + languageCode + GlobalData.urlEnd,
         _controller = assetsController ?? DownloadAssetsController(),
         _fs = fileSystem ?? const LocalFileSystem();
 
@@ -87,7 +87,10 @@ class Language {
 
     try {
       // Now we store the full path to the language
-      path = _controller.assetsDir! + pathStart + languageCode + pathEnd;
+      path = _controller.assetsDir! +
+          GlobalData.pathStart +
+          languageCode +
+          GlobalData.pathEnd;
       debugPrint("Path: $path");
       _dir = _fs.directory(path);
 
@@ -252,9 +255,9 @@ class Language {
     }
     var t = _timestamp!.subtract(const Duration(
         days: 0)); // TODO just for testing, use timestamp instead
-    var uri = latestCommitsStart +
+    var uri = GlobalData.latestCommitsStart +
         languageCode +
-        latestCommitsEnd +
+        GlobalData.latestCommitsEnd +
         t.toIso8601String();
     debugPrint(uri);
     final response = await http.get(Uri.parse(uri));
@@ -265,7 +268,6 @@ class Language {
       int commits = data.length;
       debugPrint(
           "Found $commits new commits since download on $t ($languageCode)");
-      if (commits > 0) newCommitsAvailable = true;
       return commits;
     } else {
       debugPrint("Failed to fetch latest commits ${response.statusCode}");

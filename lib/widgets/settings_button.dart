@@ -6,7 +6,7 @@ Widget settingsButton(BuildContext ctx) {
     Icons.settings,
     color: Theme.of(ctx).colorScheme.onPrimary,
   );
-  if (newCommitsAvailable) {
+  if (ctx.global.newCommitsAvailable) {
     settingsIcon = Stack(
       children: [
         Icon(

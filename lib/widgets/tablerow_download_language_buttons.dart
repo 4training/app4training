@@ -12,7 +12,8 @@ IconButton downloadLanguageButton(
       onPressed: () async {
         Language language = Language(languageCode);
         await language.init();
-        languages.add(language);
+        // TODO Don't use BuildContext across async gaps
+        ctx.global.languages.add(language);
 
         callback();
       },
@@ -34,11 +35,11 @@ IconButton updateLanguageButton(
               // Delete language
               String languageCode = language!.languageCode;
               language.removeResources();
-              languages.remove(language);
+              ctx.global.languages.remove(language);
               // Download language
               Language newLanguage = Language(languageCode);
               await newLanguage.init();
-              languages.add(newLanguage);
+              ctx.global.languages.add(newLanguage);
 
               callback();
             },
@@ -53,11 +54,12 @@ IconButton deleteLanguageButton(
     onPressed: isDisabled
         ? null
         : () {
-            if (language.languageCode == currentLanguage?.languageCode) {
+            if (language.languageCode ==
+                ctx.global.currentLanguage?.languageCode) {
               showDialog(context: ctx, builder: buildPopupDialogCantDelete);
             } else {
               language.removeResources();
-              languages.remove(language);
+              ctx.global.languages.remove(language);
             }
 
             callback();

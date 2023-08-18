@@ -29,7 +29,8 @@ class MainDrawer extends StatelessWidget {
 
   /// Return ListTiles for the ListView of all pages in the selected language
   List<ListTile> _buildPageList(BuildContext context) {
-    LinkedHashMap<String, String> allTitles = currentLanguage!.getPageTitles();
+    LinkedHashMap<String, String> allTitles =
+        context.global.currentLanguage!.getPageTitles();
     List<ListTile> allPages = [];
 
     allTitles.forEach((englishName, translatedName) {
@@ -38,8 +39,8 @@ class MainDrawer extends StatelessWidget {
             style: Theme.of(context).textTheme.labelMedium),
         onTap: () {
           Navigator.pop(context);
-          Navigator.pushReplacementNamed(
-              context, '/view/$englishName/${currentLanguage!.languageCode}');
+          Navigator.pushReplacementNamed(context,
+              '/view/$englishName/${context.global.currentLanguage!.languageCode}');
         },
       ));
     });
@@ -50,16 +51,16 @@ class MainDrawer extends StatelessWidget {
   UpwardExpansionTile _buildLanguageSelection(BuildContext context) {
     List<ListTile> allLanguages = [];
 
-    for (var language in languages) {
+    for (var language in context.global.languages) {
       if (!language.downloaded) continue;
       String title = language.languageCode.toUpperCase();
       allLanguages.add(ListTile(
         title: Text(title, style: Theme.of(context).textTheme.labelMedium),
         onTap: () {
-          currentLanguage = language;
+          context.global.currentLanguage = language;
           Navigator.pop(context);
-          Navigator.pushReplacementNamed(
-              context, "/view/$currentPage/${currentLanguage!.languageCode}");
+          Navigator.pushReplacementNamed(context,
+              "/view/${context.global.currentPage}/${context.global.currentLanguage!.languageCode}");
         },
       ));
     }

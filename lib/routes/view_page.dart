@@ -62,7 +62,7 @@ class _ViewPageState extends State<ViewPage> {
           ),
           drawer: const MainDrawer(),
           body: FutureBuilder(
-            future: currentLanguage!.getPageContent(widget.page),
+            future: context.global.currentLanguage!.getPageContent(widget.page),
             initialData: "Loading",
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
               debugPrint(snapshot.connectionState.toString());
@@ -76,7 +76,7 @@ class _ViewPageState extends State<ViewPage> {
                 case ConnectionState.done:
                   if (snapshot.hasError) {
                     return Text(
-                        "Couldn't find the content you are looking for.\nLanguage: ${currentLanguage?.languageCode}");
+                        "Couldn't find the content you are looking for.\nLanguage: ${context.global.currentLanguage?.languageCode}");
                   } else if (snapshot.hasData) {
                     return MainHtmlView(snapshot.data);
                   } else {

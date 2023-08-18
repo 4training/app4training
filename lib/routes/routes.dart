@@ -18,22 +18,22 @@ class ErrorPage extends StatelessWidget {
   }
 }
 
-Route<Object?> generateRoutes(RouteSettings settings) {
+Route<Object?> generateRoutes(RouteSettings settings, BuildContext context) {
   debugPrint('Handling route "${settings.name}"');
   if ((settings.name == null) || (settings.name == '/')) {
     return MaterialPageRoute<void>(
-      builder: (_) => const StartupPage(
-        initFunction: globalInit,
+      builder: (_) => StartupPage(
+        initFunction: context.global.initResources,
       ),
     );
   } else if (settings.name!.startsWith('/view')) {
     // route should be /view/pageName/langCode - deep linking is possible
     final List<String> parts = settings.name!.split('/');
-    String page = defaultPage;
+    String page = GlobalData.defaultPage;
     String langCode = 'en';
     if ((parts.length > 2) && (parts[2] != '')) page = parts[2];
     if (parts.length > 3) langCode = parts[3];
-    currentPage = page;
+    context.global.currentPage = page;
     return MaterialPageRoute<void>(builder: (_) => ViewPage(page, langCode));
   } else if (settings.name == '/settings') {
     return MaterialPageRoute<void>(

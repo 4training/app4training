@@ -1,0 +1,20 @@
+{
+    "title": "Einstellungen",
+    "appearance" : "Darstellung",
+    "appLanguage" : "App Sprache",
+    "theme" : "Design",
+    "light" : "hell",
+    "dark" : "dunkel",
+    "update" : "Aktualisierung",
+    "updateText" : "Wie oft soll die App nach Updates suchen?",
+    "daily" : "täglich",
+    "weekly" : "wöchentlich",
+    "monthly" : "monatlich",
+    "lastTime" : "Letzte Überprüfung",
+    "updateNow" : "Jetzt aktualisieren",
+    "languages" : "Sprachen",
+    "languagesText" : "Dies sind die verfügbaren Sprachen. Du kannst sie manuell herunterladen, löschen und aktualieren. Nutze das Häkchen, um einzustellen, welche Sprachen von der app automatisch aktualisiert werden sollen..",
+    "language" : "Sprache",
+    "state" : "Status",
+    "diskUsage" : "Speicherverbrauch"
+}

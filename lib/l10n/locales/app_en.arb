@@ -1,0 +1,20 @@
+{
+    "title": "Settings",
+    "appearance" : "Appearance",
+    "appLanguage" : "App language",
+    "theme" : "Theme",
+    "light" : "light",
+    "dark" : "dark",
+    "update" : "Update",
+    "updateText" : "How often should the app check for updates?",
+    "daily" : "daily",
+    "weekly" : "weekly",
+    "monthly" : "monthly",
+    "lastTime" : " Last check:",
+    "updateNow" : "Update now",
+    "languages" : "Languages",
+    "languagesText" : "These are the languages available. You can download, delete or update them manually. Use the checkbox to set which languages should be updated automatically by the app.",
+    "language" : "Language",
+    "state" : "State",
+    "diskUsage" : "Disk usage"
+}

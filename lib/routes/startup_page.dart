@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:four_training/data/globals.dart';
 import 'package:four_training/routes/routes.dart';
 import 'package:four_training/widgets/loading_animation.dart';
 
+/// Handles the initial route "/":
+/// Currently shows a loading indication while we're initializing
+/// the data in the background.
 class StartupPage extends StatefulWidget {
+  /// The function that does all initialization asynchronously
+  /// and returns a Future
   final Function initFunction;
-  // The optional parameter initFunction is for testing
-  const StartupPage({super.key, this.initFunction = globalInit});
+  const StartupPage({super.key, required this.initFunction});
 
   @override
   State<StartupPage> createState() => _StartupPageState();
@@ -24,9 +27,6 @@ class _StartupPageState extends State<StartupPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Get the local language
-    localLanguageCode = Localizations.localeOf(context).languageCode;
-
     return FutureBuilder(
         future:
             _data.then((v) => Navigator.pushReplacementNamed(context, "/view")),
@@ -46,7 +46,8 @@ class _StartupPageState extends State<StartupPage> {
                 // TODO do something more helpful for the user
                 return ErrorPage(snapshot.error.toString());
               } else {
-                // This is actually never called because of the new route...
+                // This is actually never called because as soon
+                // as we push the new route he's out of here...
                 return loadingAnimation("Redirecting ...");
               }
           }
