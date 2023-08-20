@@ -4,10 +4,13 @@ import 'package:four_training/l10n/l10n.dart';
 import 'package:four_training/widgets/update_now_button.dart';
 import '../data/languages.dart';
 import '../widgets/checkbox_download_language.dart';
+import '../widgets/delete_language_button.dart';
+import '../widgets/download_language_button.dart';
 import '../widgets/dropdownbutton_app_languages.dart';
 import '../widgets/dropdownbutton_theme.dart';
 import '../widgets/dropdownbutton_update_routine.dart';
-import '../widgets/tablerow_download_language_buttons.dart';
+import '../widgets/cant_delete_alert_dialog.dart';
+import '../widgets/update_language_button.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -153,7 +156,6 @@ class _SettingsPageState extends State<SettingsPage> {
     // Add a table row for each language
     for (var languageCode in GlobalData.availableLanguages) {
       Language? language;
-      late Widget downloadOrDeleteButton;
 
       for (Language element in context.global.languages) {
         if (element.languageCode == languageCode) language = element;
@@ -173,14 +175,19 @@ class _SettingsPageState extends State<SettingsPage> {
             height: 32,
             alignment: Alignment.centerLeft,
             child: language != null && language.commitsSinceDownload > 0
-                ? updateLanguageButton(ctx, language, _updateUICallback)
+                ? UpdateLanguageButton(
+                    language: language, callback: _updateUICallback)
                 : const Text("")),
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
             child: language == null
-                ? downloadLanguageButton(ctx, languageCode, _updateUICallback)
-                : deleteLanguageButton(ctx, language, _updateUICallback)),
+                ? DownloadLanguageButton(
+                    languageCode: languageCode, callback: _updateUICallback)
+                : DeleteLanguageButton(
+                    language: language,
+                    callback: _updateUICallback,
+                  )),
       ]));
     }
 

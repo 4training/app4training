@@ -17,5 +17,8 @@
     "languagesText" : "These are the languages available. You can download, delete or update them manually. Use the checkbox to set which languages should be updated automatically by the app.",
     "language" : "Language",
     "state" : "State",
-    "diskUsage" : "Disk usage"
+    "diskUsage" : "Disk usage",
+    "warning" : "Warning",
+    "cannotDelete" : "You can't delete the language, that's currently selected. Switch language and try again.",
+    "close" : "Close"
 }

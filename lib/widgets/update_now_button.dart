@@ -52,12 +52,11 @@ class _UpdateNowButtonState extends State<UpdateNowButton> {
             Language language = context.global.languages
                 .firstWhere((element) => element.languageCode == languageCode);
             await language.removeResources();
-            // TODO fix warning Don't use BuildContext across async gaps
-            context.global.languages.remove(language);
+            if(mounted) context.global.languages.remove(language);
 
             Language newLanguage = Language(languageCode);
             await newLanguage.init();
-            context.global.languages.add(newLanguage);
+            if(mounted) context.global.languages.add(newLanguage);
           }
 
           setState(() {
