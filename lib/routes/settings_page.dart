@@ -40,8 +40,9 @@ class _SettingsPageState extends State<SettingsPage> {
     List<Widget> widgets = [];
 
     widgets.add(_getAppearance(ctx));
-    widgets.add(_getUpdate(ctx));
+
     widgets.add(_getLanguages(ctx));
+    widgets.add(_getUpdate(ctx));
 
     return widgets;
   }
@@ -82,7 +83,7 @@ class _SettingsPageState extends State<SettingsPage> {
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(children: [
-          Text(context.l10n.update, style: Theme.of(ctx).textTheme.titleLarge)
+          Text(context.l10n.automaticUpdate, style: Theme.of(ctx).textTheme.titleLarge)
         ])));
 
     widgets.add(Padding(
@@ -121,7 +122,7 @@ class _SettingsPageState extends State<SettingsPage> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         UpdateNowButton(
-            buttonText: context.l10n.updateNow, callback: _updateUICallback)
+            buttonText: context.l10n.checkNow, callback: _updateUICallback)
       ],
     ));
 
