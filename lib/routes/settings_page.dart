@@ -49,12 +49,6 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _getAppearance(BuildContext ctx) {
     List<Widget> widgets = [];
 
-    widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Row(children: [
-          Text(context.l10n.appearance,
-              style: Theme.of(ctx).textTheme.titleLarge)
-        ])));
 
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
@@ -67,6 +61,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         )));
 
+    /* This will be part of a later version of the app
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(
@@ -76,6 +71,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const DropDownButtonTheme(),
           ],
         )));
+     */
 
     return Column(children: widgets);
   }
