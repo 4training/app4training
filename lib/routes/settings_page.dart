@@ -50,7 +50,6 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _getAppearance(BuildContext ctx) {
     List<Widget> widgets = [];
 
-
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(
@@ -83,7 +82,8 @@ class _SettingsPageState extends State<SettingsPage> {
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(children: [
-          Text(context.l10n.automaticUpdate, style: Theme.of(ctx).textTheme.titleLarge)
+          Text(context.l10n.automaticUpdate,
+              style: Theme.of(ctx).textTheme.titleLarge)
         ])));
 
     widgets.add(Padding(
@@ -149,27 +149,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     List<TableRow> rows = [];
-    /*
-    // Add the header of the table
-    rows.add(TableRow(children: [
-      Container(
-        height: 32,
-        alignment: Alignment.center,
-        child: const Text(""),
-      ),
-      Container(
-          height: 32,
-          alignment: Alignment.centerLeft,
-          child: Text(_language, style: Theme.of(ctx).textTheme.labelLarge)),
-      Container(
-          height: 32,
-          alignment: Alignment.centerLeft,
-          child: Text(_state, style: Theme.of(ctx).textTheme.labelLarge)),
-      Container(
-          height: 32,
-          alignment: Alignment.centerLeft,
-          child: Text("", style: Theme.of(ctx).textTheme.labelLarge)),
-    ])); */
 
     // Add a table row for each language
     for (var languageCode in GlobalData.availableLanguages) {
@@ -178,17 +157,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
       for (Language element in context.global.languages) {
         if (element.languageCode == languageCode) language = element;
-      }
-
-      if (language == null) {
-        // means it is not downloaded
-        // we need to download it with the language code
-        downloadOrDeleteButton =
-            downloadLanguageButton(ctx, languageCode, _updateUICallback);
-      } else {
-        // If we have a language, we can hand it down to the delete Function
-        downloadOrDeleteButton =
-            deleteLanguageButton(ctx, language, _updateUICallback);
       }
 
       rows.add(TableRow(children: [
@@ -204,11 +172,15 @@ class _SettingsPageState extends State<SettingsPage> {
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child: updateLanguageButton(ctx, language, _updateUICallback)),
+            child: language != null && language.commitsSinceDownload > 0
+                ? updateLanguageButton(ctx, language, _updateUICallback)
+                : const Text("")),
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child: downloadOrDeleteButton),
+            child: language == null
+                ? downloadLanguageButton(ctx, languageCode, _updateUICallback)
+                : deleteLanguageButton(ctx, language, _updateUICallback)),
       ]));
     }
 

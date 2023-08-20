@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:four_training/data/globals.dart';
-
 import '../data/languages.dart';
-import 'checkbox_download_language.dart';
 
 /// Here we have all the interactive widgets inside the tablerow with the languages on settings page
 
@@ -22,27 +20,20 @@ IconButton downloadLanguageButton(
 
 IconButton updateLanguageButton(
     BuildContext ctx, Language? language, Function callback) {
-  bool isDisabled;
-  if (language == null) {
-    isDisabled = true;
-  } else {
-    isDisabled = language.commitsSinceDownload <= 0;
-  }
   return IconButton(
-      onPressed: isDisabled
-          ? null
-          : () async {
-              // Delete language
-              String languageCode = language!.languageCode;
-              language.removeResources();
-              ctx.global.languages.remove(language);
-              // Download language
-              Language newLanguage = Language(languageCode);
-              await newLanguage.init();
-              ctx.global.languages.add(newLanguage);
+      onPressed: () async {
+        // Delete language
+        String languageCode = language!.languageCode;
+        language.removeResources();
+        ctx.global.languages.remove(language);
+        // Download language
+        Language newLanguage = Language(languageCode);
+        await newLanguage.init();
+        // TODO Don't use BuildContext across async gaps
+        ctx.global.languages.add(newLanguage);
 
-              callback();
-            },
+        callback();
+      },
       icon: const Icon(Icons.refresh));
 }
 
