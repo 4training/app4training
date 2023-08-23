@@ -10,8 +10,9 @@ class DropDownButtonUpdateRoutine extends StatefulWidget {
       _DropDownButtonUpdateRoutineState();
 }
 
-class _DropDownButtonUpdateRoutineState extends State<DropDownButtonUpdateRoutine> {
-  late String _updateRoutine;
+class _DropDownButtonUpdateRoutineState
+    extends State<DropDownButtonUpdateRoutine> {
+  String _updateRoutine = 'weekly'; // TODO
   final List<String> _routines = ["daily", "weekly", "monthly"];
 
   @override
@@ -41,7 +42,7 @@ class _DropDownButtonUpdateRoutineState extends State<DropDownButtonUpdateRoutin
         items: _routines.map<DropdownMenuItem<String>>((String value) {
           String text;
 
-          switch(value) {
+          switch (value) {
             case "never":
               text = context.l10n.never;
               break;
@@ -65,7 +66,6 @@ class _DropDownButtonUpdateRoutineState extends State<DropDownButtonUpdateRoutin
           );
         }).toList(),
         onChanged: (String? value) {
-
           // TODO change routine
           setState(() {
             _updateRoutine = value!;
@@ -73,6 +73,4 @@ class _DropDownButtonUpdateRoutineState extends State<DropDownButtonUpdateRoutin
           });
         });
   }
-
-
 }

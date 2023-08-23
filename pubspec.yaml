@@ -50,6 +50,7 @@ dependencies:
   mocktail: ^0.3.0
   file: ^6.1.4
   shared_preferences: ^2.2.0
+  flutter_riverpod: ^2.3.7
 
 
 dev_dependencies:

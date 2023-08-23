@@ -1,51 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class DropDownButtonAppLanguage extends StatefulWidget {
-  final Function callback;
-
-  const DropDownButtonAppLanguage({Key? key, required this.callback})
-      : super(key: key);
+class DropDownButtonAppLanguage extends ConsumerWidget {
+  const DropDownButtonAppLanguage({super.key});
 
   @override
-  State<DropDownButtonAppLanguage> createState() =>
-      _DropDownButtonAppLanguageState(callback: callback);
-}
-
-class _DropDownButtonAppLanguageState extends State<DropDownButtonAppLanguage> {
-  Function callback;
-  _DropDownButtonAppLanguageState({required this.callback});
-
-  String _appLanguage = "system";
-
-  @override
-  void initState() {
-    super.initState();
-    _getAppLanguage();
-  }
-
-  Future<void> _getAppLanguage() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _appLanguage = (prefs.getString('appLanguage') ?? 'system');
-    });
-  }
-
-  Future<void> _setAppLanguage(String? dropdownValue) async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      prefs.setString("appLanguage", (dropdownValue ?? "system"));
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DropdownButton(
-        value: _appLanguage,
-        items: // TODO
-            GlobalData.availableAppLanguages
-                .map<DropdownMenuItem<String>>((String value) {
+        // TODO reading from appLanguageProvider should also be fine here
+        value: ref.read(sharedPreferencesProvider).getString('appLanguage'),
+        items: GlobalData.availableAppLanguages
+            .map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
             child: Text(value.toUpperCase()),
@@ -54,28 +20,14 @@ class _DropDownButtonAppLanguageState extends State<DropDownButtonAppLanguage> {
         onChanged: (String? value) {
           String selectedLanguageCode = value!;
 
-          // If the selected language is system, set the value to the local language
-          selectedLanguageCode = selectedLanguageCode == 'system'
-              ? context.global.localLanguageCode
-              : selectedLanguageCode;
+          // Persist the selection in the SharedPreferences TODO move this into the AppLanguageNotifier class
+          ref
+              .read(sharedPreferencesProvider)
+              .setString("appLanguage", selectedLanguageCode);
 
-          // Set the app language
-          for (var element in GlobalData.availableAppLanguages) {
-            if (element == selectedLanguageCode) {
-              context.global.appLanguageCode.value = Locale(element);
-              break;
-            }
-          }
-
-          setState(() {
-            // Set the app language for the dropdown field
-            _appLanguage = value;
-            // Save the app language in preferences
-            _setAppLanguage(selectedLanguageCode);
-          });
-
-          // That's the callback for the parent widget to update the text on the page
-          callback();
+          ref
+              .read(appLanguageProvider.notifier)
+              .setLocale(selectedLanguageCode);
         });
   }
 }

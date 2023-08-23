@@ -60,7 +60,7 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             Text(context.l10n.appLanguage,
                 style: Theme.of(ctx).textTheme.bodyMedium),
-            DropDownButtonAppLanguage(callback: _updateUICallback),
+            DropDownButtonAppLanguage(/*callback: _updateUICallback*/),
           ],
         )));
 

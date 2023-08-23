@@ -1,5 +1,72 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/languages.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+final sharedPreferencesProvider = MustOverrideProvider<SharedPreferences>();
+
+/// ignore: non_constant_identifier_names
+Provider<T> MustOverrideProvider<T>() {
+  return Provider<T>(
+    (_) => throw ProviderNotOverriddenException(),
+  );
+}
+
+class ProviderNotOverriddenException implements Exception {
+  @override
+  String toString() {
+    return 'The value for this provider must be set by an override on ProviderScope';
+  }
+}
+
+@immutable
+class AppLanguage {
+  final bool isSystemLanguage;
+  final String languageCode;
+  const AppLanguage(this.isSystemLanguage, this.languageCode);
+
+  Locale get locale => Locale(languageCode);
+}
+
+class AppLanguageNotifier extends Notifier<AppLanguage> {
+  @override
+  AppLanguage build() {
+    // Load the value stored in the SharedPreferences
+    String storedPref =
+        ref.read(sharedPreferencesProvider).getString('appLanguage') ??
+            'system';
+    String languageCode = 'en';
+    if ((storedPref != 'system') &&
+        (GlobalData.availableAppLanguages).contains(storedPref)) {
+      languageCode = storedPref;
+    } else {
+      // TODO how to get the device language without a BuildContext?
+    }
+    return AppLanguage(storedPref == 'system', languageCode);
+  }
+
+  /// [selection] can be a locale ('en', 'de', ...) or 'system'
+  void setLocale(String selection) {
+    debugPrint('setLocale: $selection');
+    // If the selected language is system, set the value to the local language
+    String languageCode = 'en';
+    bool isSystemLanguage = selection == 'system';
+    // TODO if (isSystemLanguage) languageCode = context.global.localLanguageCode;
+    if (GlobalData.availableAppLanguages.contains(selection) &&
+        !isSystemLanguage) {
+      languageCode = selection;
+    }
+
+    state = AppLanguage(isSystemLanguage, languageCode);
+  }
+}
+
+final appLanguageProvider =
+    NotifierProvider<AppLanguageNotifier, AppLanguage>(() {
+  return AppLanguageNotifier();
+});
 
 /// Holds our global state
 // TODO: Clean up the numerous issues of this class
@@ -18,9 +85,6 @@ class GlobalData extends InheritedWidget {
   /// App Languages (settings)
   // TODO get the list from the repository - maybe create applanguage class
   static const List<String> availableAppLanguages = ["system", "en", "de"];
-  // TODO Do we want this variable or only use the value stored in prefs? How do we handle prefs? Load on startup?
-  final ValueNotifier<Locale> appLanguageCode =
-      ValueNotifier<Locale>(Locale('en'));
 
   /// The currently selected page (without language code)
   String currentPage = "";
@@ -93,7 +157,7 @@ class GlobalData extends InheritedWidget {
 
   @override
   bool updateShouldNotify(covariant GlobalData oldWidget) {
-    return appLanguageCode != oldWidget.appLanguageCode;
+    return false;
   }
 }
 
