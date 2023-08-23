@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/languages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final sharedPreferencesProvider = MustOverrideProvider<SharedPreferences>();
+final sharedPrefsProvider = MustOverrideProvider<SharedPreferences>();
 
 /// ignore: non_constant_identifier_names
 Provider<T> MustOverrideProvider<T>() {
@@ -21,45 +22,69 @@ class ProviderNotOverriddenException implements Exception {
   }
 }
 
-@immutable
-class AppLanguage {
-  final bool isSystemLanguage;
-  final String languageCode;
-  const AppLanguage(this.isSystemLanguage, this.languageCode);
-
-  Locale get locale => Locale(languageCode);
+/// wrapper class around `Platform.localeName`:
+/// - provides the language code (just 'en' instead of 'en_US' e.g.)
+/// - for better testability
+///
+/// Remark: This doesn't change while the app is running,
+/// even if the user changes their devices' language configuration
+class LocaleWrapper {
+  static String get languageCode {
+    int index = Platform.localeName.indexOf('_');
+    return Platform.localeName.substring(0, index < 0 ? null : index);
+  }
 }
 
+/// Holds the current app language: available through [appLanguageProvider]
+/// This state is immutable - if the app language changes, a new AppLanguage
+/// object is created
+@immutable
+class AppLanguage {
+  final bool isSystemDefault;
+  final String languageCode;
+  const AppLanguage(this.isSystemDefault, this.languageCode);
+
+  Locale get locale => Locale(languageCode);
+
+  @override
+  String toString() {
+    return isSystemDefault ? 'system' : languageCode;
+  }
+
+  /// [str] can be a language code ('en', 'de', ...) or 'system'
+  /// In case of 'system': Use the [defaultLangCode]
+  static fromString(String str, String defaultLangCode) {
+    if (!GlobalData.availableAppLanguages.contains(str)) str = 'system';
+    bool isSystemLanguage = str == 'system';
+
+    String languageCode = str;
+    if (isSystemLanguage) {
+      languageCode = defaultLangCode;
+    }
+    if ((languageCode == 'system') ||
+        !GlobalData.availableAppLanguages.contains(languageCode)) {
+      // English is default in case we can't make sense of our parameters
+      languageCode = 'en';
+    }
+    return AppLanguage(isSystemLanguage, languageCode);
+  }
+}
+
+/// This class also takes care of persistance and reads/writes
+/// the currently selected app language into the SharedPreferences
 class AppLanguageNotifier extends Notifier<AppLanguage> {
   @override
   AppLanguage build() {
     // Load the value stored in the SharedPreferences
     String storedPref =
-        ref.read(sharedPreferencesProvider).getString('appLanguage') ??
-            'system';
-    String languageCode = 'en';
-    if ((storedPref != 'system') &&
-        (GlobalData.availableAppLanguages).contains(storedPref)) {
-      languageCode = storedPref;
-    } else {
-      // TODO how to get the device language without a BuildContext?
-    }
-    return AppLanguage(storedPref == 'system', languageCode);
+        ref.read(sharedPrefsProvider).getString('appLanguage') ?? 'system';
+    return AppLanguage.fromString(storedPref, LocaleWrapper.languageCode);
   }
 
-  /// [selection] can be a locale ('en', 'de', ...) or 'system'
+  /// [selection] can be a language code ('en', 'de', ...) or 'system'
   void setLocale(String selection) {
-    debugPrint('setLocale: $selection');
-    // If the selected language is system, set the value to the local language
-    String languageCode = 'en';
-    bool isSystemLanguage = selection == 'system';
-    // TODO if (isSystemLanguage) languageCode = context.global.localLanguageCode;
-    if (GlobalData.availableAppLanguages.contains(selection) &&
-        !isSystemLanguage) {
-      languageCode = selection;
-    }
-
-    state = AppLanguage(isSystemLanguage, languageCode);
+    state = AppLanguage.fromString(selection, LocaleWrapper.languageCode);
+    ref.read(sharedPrefsProvider).setString('appLanguage', state.toString());
   }
 }
 

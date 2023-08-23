@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/routes/routes.dart';
@@ -13,7 +15,7 @@ void main() async {
   // The InheritedWidget holding our global state
   // needs to be at the root of the widget tree
   runApp(ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
       child: GlobalData(child: const MyApp())));
 }
 

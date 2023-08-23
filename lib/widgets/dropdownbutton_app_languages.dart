@@ -7,9 +7,9 @@ class DropDownButtonAppLanguage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final AppLanguage appLanguage = ref.watch(appLanguageProvider);
     return DropdownButton(
-        // TODO reading from appLanguageProvider should also be fine here
-        value: ref.read(sharedPreferencesProvider).getString('appLanguage'),
+        value: appLanguage.toString(),
         items: GlobalData.availableAppLanguages
             .map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
@@ -18,16 +18,7 @@ class DropDownButtonAppLanguage extends ConsumerWidget {
           );
         }).toList(),
         onChanged: (String? value) {
-          String selectedLanguageCode = value!;
-
-          // Persist the selection in the SharedPreferences TODO move this into the AppLanguageNotifier class
-          ref
-              .read(sharedPreferencesProvider)
-              .setString("appLanguage", selectedLanguageCode);
-
-          ref
-              .read(appLanguageProvider.notifier)
-              .setLocale(selectedLanguageCode);
+          ref.read(appLanguageProvider.notifier).setLocale(value!);
         });
   }
 }
