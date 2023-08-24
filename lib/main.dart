@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/routes/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'data/app_language.dart';
 import 'data/globals.dart';
 import 'design/theme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';

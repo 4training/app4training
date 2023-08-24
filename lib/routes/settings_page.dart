@@ -6,7 +6,7 @@ import '../data/languages.dart';
 import '../widgets/checkbox_download_language.dart';
 import '../widgets/delete_language_button.dart';
 import '../widgets/download_language_button.dart';
-import '../widgets/dropdownbutton_app_languages.dart';
+import '../widgets/dropdownbutton_app_language.dart';
 import '../widgets/dropdownbutton_theme.dart';
 import '../widgets/dropdownbutton_update_routine.dart';
 import '../widgets/cant_delete_alert_dialog.dart';
@@ -60,7 +60,7 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             Text(context.l10n.appLanguage,
                 style: Theme.of(ctx).textTheme.bodyMedium),
-            DropDownButtonAppLanguage(/*callback: _updateUICallback*/),
+            DropdownButtonAppLanguage(/*callback: _updateUICallback*/),
           ],
         )));
 
