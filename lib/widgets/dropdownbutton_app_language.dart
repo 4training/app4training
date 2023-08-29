@@ -11,13 +11,13 @@ class DropdownButtonAppLanguage extends ConsumerWidget {
     final AppLanguage appLanguage = ref.watch(appLanguageProvider);
     return DropdownButton(
         value: appLanguage.toString(),
-        items: AppLanguage.availableAppLanguages
-            .map<DropdownMenuItem<String>>((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value.toUpperCase()),
-          );
-        }).toList(),
+        items: [
+          for (var value in AppLanguage.availableAppLanguages)
+            DropdownMenuItem<String>(
+              value: value,
+              child: Text(value.toUpperCase()),
+            )
+        ],
         onChanged: (String? value) {
           ref.read(appLanguageProvider.notifier).setLocale(value!);
         });

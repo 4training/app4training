@@ -36,8 +36,8 @@ void main() {
       expect(appLanguage.languageCode, equals('en'));
     });
     test('Test AppLanguage.toString()', () {
-      expect(AppLanguage(true, 'de').toString(), equals('system'));
-      expect(AppLanguage(false, 'de').toString(), equals('de'));
+      expect(const AppLanguage(true, 'de').toString(), equals('system'));
+      expect(const AppLanguage(false, 'de').toString(), equals('de'));
     });
   });
 }

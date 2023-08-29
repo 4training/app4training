@@ -6,7 +6,7 @@ import 'package:four_training/widgets/dropdownbutton_app_language.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('Test DropdownButtonAppLanguage: appLanguage is system default',
+  testWidgets('Test DropdownButtonAppLanguage with appLanguage: system default',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
     final prefs = await SharedPreferences.getInstance();
@@ -15,7 +15,7 @@ void main() {
         child: const MaterialApp(
             home: Scaffold(body: DropdownButtonAppLanguage()))));
 
-    // Initial value should be 'SYSTEM'
+    // Verify initial value
     expect(prefs.getString('appLanguage'), 'system');
     expect(find.text('SYSTEM'), findsOneWidget);
     expect(find.text('DE'), findsNothing);
@@ -34,7 +34,7 @@ void main() {
     expect(prefs.getString('appLanguage'), 'de');
   });
 
-  testWidgets('Test DropdownButtonAppLanguage: appLanguage is German',
+  testWidgets('Test DropdownButtonAppLanguage with appLanguage: German',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
     final prefs = await SharedPreferences.getInstance();
@@ -43,7 +43,7 @@ void main() {
         child: const MaterialApp(
             home: Scaffold(body: DropdownButtonAppLanguage()))));
 
-    // Initial value should be 'SYSTEM'
+    // Verify initial value
     expect(prefs.getString('appLanguage'), 'de');
     expect(find.text('DE'), findsOneWidget);
     expect(find.text('SYSTEM'), findsNothing);
@@ -54,7 +54,7 @@ void main() {
     expect(find.text('SYSTEM'), findsOneWidget);
     expect(find.text('EN'), findsOneWidget);
 
-    // Select German and verify correct UI and saving in SharedPreferences
+    // Select SYSTEM and verify correct UI and saving in SharedPreferences
     await tester.tap(find.text('SYSTEM'));
     await tester.pump();
     expect(find.text('SYSTEM'), findsOneWidget);
