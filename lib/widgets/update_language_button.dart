@@ -18,7 +18,8 @@ class _UpdateLanguageButtonState extends State<UpdateLanguageButton> {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-        onPressed: () async {
+        onPressed: null,
+        /* TODO () async {
           // Delete language
           String languageCode = widget.language.languageCode;
           await widget.language.removeResources();
@@ -28,7 +29,7 @@ class _UpdateLanguageButtonState extends State<UpdateLanguageButton> {
           await newLanguage.init();
           if(mounted) context.global.languages.add(newLanguage);
           widget.callback();
-        },
+        },*/
         icon: const Icon(Icons.refresh));
   }
 }

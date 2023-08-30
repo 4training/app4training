@@ -11,11 +11,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
 
-  // The InheritedWidget holding our global state
-  // needs to be at the root of the widget tree
   runApp(ProviderScope(
       overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-      child: GlobalData(child: const MyApp())));
+      child: const MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -30,7 +28,7 @@ class MyApp extends ConsumerWidget {
       theme: lightTheme,
       themeMode: ThemeMode.system,
       initialRoute: '/',
-      onGenerateRoute: (settings) => generateRoutes(settings, context),
+      onGenerateRoute: (settings) => generateRoutes(settings, context, ref),
       locale: appLanguage.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

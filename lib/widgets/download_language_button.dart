@@ -18,12 +18,13 @@ class _DownloadLanguageButtonState extends State<DownloadLanguageButton> {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-        onPressed: () async {
+        onPressed: null,
+        /* TODO () async {
           Language language = Language(widget.languageCode);
           await language.init();
           if (mounted) context.global.languages.add(language);
           widget.callback();
-        },
+        },*/
         icon: const Icon(Icons.download));
   }
 }

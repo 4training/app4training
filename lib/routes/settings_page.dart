@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/l10n/l10n.dart';
 import 'package:four_training/widgets/update_now_button.dart';
@@ -10,14 +11,9 @@ import '../widgets/dropdownbutton_app_language.dart';
 import '../widgets/dropdownbutton_check_frequency.dart';
 import '../widgets/update_language_button.dart';
 
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,30 +21,16 @@ class _SettingsPageState extends State<SettingsPage> {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
-            child: Column(
-          children: _getContent(context),
-        )),
+            child: Column(children: [
+          _getAppearance(context),
+          const LanguageSettings(),
+          const UpdateSettings()
+        ])),
       ),
     );
   }
 
-  void _updateUICallback() {
-    setState(() {});
-  }
-
-  List<Widget> _getContent(BuildContext ctx) {
-    // Fill the list with alle the widgets we need
-    List<Widget> widgets = [];
-
-    widgets.add(_getAppearance(ctx));
-
-    widgets.add(_getLanguages(ctx));
-    widgets.add(_getUpdate(ctx));
-
-    return widgets;
-  }
-
-  Widget _getAppearance(BuildContext ctx) {
+  Widget _getAppearance(BuildContext context) {
     List<Widget> widgets = [];
 
     widgets.add(Padding(
@@ -57,7 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(context.l10n.appLanguage,
-                style: Theme.of(ctx).textTheme.bodyMedium),
+                style: Theme.of(context).textTheme.bodyMedium),
             const DropdownButtonAppLanguage(),
           ],
         )));
@@ -76,68 +58,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Column(children: widgets);
   }
+}
 
-  Widget _getUpdate(BuildContext ctx) {
-    List<Widget> widgets = [];
+class LanguageSettings extends ConsumerWidget {
+  const LanguageSettings({super.key});
 
-    widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Row(children: [
-          Text(context.l10n.automaticUpdate,
-              style: Theme.of(ctx).textTheme.titleLarge)
-        ])));
-
-    widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(context.l10n.updateText,
-                style: Theme.of(ctx).textTheme.bodyMedium),
-          ],
-        )));
-
-    widgets.add(const Padding(
-        padding: EdgeInsets.only(bottom: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            DropdownButtonCheckFrequency(),
-          ],
-        )));
-
-    widgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text("${context.l10n.lastTime} ",
-              style: Theme.of(ctx).textTheme.bodyMedium),
-          Text(
-              context.global.languages
-                  .elementAt(0)
-                  .formatTimestamp(style: 'full', adjustToTimeZone: true),
-              style: Theme.of(ctx).textTheme.bodyMedium)
-        ])));
-
-    widgets.add(Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        UpdateNowButton(
-            buttonText: context.l10n.checkNow, callback: _updateUICallback)
-      ],
-    ));
-
-    return Column(children: widgets);
-  }
-
-  Widget _getLanguages(BuildContext ctx) {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     List<Widget> widgets = [];
 
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(children: [
           Text(context.l10n.languages,
-              style: Theme.of(ctx).textTheme.titleLarge)
+              style: Theme.of(context).textTheme.titleLarge)
         ])));
 
     widgets.add(
@@ -145,19 +79,17 @@ class _SettingsPageState extends State<SettingsPage> {
           padding: const EdgeInsets.only(bottom: 10),
           child: Text(
             context.l10n.languagesText,
-            style: Theme.of(ctx).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodyMedium,
           )),
     );
 
     List<TableRow> rows = [];
 
     // Add a table row for each language
-    for (var languageCode in GlobalData.availableLanguages) {
-      Language? language;
+    for (var languageCode in Globals.availableLanguages) {
+      Language language = ref.watch(languageProvider(languageCode));
 
-      for (Language element in context.global.languages) {
-        if (element.languageCode == languageCode) language = element;
-      }
+      // TODO read the language specifics
 
       rows.add(TableRow(children: [
         Container(
@@ -168,23 +100,23 @@ class _SettingsPageState extends State<SettingsPage> {
             height: 32,
             alignment: Alignment.centerLeft,
             child: Text(languageCode.toUpperCase(),
-                style: Theme.of(ctx).textTheme.bodyMedium)),
+                style: Theme.of(context).textTheme.bodyMedium)),
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child: language != null && language.commitsSinceDownload > 0
-                ? UpdateLanguageButton(
-                    language: language, callback: _updateUICallback)
-                : const Text("")),
+            child:
+                language.languageCode != '' && language.commitsSinceDownload > 0
+                    ? UpdateLanguageButton(language: language, callback: () {})
+                    : const Text("")),
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child: language == null
+            child: language.languageCode == ''
                 ? DownloadLanguageButton(
-                    languageCode: languageCode, callback: _updateUICallback)
+                    languageCode: languageCode, callback: () {})
                 : DeleteLanguageButton(
-                    language: language,
-                    callback: _updateUICallback,
+                    languageCode: languageCode,
+//                    callback: _updateUICallback,
                   )),
       ]));
     }
@@ -204,14 +136,78 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     ));
 
+    // TODO move this calculation somewhere else?
+    int sizeInKB = 0;
+    for (String langCode in Globals.availableLanguages) {
+      sizeInKB += ref.watch(languageProvider(langCode)).sizeInKB;
+    }
+
     widgets.add(
       Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Text(
-            "${context.l10n.diskUsage}: ${context.global.getResourcesSizeInKB()} kB",
-            style: Theme.of(ctx).textTheme.bodyMedium,
+            "${context.l10n.diskUsage}: $sizeInKB kB",
+            style: Theme.of(context).textTheme.bodyMedium,
           )),
     );
+
+    return Column(children: widgets);
+  }
+}
+
+class UpdateSettings extends ConsumerWidget {
+  const UpdateSettings({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // TODO: We always display the timestamp of English
+    Language currentLanguage = ref.watch(languageProvider('en'));
+    List<Widget> widgets = [];
+
+    widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(children: [
+          Text(context.l10n.automaticUpdate,
+              style: Theme.of(context).textTheme.titleLarge)
+        ])));
+
+    widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(context.l10n.updateText,
+                style: Theme.of(context).textTheme.bodyMedium),
+          ],
+        )));
+
+    widgets.add(const Padding(
+        padding: EdgeInsets.only(bottom: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            DropdownButtonCheckFrequency(),
+          ],
+        )));
+
+    widgets.add(Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child:
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text("${context.l10n.lastTime} ",
+              style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+              currentLanguage.formatTimestamp(
+                  style: 'full', adjustToTimeZone: true),
+              style: Theme.of(context).textTheme.bodyMedium)
+        ])));
+
+    widgets.add(Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        UpdateNowButton(buttonText: context.l10n.checkNow, callback: () {})
+      ],
+    ));
 
     return Column(children: widgets);
   }

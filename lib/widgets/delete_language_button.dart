@@ -1,41 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/widgets/cant_delete_alert_dialog.dart';
 import '../data/languages.dart';
 
-class DeleteLanguageButton extends StatefulWidget {
-  const DeleteLanguageButton(
-      {Key? key, required this.language, required this.callback})
+class DeleteLanguageButton extends ConsumerWidget {
+  const DeleteLanguageButton({Key? key, required this.languageCode})
       : super(key: key);
 
-  final Language language;
-  final Function callback;
+  final String languageCode;
 
   @override
-  State<DeleteLanguageButton> createState() => _DeleteLanguageButtonState();
-}
-
-class _DeleteLanguageButtonState extends State<DeleteLanguageButton> {
-  late bool isDisabled;
-
-  @override
-  Widget build(BuildContext context) {
-    isDisabled = !widget.language.downloaded;
+  Widget build(BuildContext context, WidgetRef ref) {
+//    Language language = ref.read(languageProvider);
 
     return IconButton(
-      onPressed: isDisabled
+      onPressed: null,
+/* TODO     isDisabled
           ? null
           : () async {
-              if (widget.language.languageCode ==
+              if (language.languageCode ==
                   context.global.currentLanguage?.languageCode) {
                 showDialog(
                     context: context, builder: buildPopupDialogCantDelete);
               } else {
-                await widget.language.removeResources();
-                if (mounted) context.global.languages.remove(widget.language);
+                await language.removeResources();
+                if (mounted) context.global.languages.remove(language);
               }
               widget.callback();
-            },
+            },*/
       icon: const Icon(Icons.delete),
       color: Theme.of(context).colorScheme.primary,
     );

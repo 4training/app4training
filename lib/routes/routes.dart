@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/routes/settings_page.dart';
 import 'package:four_training/routes/startup_page.dart';
@@ -18,22 +19,21 @@ class ErrorPage extends StatelessWidget {
   }
 }
 
-Route<Object?> generateRoutes(RouteSettings settings, BuildContext context) {
+Route<Object?> generateRoutes(
+    RouteSettings settings, BuildContext context, WidgetRef ref) {
   debugPrint('Handling route "${settings.name}"');
   if ((settings.name == null) || (settings.name == '/')) {
     return MaterialPageRoute<void>(
-      builder: (_) => StartupPage(
-        initFunction: context.global.initResources,
-      ),
+      builder: (_) => const StartupPage(),
     );
   } else if (settings.name!.startsWith('/view')) {
     // route should be /view/pageName/langCode - deep linking is possible
     final List<String> parts = settings.name!.split('/');
-    String page = GlobalData.defaultPage;
+    String page = Globals.defaultPage;
     String langCode = 'en';
     if ((parts.length > 2) && (parts[2] != '')) page = parts[2];
     if (parts.length > 3) langCode = parts[3];
-    context.global.currentPage = page;
+    ref.read(currentPageProvider.notifier).state = page;
     return MaterialPageRoute<void>(builder: (_) => ViewPage(page, langCode));
   } else if (settings.name == '/settings') {
     return MaterialPageRoute<void>(

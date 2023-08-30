@@ -1,35 +1,38 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/routes/routes.dart';
 import 'package:four_training/widgets/loading_animation.dart';
+
+import '../data/globals.dart';
+import '../data/languages.dart';
 
 /// Handles the initial route "/":
 /// Currently shows a loading indication while we're initializing
 /// the data in the background.
-class StartupPage extends StatefulWidget {
+class StartupPage extends ConsumerWidget {
   /// The function that does all initialization asynchronously
   /// and returns a Future
-  final Function initFunction;
-  const StartupPage({super.key, required this.initFunction});
+  const StartupPage({super.key});
 
-  @override
-  State<StartupPage> createState() => _StartupPageState();
-}
-
-class _StartupPageState extends State<StartupPage> {
-  late Future<dynamic> _data;
-
-  @override
-  void initState() {
-    super.initState();
-    _data = widget.initFunction();
+  /// Make sure we have all the resources downloaded in the languages we want
+  /// and load the structure
+  /// TODO currently we're loading all availableLanguages
+  Future initResources(WidgetRef ref) async {
+    for (String languageCode in Globals.availableLanguages) {
+      var currentLanguage = ref.read(languageProvider(languageCode).notifier);
+      int commitsSinceDownload = await currentLanguage.init();
+      if (commitsSinceDownload > 0) {
+        ref.read(newCommitsAvailableProvider.notifier).state = true;
+      }
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder(
-        future:
-            _data.then((v) => Navigator.pushReplacementNamed(context, "/view")),
+        future: initResources(ref)
+            .then((v) => Navigator.pushReplacementNamed(context, "/view")),
         initialData: "Loading",
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           debugPrint(snapshot.connectionState.toString());

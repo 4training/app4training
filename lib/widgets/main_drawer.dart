@@ -1,15 +1,18 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/widgets/upward_expansion_tile.dart';
 
+import '../data/languages.dart';
+
 /// Our main menu with the list of pages and the language selection at the end
-class MainDrawer extends StatelessWidget {
+class MainDrawer extends ConsumerWidget {
   const MainDrawer({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Drawer(
         child: Column(children: [
       // Header
@@ -21,16 +24,16 @@ class MainDrawer extends StatelessWidget {
                 Text("Content", style: Theme.of(context).textTheme.titleLarge)),
       ),
       // Menu with all the pages
-      Expanded(child: ListView(children: _buildPageList(context))),
-      // Language selection at the end
-      _buildLanguageSelection(context),
+      Expanded(child: ListView(children: _buildPageList(context, ref))),
+      const LanguageSelection()
     ]));
   }
 
   /// Return ListTiles for the ListView of all pages in the selected language
-  List<ListTile> _buildPageList(BuildContext context) {
+  List<ListTile> _buildPageList(BuildContext context, WidgetRef ref) {
+    String currentLanguage = ref.watch(currentLanguageProvider);
     LinkedHashMap<String, String> allTitles =
-        context.global.currentLanguage!.getPageTitles();
+        ref.watch(languageProvider(currentLanguage)).getPageTitles();
     List<ListTile> allPages = [];
 
     allTitles.forEach((englishName, translatedName) {
@@ -39,28 +42,35 @@ class MainDrawer extends StatelessWidget {
             style: Theme.of(context).textTheme.labelMedium),
         onTap: () {
           Navigator.pop(context);
-          Navigator.pushReplacementNamed(context,
-              '/view/$englishName/${context.global.currentLanguage!.languageCode}');
+          Navigator.pushReplacementNamed(
+              context, '/view/$englishName/$currentLanguage');
         },
       ));
     });
     return allPages;
   }
+}
 
-  /// Language selection (opens upwards)
-  UpwardExpansionTile _buildLanguageSelection(BuildContext context) {
+/// Language selection (opens upwards)
+class LanguageSelection extends ConsumerWidget {
+  const LanguageSelection({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     List<ListTile> allLanguages = [];
 
-    for (var language in context.global.languages) {
-      if (!language.downloaded) continue;
-      String title = language.languageCode.toUpperCase();
+    for (var language in ['de', 'en']) {
+      // TODO context.global.languages) {
+// TODO      if (!language.downloaded) continue;
+      String title = language.toUpperCase();
       allLanguages.add(ListTile(
         title: Text(title, style: Theme.of(context).textTheme.labelMedium),
         onTap: () {
-          context.global.currentLanguage = language;
+          ref.read(currentLanguageProvider.notifier).state = language;
+          String currentPage = ref.watch(currentPageProvider);
           Navigator.pop(context);
-          Navigator.pushReplacementNamed(context,
-              "/view/${context.global.currentPage}/${context.global.currentLanguage!.languageCode}");
+          Navigator.pushReplacementNamed(
+              context, "/view/$currentPage/$language");
         },
       ));
     }

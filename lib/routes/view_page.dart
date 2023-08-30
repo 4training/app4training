@@ -1,19 +1,20 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:four_training/data/languages.dart';
 import 'package:four_training/widgets/loading_animation.dart';
 import 'package:four_training/widgets/main_drawer.dart';
-import 'package:four_training/data/globals.dart';
 import 'package:four_training/widgets/settings_button.dart';
 
 /// The standard view of this app:
 /// Show a page (worksheet)
-class ViewPage extends StatefulWidget {
-  final String page;
+class ViewPage extends ConsumerStatefulWidget {
+  final String page; // currently selected page
   final String langCode;
   const ViewPage(this.page, this.langCode, {super.key});
   @override
-  State<ViewPage> createState() => _ViewPageState();
+  ConsumerState<ViewPage> createState() => _ViewPageState();
 }
 
 /// Scrollable display of HTML content, filling most of the screen.
@@ -43,7 +44,7 @@ class MainHtmlView extends StatelessWidget {
   }
 }
 
-class _ViewPageState extends State<ViewPage> {
+class _ViewPageState extends ConsumerState<ViewPage> {
   static const title = "4training";
 
   @override
@@ -53,41 +54,20 @@ class _ViewPageState extends State<ViewPage> {
 
   @override
   Widget build(BuildContext context) {
+    AsyncValue<String> page = ref.watch(pageContentProvider(widget.page));
     return WillPopScope(
         onWillPop: _onWillPop,
         child: Scaffold(
-          appBar: AppBar(
-            title: const Text(title),
-            actions: [settingsButton(context)],
-          ),
-          drawer: const MainDrawer(),
-          body: FutureBuilder(
-            future: context.global.currentLanguage!.getPageContent(widget.page),
-            initialData: "Loading",
-            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              debugPrint(snapshot.connectionState.toString());
-
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                case ConnectionState.waiting:
-                case ConnectionState.active:
-                  return loadingAnimation(
-                      "Loading content\nState: ${snapshot.connectionState}");
-                case ConnectionState.done:
-                  if (snapshot.hasError) {
-                    return Text(
-                        "Couldn't find the content you are looking for.\nLanguage: ${context.global.currentLanguage?.languageCode}");
-                  } else if (snapshot.hasData) {
-                    return MainHtmlView(snapshot.data);
-                  } else {
-                    return loadingAnimation("Empty Data");
-                  }
-                default:
-                  return Text("State: ${snapshot.connectionState}");
-              }
-            },
-          ),
-        ));
+            appBar: AppBar(
+              title: const Text(title),
+              actions: const [SettingsButton()],
+            ),
+            drawer: const MainDrawer(),
+            body: page.when(
+                loading: () => loadingAnimation("Loading content..."),
+                data: (content) => MainHtmlView(content),
+                error: (e, st) => Text(
+                    "Couldn't find the content you are looking for: ${e.toString()}\nLanguage: ${ref.read(currentLanguageProvider)}"))));
   }
 
   Future<bool> _onWillPop() async {

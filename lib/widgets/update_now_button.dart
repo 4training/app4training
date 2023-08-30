@@ -23,7 +23,7 @@ class _UpdateNowButtonState extends State<UpdateNowButton> {
   Future<void> _getUpdate() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      for (String languageCode in GlobalData.availableLanguages) {
+      for (String languageCode in Globals.availableLanguages) {
         bool update = prefs.getBool('update_$languageCode') ?? false;
         if (update) _updateList.add(languageCode);
       }
@@ -48,7 +48,7 @@ class _UpdateNowButtonState extends State<UpdateNowButton> {
           });
 
           // Each language in the list first gets deleted and then initialized again
-          for (String languageCode in _updateList) {
+/*          for (String languageCode in _updateList) {
             Language language = context.global.languages
                 .firstWhere((element) => element.languageCode == languageCode);
             await language.removeResources();
@@ -57,7 +57,7 @@ class _UpdateNowButtonState extends State<UpdateNowButton> {
             Language newLanguage = Language(languageCode);
             await newLanguage.init();
             if(mounted) context.global.languages.add(newLanguage);
-          }
+          } TODO */
 
           setState(() {
             _isLoading = false;
