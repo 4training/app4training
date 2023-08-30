@@ -10,7 +10,8 @@ class DropDownButtonTheme extends StatefulWidget {
 
 class _DropDownButtonThemeState extends State<DropDownButtonTheme> {
   String _appTheme = 'system';
-  final List<String> themesList = ["system", "light", "dark"]; // TODO translateable values
+  // TODO translateable values
+  final List<String> themesList = ["system", "light", "dark"];
 
   @override
   void initState() {
@@ -43,7 +44,7 @@ class _DropDownButtonThemeState extends State<DropDownButtonTheme> {
           );
         }).toList(),
         onChanged: (String? value) {
-           // TODO change theme (write function)
+          // TODO change theme (write function)
 
           setState(() {
             _appTheme = value!;

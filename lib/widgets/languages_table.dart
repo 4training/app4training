@@ -23,8 +23,8 @@ class LanguagesTable extends ConsumerWidget {
     // Add a table row for each language
     for (var languageCode in Globals.availableLanguages) {
       // watch this to rebuild if a Language object gets renewed
-      ref.watch(languageProvider(languageCode));
-      LanguageController lang =
+      Language lang = ref.watch(languageProvider(languageCode));
+      LanguageController langController =
           ref.watch(languageProvider(languageCode).notifier);
       rows.add(TableRow(children: [
         Container(
@@ -39,7 +39,7 @@ class LanguagesTable extends ConsumerWidget {
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child: lang.downloaded && lang.updatesAvailable
+            child: lang.downloaded && langController.updatesAvailable
                 ? UpdateLanguageButton(languageCode)
                 : const Text("")),
         Container(

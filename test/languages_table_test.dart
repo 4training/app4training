@@ -11,11 +11,14 @@ import 'settings_page_test.dart';
 // Simulate that German is downloaded and has updates available
 class TestLanguageController extends DummyLanguageController {
   @override
-  bool get downloaded {
-    if (languageCode == 'de') return true;
-    return false;
+  Language build(String arg) {
+    languageCode = (arg == 'de') ? 'de' : '';
+    // For 'de', Language.downloaded will be true, for the rest it will be false
+    return Language(
+        languageCode, const {}, const [], const {}, '', 0, DateTime(2023));
   }
 
+// ignore: avoid_public_notifier_properties
   @override
   bool get updatesAvailable {
     if (languageCode == 'de') return true;

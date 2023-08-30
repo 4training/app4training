@@ -80,14 +80,13 @@ final languageProvider =
 });
 
 class LanguageController extends FamilyNotifier<Language, String> {
+  @protected
   String languageCode = '';
   final DownloadAssetsController _controller;
 
-  /// Did we download all content?
-  bool _downloaded = false;
-  bool get downloaded => _downloaded;
-
   bool _updatesAvailable = false;
+  // TODO: this should go probably into the Language class - see #87
+  // ignore: avoid_public_notifier_properties
   bool get updatesAvailable => _updatesAvailable;
 
   /// We use dependency injection (optional parameters [assetsController])
@@ -115,10 +114,10 @@ class LanguageController extends FamilyNotifier<Language, String> {
       debugPrint("Path: $path");
       Directory dir = fileSystem.directory(path);
 
-      _downloaded = await _controller.assetsDirAlreadyExists();
-      debugPrint("assets ($languageCode) loaded: $_downloaded");
-      if (!_downloaded) await _download();
-      _downloaded = true;
+      bool downloaded = await _controller.assetsDirAlreadyExists();
+      debugPrint("assets ($languageCode) loaded: $downloaded");
+      if (!downloaded) await _download();
+      downloaded = true;
 
       // Store the size of the downloaded directory
       int sizeInKB = await _calculateMemoryUsage(dir);
@@ -168,7 +167,6 @@ class LanguageController extends FamilyNotifier<Language, String> {
       String msg = "Error initializing data structure: $e";
       debugPrint(msg);
       // Delete the whole folder
-      _downloaded = false;
       _controller.clearAssets();
       throw Exception(msg);
     }
@@ -176,7 +174,6 @@ class LanguageController extends FamilyNotifier<Language, String> {
 
   // TODO: are there race conditions possible in our LanguageController?
   Future<void> deleteResources() async {
-    _downloaded = false;
     await _controller.clearAssets();
     state =
         Language('', const {}, const [], const {}, '', 0, DateTime(2023, 1, 1));
@@ -290,6 +287,9 @@ class Image {
 @immutable
 class Language {
   final String languageCode;
+
+  /// Check this getter to see if we have any meaningful data
+  bool get downloaded => languageCode != '';
 
   /// Holds our pages identified by their English name (e.g. "Hearing_from_God")
   final Map<String, Page> pages;

@@ -58,20 +58,20 @@ final checkFrequencyProvider =
 
 /// Handle persisting the downloadLanguage setting in the SharedPreferences
 class DownloadLanguageNotifier extends FamilyNotifier<bool, String> {
-  String lang = ''; // language code
+  String _lang = ''; // language code
 
   @override
   bool build(String arg) {
-    lang = arg;
+    _lang = arg;
     // Load the value stored in the SharedPreferences
-    bool? value = ref.read(sharedPrefsProvider).getBool('download_$lang');
+    bool? value = ref.read(sharedPrefsProvider).getBool('download_$_lang');
     if (value != null) return value;
 
     // Default: download resources in English + app language
     // (but user may delete even them)
     String appLanguage = ref.read(appLanguageProvider).languageCode;
-    if ((lang == 'en') || (lang == appLanguage)) {
-      ref.read(sharedPrefsProvider).setBool('download_$lang', true);
+    if ((_lang == 'en') || (_lang == appLanguage)) {
+      ref.read(sharedPrefsProvider).setBool('download_$_lang', true);
       return true;
     }
     return false;
@@ -79,7 +79,7 @@ class DownloadLanguageNotifier extends FamilyNotifier<bool, String> {
 
   void setDownload(bool download) {
     state = download;
-    ref.read(sharedPrefsProvider).setBool('download_$lang', download);
+    ref.read(sharedPrefsProvider).setBool('download_$_lang', download);
   }
 }
 

@@ -1,13 +1,7 @@
 name: test
-on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+# Triggers the workflow on push or pull request on all branches
+# and allows you to run this workflow manually from the Actions tab
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   flutter-tests:
@@ -26,6 +20,14 @@ jobs:
         dart pub global activate full_coverage
         dart pub global run full_coverage
 
+    - name: Ensure standard dart formatting
+      run: dart format --output=none --set-exit-if-changed .
+
+    - name: Run linters
+      run: |
+        dart analyze --fatal-infos
+        dart run custom_lint
+
     - name: Run all tests and generate coverage information in coverage/lcov.info
       run: flutter test --coverage
 
@@ -34,4 +36,3 @@ jobs:
       with:
         files: coverage/lcov.info
         fail_ci_if_error: true
-        verbose: true

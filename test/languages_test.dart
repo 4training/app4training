@@ -1,6 +1,5 @@
 import 'package:download_assets/download_assets.dart';
 import 'package:file/chroot.dart';
-import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
 import 'package:flutter/material.dart';
@@ -18,11 +17,9 @@ class MockDownloadAssetsController extends Mock
 class FakeDownloadAssetsController extends Fake
     implements DownloadAssetsController {
   late String _assetDir;
-  final FileSystem _fs;
   bool initCalled = false;
   bool startDownloadCalled = false;
 
-  FakeDownloadAssetsController(FileSystem fileSystem) : _fs = fileSystem;
   // TODO use this class to test the startDownload() functionality
   @override
   Future init(
@@ -63,7 +60,7 @@ void main() {
 
   test('Test the download process', () async {
     var fileSystem = MemoryFileSystem();
-    var fakeController = FakeDownloadAssetsController(fileSystem);
+    var fakeController = FakeDownloadAssetsController();
     final container = ProviderContainer(overrides: [
       languageProvider.overrideWith(
           () => LanguageController(assetsController: fakeController)),
@@ -112,7 +109,7 @@ void main() {
         } catch (e) {
           expect(e.toString(), contains('No such file or directory'));
         }
-        expect(deTest.downloaded, false);
+        expect(deTest.state.downloaded, false);
       });
 
       test('Test error handling when structure is inconsistent', () async {
@@ -135,7 +132,7 @@ void main() {
         } catch (e) {
           expect(e.toString(), contains('FormatException'));
         }
-        expect(deTest.downloaded, false);
+        expect(deTest.state.downloaded, false);
       });
     });
 

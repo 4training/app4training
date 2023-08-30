@@ -33,11 +33,7 @@ IconThemeData darkActionsIconThemeData = IconThemeData(
   color: darkSecondary,
 );
 
-TextStyle appBarTitleTextStyle = const TextStyle(
-    fontWeight: FontWeight.bold,
-    fontSize: 25
-);
+TextStyle appBarTitleTextStyle =
+    const TextStyle(fontWeight: FontWeight.bold, fontSize: 25);
 
-TextStyle appBarToolbarTextStyle = const TextStyle(
-    fontWeight: FontWeight.w600
-);
+TextStyle appBarToolbarTextStyle = const TextStyle(fontWeight: FontWeight.w600);

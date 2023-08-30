@@ -8,8 +8,7 @@ AlertDialog buildPopupDialogCantDelete(BuildContext context) {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-            context.l10n.cannotDelete),
+        Text(context.l10n.cannotDelete),
       ],
     ),
     actions: <Widget>[
