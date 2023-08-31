@@ -31,8 +31,9 @@ final pageContentProvider =
   final currentLanguage = ref.watch(languageProvider(langCode));
   Page? page = currentLanguage.pages[pageName];
   if (page == null) {
-    debugPrint("Internal error: Couldn't find page $pageName");
-    return "";
+    debugPrint(
+        "Internal error: Couldn't find page $pageName in language $langCode");
+    return '';
   }
   debugPrint("Fetching content of '$pageName' in language '$langCode'...");
   String content = await fileSystem
@@ -44,13 +45,13 @@ final pageContentProvider =
   // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
   content =
       content.replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'), (match) {
-    String imageData = ref.watch(imageContentProvider(match.group(1)!));
-    if (imageData == '') {
-      debugPrint('Warning: image ${match.group(1)} missing (in $pageName)');
+    if (!currentLanguage.images.containsKey(match.group(1))) {
+      debugPrint(
+          'Warning: image ${match.group(1)} missing (in ${page.fileName})');
       return match.group(0)!;
-    } else {
-      return 'src="data:image/png;base64,$imageData"';
     }
+    String imageData = ref.watch(imageContentProvider(match.group(1)!));
+    return 'src="data:image/png;base64,$imageData"';
   });
   return content;
 });
@@ -69,7 +70,6 @@ final currentLanguageProvider = StateProvider<String>((ref) {
 class LanguageController extends FamilyNotifier<Language, String> {
   String languageCode = '';
   final DownloadAssetsController _controller;
-  final FileSystem _fs;
 
   /// full local path to directory holding all content
   late final String path;
@@ -86,19 +86,17 @@ class LanguageController extends FamilyNotifier<Language, String> {
 
   /// We use dependency injection (optional parameters [assetsController] and
   /// [fileSystem]) so that we can test the class well
-  LanguageController(
-      {DownloadAssetsController? assetsController, FileSystem? fileSystem})
-      : _controller = assetsController ?? DownloadAssetsController(),
-        _fs = fileSystem ?? const LocalFileSystem();
+  LanguageController({DownloadAssetsController? assetsController})
+      : _controller = assetsController ?? DownloadAssetsController();
 
   @override
   Language build(String arg) {
     languageCode = arg;
-    return Language(arg, {}, [], {}, 0, DateTime(2023, 1, 1));
+    return Language('', {}, [], {}, 0, DateTime(2023, 1, 1));
   }
 
   Future<int> init() async {
-//    final fileSystem = ref.watch(fileSystemProvider);
+    final fileSystem = ref.watch(fileSystemProvider);
     await _controller.init(assetDir: "assets-$languageCode");
 
     try {
@@ -108,7 +106,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
           languageCode +
           Globals.pathEnd;
       debugPrint("Path: $path");
-      _dir = _fs.directory(path);
+      _dir = fileSystem.directory(path);
 
       _downloaded = await _controller.assetsDirAlreadyExists();
       // TODO check that in every unexpected behavior the folder gets deleted and downloaded is false
@@ -123,7 +121,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
 
       // Read structure/contents.json as our source of truth:
       // Which pages are available, what is the order in the menu
-      var structure = jsonDecode(_fs
+      var structure = jsonDecode(fileSystem
           .file(join(path, 'structure', 'contents.json'))
           .readAsStringSync());
 
@@ -147,7 +145,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
       await _checkConsistency(pages);
 
       // Register available images
-      await for (var file in _fs
+      await for (var file in fileSystem
           .directory(join(path, 'files'))
           .list(recursive: false, followLinks: false)) {
         if (file is File) {
@@ -344,33 +342,10 @@ class Language {
     return titles;
   }
 
-  /// Returns the timestamp in a human readable string. If we don't have a timestamp, an empty string is returned.
-  String formatTimestamp(
-      {required String style, required bool adjustToTimeZone}) {
-    DateTime tempTimestamp = timestamp;
-    if (adjustToTimeZone) {
-      DateTime dateTime = DateTime.now();
-      Duration offset = dateTime.timeZoneOffset;
-      tempTimestamp.add(offset);
-    }
-
-    String format = "";
-    switch (style) {
-      case 'date':
-        format = 'yyyy-MM-dd';
-        break;
-      case 'time':
-        format = 'HH:mm';
-        break;
-      case 'full':
-        format = 'yyyy-MM-dd HH:mm';
-        break;
-      default:
-        format = 'yyyy-MM-dd HH:mm';
-        break;
-    }
-
-    return DateFormat(format).format(tempTimestamp);
+  /// Returns the timestamp in a human readable string, converted to local time
+  String formatTimestamp() {
+    DateTime localTime = timestamp.add(DateTime.now().timeZoneOffset);
+    return DateFormat('yyyy-MM-dd HH:mm').format(localTime);
   }
 }
 

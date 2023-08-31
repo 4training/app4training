@@ -196,9 +196,7 @@ class UpdateSettings extends ConsumerWidget {
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text("${context.l10n.lastTime} ",
               style: Theme.of(context).textTheme.bodyMedium),
-          Text(
-              currentLanguage.formatTimestamp(
-                  style: 'full', adjustToTimeZone: true),
+          Text(currentLanguage.formatTimestamp(),
               style: Theme.of(context).textTheme.bodyMedium)
         ])));
 

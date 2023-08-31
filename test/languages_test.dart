@@ -3,10 +3,14 @@ import 'package:file/chroot.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:four_training/data/languages.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as path;
+
+class MockLanguageController extends Mock implements LanguageController {}
 
 class MockDownloadAssetsController extends Mock
     implements DownloadAssetsController {}
@@ -58,11 +62,16 @@ void main() {
   late DownloadAssetsController mock;
 
   test('Test the download process', () async {
-    // TODO this is not testing very much yet
     var fileSystem = MemoryFileSystem();
     var fakeController = FakeDownloadAssetsController(fileSystem);
-    var deTest = Language('de',
-        assetsController: fakeController, fileSystem: fileSystem);
+    final container = ProviderContainer(overrides: [
+      languageProvider.overrideWith(
+          () => LanguageController(assetsController: fakeController)),
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+    ]);
+    final deTest = container.read(languageProvider('de').notifier);
+
+    // TODO this is not testing very much yet
     try {
       await deTest.init();
       fail('init() should throw because no files are there');
@@ -78,6 +87,7 @@ void main() {
     setUp(() {
       mock = MockDownloadAssetsController();
       when(() => mock.init(assetDir: 'assets-de')).thenAnswer((_) async {
+        debugPrint('Successfully called mock.init()');
         return;
       });
       when(mock.clearAssets).thenAnswer((_) async {
@@ -89,8 +99,13 @@ void main() {
 
     group('Test error handling of incorrect files / structure', () {
       test('Test error handling when no files can be found at all', () async {
-        var deTest = Language('de',
-            assetsController: mock, fileSystem: MemoryFileSystem());
+        final container = ProviderContainer(overrides: [
+          languageProvider
+              .overrideWith(() => LanguageController(assetsController: mock)),
+          fileSystemProvider.overrideWith((ref) => MemoryFileSystem()),
+        ]);
+        final deTest = container.read(languageProvider('de').notifier);
+
         try {
           await deTest.init();
           fail('Test.init() should throw a FileSystemException');
@@ -109,8 +124,12 @@ void main() {
         var contentsJson = fileSystem
             .file('assets-de/test-html-de-main/structure/contents.json');
         contentsJson.writeAsString('invalid');
-        var deTest =
-            Language('de', assetsController: mock, fileSystem: fileSystem);
+        final container = ProviderContainer(overrides: [
+          languageProvider
+              .overrideWith(() => LanguageController(assetsController: mock)),
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+        ]);
+        final deTest = container.read(languageProvider('de').notifier);
         try {
           await deTest.init();
           fail('Test.init() should throw while decoding contents.json');
@@ -124,13 +143,19 @@ void main() {
     test('Test everything with real content from test/assets-de/', () async {
       var fileSystem =
           ChrootFileSystem(const LocalFileSystem(), path.canonicalize('test/'));
-      var deTest =
-          Language('de', assetsController: mock, fileSystem: fileSystem);
+      final container = ProviderContainer(overrides: [
+        languageProvider
+            .overrideWith(() => LanguageController(assetsController: mock)),
+        fileSystemProvider.overrideWith((ref) => fileSystem),
+        currentLanguageProvider.overrideWith((ref) => 'de')
+      ]);
+
+      final deTest = container.read(languageProvider('de').notifier);
       await deTest.init();
 
       // Loads Gottes_Geschichte_(fünf_Finger).html
-      String content =
-          await deTest.getPageContent("God's_Story_(five_fingers)");
+      String content = await container
+          .read(pageContentProvider("God's_Story_(five_fingers)").future);
 
       expect(content, startsWith('<h1>Gottes Geschichte'));
       // The link of this image should have been replaced with image content
@@ -141,12 +166,12 @@ void main() {
 
       // Test Languages.getPageTitles()
       expect(
-          deTest.getPageTitles().values,
+          deTest.state.getPageTitles().values,
           orderedEquals(const [
             'Gottes Geschichte (fünf Finger)',
             'Schritte der Vergebung'
           ]));
-      expect(deTest.sizeInKB, 79);
+      expect(deTest.state.sizeInKB, 79);
     });
   });
 }

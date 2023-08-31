@@ -8,7 +8,7 @@ void main() {
   // Mocking the globalInit() function:
   // We want to be able to test all the different outcomes of the future
   Completer completer = Completer();
-  Future<dynamic> mockInitFunction() {
+  Future mockInitFunction() {
     return completer.future;
   }
 
