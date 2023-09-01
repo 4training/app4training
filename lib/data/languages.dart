@@ -14,56 +14,58 @@ final fileSystemProvider = Provider<FileSystem>((ref) {
   return const LocalFileSystem();
 });
 
-final imageContentProvider = Provider.family<String, String>((ref, imageName) {
-  final String langCode = ref.watch(currentLanguageProvider);
-  final String path = ref.watch(languageProvider(langCode).notifier).path;
+/// Unique identifier of an image or a page
+typedef Resource = ({String name, String langCode});
+
+/// Provide image data
+final imageContentProvider = Provider.family<String, Resource>((ref, res) {
+  final String path = ref.watch(languageProvider(res.langCode).notifier).path;
   final fileSystem = ref.watch(fileSystemProvider);
   // TODO add error handling
-  String data = imageToBase64(fileSystem.file(join(path, 'files', imageName)));
-  debugPrint("Successfully loaded $imageName");
+  String data = imageToBase64(fileSystem.file(join(path, 'files', res.name)));
+  debugPrint("Successfully loaded ${res.name}");
   return data;
 });
 
+/// Provide HTML content of a specific page in a specific language
 final pageContentProvider =
-    FutureProvider.family<String, String>((ref, pageName) async {
+    FutureProvider.family<String, Resource>((ref, page) async {
   final fileSystem = ref.watch(fileSystemProvider);
-  final langCode = ref.watch(currentLanguageProvider);
-  final currentLanguage = ref.watch(languageProvider(langCode));
-  Page? page = currentLanguage.pages[pageName];
-  if (page == null) {
+  final lang = ref.watch(languageProvider(page.langCode));
+  Page? pageDetails = lang.pages[page.name];
+  if (pageDetails == null) {
     debugPrint(
-        "Internal error: Couldn't find page $pageName in language $langCode");
+        "Internal error: Couldn't find page ${page.name}/${page.langCode}");
     return '';
   }
-  debugPrint("Fetching content of '$pageName' in language '$langCode'...");
-  String content = await fileSystem
-      .file(join(
-          ref.watch(languageProvider(langCode).notifier).path, page.fileName))
-      .readAsString();
+
+  debugPrint("Fetching content of '${page.name}/${page.langCode}'...");
+  String path = ref.watch(languageProvider(page.langCode).notifier).path;
+  String content =
+      await fileSystem.file(join(path, pageDetails.fileName)).readAsString();
 
   // Load images directly into the HTML:
   // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
   content =
       content.replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'), (match) {
-    if (!currentLanguage.images.containsKey(match.group(1))) {
+    if (!lang.images.containsKey(match.group(1))) {
       debugPrint(
-          'Warning: image ${match.group(1)} missing (in ${page.fileName})');
+          'Warning: image ${match.group(1)} missing (in ${pageDetails.fileName})');
       return match.group(0)!;
     }
-    String imageData = ref.watch(imageContentProvider(match.group(1)!));
+    String imageData = ref.watch(
+        imageContentProvider((name: match.group(1)!, langCode: page.langCode)));
     return 'src="data:image/png;base64,$imageData"';
   });
   return content;
 });
 
+/// Usage:
+/// ref.watch(languageProvider('de')) -> get German Language object
+/// ref.watch(languageProvider('en').notifier) -> get English LanguageController
 final languageProvider =
     NotifierProvider.family<LanguageController, Language, String>(() {
   return LanguageController();
-});
-
-final currentLanguageProvider = StateProvider<String>((ref) {
-  // TODO read from Platform.localeName (see AppLanguage) and persist this to SharedPreferences
-  return 'en';
 });
 
 /// late members will be initialized after calling init()

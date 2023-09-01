@@ -147,15 +147,14 @@ void main() {
         languageProvider
             .overrideWith(() => LanguageController(assetsController: mock)),
         fileSystemProvider.overrideWith((ref) => fileSystem),
-        currentLanguageProvider.overrideWith((ref) => 'de')
       ]);
 
       final deTest = container.read(languageProvider('de').notifier);
       await deTest.init();
 
       // Loads Gottes_Geschichte_(fünf_Finger).html
-      String content = await container
-          .read(pageContentProvider("God's_Story_(five_fingers)").future);
+      String content = await container.read(pageContentProvider(
+          (name: "God's_Story_(five_fingers)", langCode: 'de')).future);
 
       expect(content, startsWith('<h1>Gottes Geschichte'));
       // The link of this image should have been replaced with image content

@@ -6,10 +6,12 @@ import 'package:four_training/data/globals.dart';
 import 'package:four_training/widgets/upward_expansion_tile.dart';
 
 import '../data/languages.dart';
+import '../routes/view_page.dart';
 
 /// Our main menu with the list of pages and the language selection at the end
 class MainDrawer extends ConsumerWidget {
-  const MainDrawer({super.key});
+  final String langCode;
+  const MainDrawer(this.langCode, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,9 +33,8 @@ class MainDrawer extends ConsumerWidget {
 
   /// Return ListTiles for the ListView of all pages in the selected language
   List<ListTile> _buildPageList(BuildContext context, WidgetRef ref) {
-    String currentLanguage = ref.watch(currentLanguageProvider);
     LinkedHashMap<String, String> allTitles =
-        ref.watch(languageProvider(currentLanguage)).getPageTitles();
+        ref.watch(languageProvider(langCode)).getPageTitles();
     List<ListTile> allPages = [];
 
     allTitles.forEach((englishName, translatedName) {
@@ -42,8 +43,7 @@ class MainDrawer extends ConsumerWidget {
             style: Theme.of(context).textTheme.labelMedium),
         onTap: () {
           Navigator.pop(context);
-          Navigator.pushReplacementNamed(
-              context, '/view/$englishName/$currentLanguage');
+          Navigator.pushNamed(context, '/view/$englishName/$langCode');
         },
       ));
     });
@@ -66,11 +66,10 @@ class LanguageSelection extends ConsumerWidget {
       allLanguages.add(ListTile(
         title: Text(title, style: Theme.of(context).textTheme.labelMedium),
         onTap: () {
-          ref.read(currentLanguageProvider.notifier).state = language;
-          String currentPage = ref.watch(currentPageProvider);
+          String currentPage =
+              context.findAncestorWidgetOfExactType<ViewPage>()!.page;
           Navigator.pop(context);
-          Navigator.pushReplacementNamed(
-              context, "/view/$currentPage/$language");
+          Navigator.pushNamed(context, "/view/$currentPage/$language");
         },
       ));
     }

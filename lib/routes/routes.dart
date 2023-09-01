@@ -33,7 +33,6 @@ Route<Object?> generateRoutes(
     String langCode = 'en';
     if ((parts.length > 2) && (parts[2] != '')) page = parts[2];
     if (parts.length > 3) langCode = parts[3];
-    ref.read(currentPageProvider.notifier).state = page;
     return MaterialPageRoute<void>(builder: (_) => ViewPage(page, langCode));
   } else if (settings.name == '/settings') {
     return MaterialPageRoute<void>(

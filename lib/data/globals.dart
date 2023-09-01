@@ -21,11 +21,6 @@ class ProviderNotOverriddenException implements Exception {
 /// TODO rename to updatesAvailableProvider?
 final newCommitsAvailableProvider = StateProvider<bool>((ref) => false);
 
-/// The currently selected page (without language code)
-final currentPageProvider = StateProvider<String>((ref) {
-  return '';
-});
-
 /// global constants
 class Globals {
   static const List<String> availableLanguages = ["en", "de"];
