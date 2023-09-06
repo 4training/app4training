@@ -21,7 +21,7 @@ void main() {
 
   testWidgets('Test normal behaviour', (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(
-      home: StartupPage(initFunction: mockInitFunction),
+      home: StartupPage(navigateTo: '/test', initFunction: mockInitFunction),
       onGenerateRoute: generateRoutes,
     ));
     // First there should be the loading animation
@@ -34,7 +34,7 @@ void main() {
     await tester.runAsync(() async {
       await tester.idle();
       await tester.pump();
-      expect(route, equals('/view')); // Now we went on to this route
+      expect(route, equals('/test')); // Now we went on to this route
     });
   });
 
@@ -42,7 +42,7 @@ void main() {
     completer = Completer();
     route = null;
     await tester.pumpWidget(MaterialApp(
-      home: StartupPage(initFunction: mockInitFunction),
+      home: StartupPage(navigateTo: '/test', initFunction: mockInitFunction),
       onGenerateRoute: generateRoutes,
     ));
     expect(find.byType(CircularProgressIndicator), findsOneWidget);

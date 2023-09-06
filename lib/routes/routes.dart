@@ -19,12 +19,16 @@ class ErrorPage extends StatelessWidget {
   }
 }
 
-Route<Object?> generateRoutes(
-    RouteSettings settings, BuildContext context, WidgetRef ref) {
+Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
   debugPrint('Handling route "${settings.name}"');
   if ((settings.name == null) || (settings.name == '/')) {
+    String page = ref.read(sharedPrefsProvider).getString('recentPage') ?? '';
+    String lang = ref.read(sharedPrefsProvider).getString('recentLang') ?? '';
+    String navigateTo = '/view';
+    if ((page != '') && (lang != '')) navigateTo = '/view/$page/$lang';
     return MaterialPageRoute<void>(
-      builder: (_) => const StartupPage(),
+      settings: settings, // Necessary for the NavigatorObserver while testing
+      builder: (_) => StartupPage(navigateTo: navigateTo),
     );
   } else if (settings.name!.startsWith('/view')) {
     // route should be /view/pageName/langCode - deep linking is possible
@@ -32,16 +36,23 @@ Route<Object?> generateRoutes(
     String page = Globals.defaultPage;
     String langCode = 'en';
     if ((parts.length > 2) && (parts[2] != '')) page = parts[2];
-    if (parts.length > 3) langCode = parts[3];
-    return MaterialPageRoute<void>(builder: (_) => ViewPage(page, langCode));
+    if ((parts.length > 3) && (parts[3] != '')) langCode = parts[3];
+    // Save the selected page to the SharedPreferences to continue here
+    // in case the user closes the app
+    ref.read(sharedPrefsProvider).setString('recentPage', page);
+    ref.read(sharedPrefsProvider).setString('recentLang', langCode);
+    return MaterialPageRoute<void>(
+        settings: settings, builder: (_) => ViewPage(page, langCode));
   } else if (settings.name == '/settings') {
     return MaterialPageRoute<void>(
+      settings: settings,
       builder: (_) => const SettingsPage(),
     );
   }
 
   debugPrint('Warning: unknown route ${settings.name}');
   return MaterialPageRoute<void>(
+    settings: settings,
     builder: (_) => ErrorPage('Warning: unknown route ${settings.name}'),
   );
 }

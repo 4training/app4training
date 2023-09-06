@@ -28,7 +28,7 @@ class MyApp extends ConsumerWidget {
       theme: lightTheme,
       themeMode: ThemeMode.system,
       initialRoute: '/',
-      onGenerateRoute: (settings) => generateRoutes(settings, context, ref),
+      onGenerateRoute: (settings) => generateRoutes(settings, ref),
       locale: appLanguage.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

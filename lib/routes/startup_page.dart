@@ -11,8 +11,9 @@ import '../data/languages.dart';
 /// Currently shows a loading indication while we're initializing
 /// the data in the background.
 class StartupPage extends ConsumerWidget {
+  final String navigateTo;
   final Function? initFunction; // For testing (is there a better solution?)
-  const StartupPage({super.key, this.initFunction});
+  const StartupPage({required this.navigateTo, super.key, this.initFunction});
 
   /// Make sure we have all the resources downloaded in the languages we want
   /// and load the structure
@@ -29,11 +30,12 @@ class StartupPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // When we're finished with loading: Go to the recently opened page
     Future initResult =
         ((initFunction != null) ? initFunction!() : initResources(ref));
     return FutureBuilder(
         future: initResult
-            .then((v) => Navigator.pushReplacementNamed(context, "/view")),
+            .then((v) => Navigator.pushReplacementNamed(context, navigateTo)),
         initialData: "Loading",
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           debugPrint(snapshot.connectionState.toString());
