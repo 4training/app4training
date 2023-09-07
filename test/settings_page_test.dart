@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:four_training/data/app_language.dart';
 import 'package:four_training/data/globals.dart';
+import 'package:four_training/data/languages.dart';
 import 'package:four_training/l10n/l10n.dart';
 import 'package:four_training/routes/settings_page.dart';
 import 'package:four_training/widgets/dropdownbutton_app_language.dart';
@@ -23,6 +24,14 @@ class TestSettingsPage extends ConsumerWidget {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const SettingsPage());
+  }
+}
+
+class TestLanguageController extends LanguageController {
+  @override
+  Language build(String arg) {
+    // Return dummy Language object using 42 kB
+    return Language('', {}, [], {}, 42, DateTime(2023, 1, 1));
   }
 }
 
@@ -63,5 +72,21 @@ void main() {
     expect(find.text(AppLocalizationsDe().appLanguage), findsOneWidget);
     expect(find.text(AppLocalizationsEn().appLanguage), findsNothing);
     expect(prefs.getString('appLanguage'), equals('de'));
+  });
+
+  testWidgets('Test displaying memory usage on settings page',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final testLanguageProvider =
+        NotifierProvider.family<LanguageController, Language, String>(() {
+      return TestLanguageController();
+    });
+
+    await tester.pumpWidget(ProviderScope(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      languageProvider.overrideWithProvider(testLanguageProvider)
+    ], child: const TestSettingsPage()));
+    expect(find.textContaining('84 kB'), findsOneWidget);
   });
 }
