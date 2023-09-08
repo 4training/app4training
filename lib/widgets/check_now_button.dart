@@ -3,8 +3,9 @@ import 'package:four_training/data/languages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../data/globals.dart';
 
-class UpdateNowButton extends StatefulWidget {
-  const UpdateNowButton(
+/// Button on the settings page to check for available updates
+class CheckNowButton extends StatefulWidget {
+  const CheckNowButton(
       {Key? key, required this.buttonText, required this.callback})
       : super(key: key);
 
@@ -12,10 +13,10 @@ class UpdateNowButton extends StatefulWidget {
   final Function callback;
 
   @override
-  State<UpdateNowButton> createState() => _UpdateNowButtonState();
+  State<CheckNowButton> createState() => _CheckNowButtonState();
 }
 
-class _UpdateNowButtonState extends State<UpdateNowButton> {
+class _CheckNowButtonState extends State<CheckNowButton> {
   final List<String> _updateList = [];
   bool _isLoading = false;
 
@@ -58,7 +59,7 @@ class _UpdateNowButtonState extends State<UpdateNowButton> {
             await newLanguage.init();
             if(mounted) context.global.languages.add(newLanguage);
           } TODO */
-
+          await Future.delayed(Duration(seconds: 2));
           setState(() {
             _isLoading = false;
           });

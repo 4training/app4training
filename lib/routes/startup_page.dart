@@ -20,11 +20,7 @@ class StartupPage extends ConsumerWidget {
   /// TODO currently we're loading all availableLanguages
   Future initResources(WidgetRef ref) async {
     for (String languageCode in Globals.availableLanguages) {
-      var currentLanguage = ref.read(languageProvider(languageCode).notifier);
-      int commitsSinceDownload = await currentLanguage.init();
-      if (commitsSinceDownload > 0) {
-        ref.read(newCommitsAvailableProvider.notifier).state = true;
-      }
+      await ref.read(languageProvider(languageCode).notifier).init();
     }
   }
 

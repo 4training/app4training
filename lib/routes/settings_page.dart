@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/l10n/l10n.dart';
-import 'package:four_training/widgets/update_now_button.dart';
+import 'package:four_training/widgets/check_now_button.dart';
 import '../data/languages.dart';
 import '../widgets/checkbox_download_language.dart';
 import '../widgets/delete_language_button.dart';
@@ -87,6 +87,8 @@ class LanguageSettings extends ConsumerWidget {
 
     // Add a table row for each language
     for (var languageCode in Globals.availableLanguages) {
+      LanguageController lang =
+          ref.watch(languageProvider(languageCode).notifier);
       Language language = ref.watch(languageProvider(languageCode));
 
       // TODO read the language specifics
@@ -104,19 +106,17 @@ class LanguageSettings extends ConsumerWidget {
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child:
-                language.languageCode != '' && language.commitsSinceDownload > 0
-                    ? UpdateLanguageButton(language: language, callback: () {})
-                    : const Text("")),
+            child: lang.downloaded && lang.updatesAvailable
+                ? UpdateLanguageButton(language: language, callback: () {})
+                : const Text("")),
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child: language.languageCode == ''
+            child: lang.downloaded
                 ? DownloadLanguageButton(
                     languageCode: languageCode, callback: () {})
                 : DeleteLanguageButton(
                     languageCode: languageCode,
-//                    callback: _updateUICallback,
                   )),
       ]));
     }
@@ -160,8 +160,6 @@ class UpdateSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: We always display the timestamp of English
-    Language currentLanguage = ref.watch(languageProvider('en'));
     List<Widget> widgets = [];
 
     widgets.add(Padding(
@@ -190,20 +188,26 @@ class UpdateSettings extends ConsumerWidget {
           ],
         )));
 
+    // TODO
+    // DateTime lastCheck = ref.watch(updatesAvailableProvider);
+    // Convert into human readable string in local time
+    // DateTime localTime = lastCheck.add(DateTime.now().timeZoneOffset);
+    // String timestamp = DateFormat('yyyy-MM-dd HH:mm').format(localTime);
+    String timestamp = 'TODO see #87';
+
     widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text("${context.l10n.lastTime} ",
               style: Theme.of(context).textTheme.bodyMedium),
-          Text(currentLanguage.formatTimestamp(),
-              style: Theme.of(context).textTheme.bodyMedium)
+          Text(timestamp, style: Theme.of(context).textTheme.bodyMedium)
         ])));
 
     widgets.add(Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        UpdateNowButton(buttonText: context.l10n.checkNow, callback: () {})
+        CheckNowButton(buttonText: context.l10n.checkNow, callback: () {})
       ],
     ));
 

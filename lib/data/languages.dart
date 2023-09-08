@@ -2,11 +2,10 @@ import 'dart:collection';
 import 'dart:convert';
 import 'package:download_assets/download_assets.dart';
 import 'package:file/local.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:file/file.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 
@@ -17,14 +16,14 @@ final fileSystemProvider = Provider<FileSystem>((ref) {
 /// Unique identifier of an image or a page
 typedef Resource = ({String name, String langCode});
 
-/// Provide image data
+/// Provide image data (base64-encoded)
 final imageContentProvider = Provider.family<String, Resource>((ref, res) {
   final String path = ref.watch(languageProvider(res.langCode).notifier).path;
   final fileSystem = ref.watch(fileSystemProvider);
   // TODO add error handling
-  String data = imageToBase64(fileSystem.file(join(path, 'files', res.name)));
+  File image = fileSystem.file(join(path, 'files', res.name));
   debugPrint("Successfully loaded ${res.name}");
-  return data;
+  return base64Encode(image.readAsBytesSync());
 });
 
 /// Provide HTML content of a specific page in a specific language
@@ -76,15 +75,12 @@ class LanguageController extends FamilyNotifier<Language, String> {
   /// full local path to directory holding all content
   late final String path;
 
-  /// Directory object of path
-  late final Directory _dir;
-
   /// Did we download all content?
   bool _downloaded = false;
   bool get downloaded => _downloaded;
 
-  DateTime? _timestamp; // TODO
-  int _commitsSinceDownload = 0; // TODO
+  bool _updatesAvailable = false;
+  bool get updatesAvailable => _updatesAvailable;
 
   /// We use dependency injection (optional parameters [assetsController] and
   /// [fileSystem]) so that we can test the class well
@@ -97,7 +93,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
     return Language('', {}, [], {}, 0, DateTime(2023, 1, 1));
   }
 
-  Future<int> init() async {
+  Future<void> init() async {
     final fileSystem = ref.watch(fileSystemProvider);
     await _controller.init(assetDir: "assets-$languageCode");
 
@@ -108,18 +104,26 @@ class LanguageController extends FamilyNotifier<Language, String> {
           languageCode +
           Globals.pathEnd;
       debugPrint("Path: $path");
-      _dir = fileSystem.directory(path);
+      Directory dir = fileSystem.directory(path);
 
       _downloaded = await _controller.assetsDirAlreadyExists();
-      // TODO check that in every unexpected behavior the folder gets deleted and downloaded is false
       debugPrint("assets ($languageCode) loaded: $_downloaded");
       if (!_downloaded) await _download();
+      _downloaded = true;
 
       // Store the size of the downloaded directory
-      int sizeInKB = await _calculateMemoryUsage();
+      int sizeInKB = await _calculateMemoryUsage(dir);
 
-      _timestamp = await _getTimestamp();
-      _commitsSinceDownload = await _fetchLatestCommits();
+      // Get the timestamp: When were our contents stored on the device?
+      FileStat stat =
+          await FileStat.stat(join(path, 'structure', 'contents.json'));
+      DateTime timestamp = stat.changed; // TODO is this UTC or local time?
+
+      // TODO: Move this somewhere else (See #87)
+      if (await _fetchCommitCount(timestamp) > 0) {
+        _updatesAvailable = true;
+        ref.read(updatesAvailableProvider.notifier).state = true;
+      }
 
       // Read structure/contents.json as our source of truth:
       // Which pages are available, what is the order in the menu
@@ -127,14 +131,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
           .file(join(path, 'structure', 'contents.json'))
           .readAsStringSync());
 
-      /// Holds our pages identified by their English name (e.g. "Hearing_from_God")
       final Map<String, Page> pages = {};
-
-      /// Define the order of pages in the menu: List of page names
-      /// Not all pages must be in the menu, so every item in this list must be
-      /// in _pages, but not every item of _pages must be in this list
       final List<String> pageIndex = [];
-
       final Map<String, Image> images = {};
 
       for (var element in structure["worksheets"]) {
@@ -143,8 +141,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
         pages[element['page']] = Page(element['page'], element['title'],
             element['filename'], element['version']);
       }
-
-      await _checkConsistency(pages);
+      await _checkConsistency(dir, pages);
 
       // Register available images
       await for (var file in fileSystem
@@ -156,101 +153,68 @@ class LanguageController extends FamilyNotifier<Language, String> {
           debugPrint("Found unexpected element $file in files/ directory");
         }
       }
-      state = Language(
-          languageCode, pages, pageIndex, images, sizeInKB, _timestamp!);
-      return _commitsSinceDownload;
+      state =
+          Language(languageCode, pages, pageIndex, images, sizeInKB, timestamp);
     } catch (e) {
       String msg = "Error initializing data structure: $e";
       debugPrint(msg);
-      // Delete the whole folder (TODO make sure this is called in every unexpected situation)
+      // Delete the whole folder
       _downloaded = false;
       _controller.clearAssets();
       throw Exception(msg);
     }
   }
 
+  /// Download all files for one language via DownloadAssetsController
   Future _download() async {
     debugPrint("Starting downloadLanguage: $languageCode ...");
     String remoteUrl = Globals.urlStart + languageCode + Globals.urlEnd;
 
-    try {
-      await _controller.startDownload(
-        assetsUrls: [remoteUrl],
-        onProgress: (progressValue) {
-          if (progressValue < 20) {
-            // The value goes for some reason only up to 18.7 or so ...
-            String progress = "Downloading $languageCode: ";
+    await _controller.startDownload(
+      assetsUrls: [remoteUrl],
+      onProgress: (progressValue) {
+        if (progressValue < 20) {
+          // The value goes for some reason only up to 18.7 or so ...
+          String progress = "Downloading $languageCode: ";
 
-            for (int i = 0; i < 20; i++) {
-              progress += (i <= progressValue) ? "|" : ".";
-            }
-            //debugPrint("$progress ${progressValue.round()}");
-          } else {
-            debugPrint("Download completed");
-            _downloaded = true;
+          for (int i = 0; i < 20; i++) {
+            progress += (i <= progressValue) ? "|" : ".";
           }
-        },
-      );
-    } on DownloadAssetsException catch (e) {
-      debugPrint(e.toString());
-      _downloaded = false;
-      _controller.clearAssets();
-    }
+          //debugPrint("$progress ${progressValue.round()}");
+        } else {
+          debugPrint("Download completed");
+        }
+      },
+    );
   }
 
   /// Return the total size of all files in our directory in kB
-  Future<int> _calculateMemoryUsage() async {
-    var files = await _dir.list(recursive: true).toList();
+  Future<int> _calculateMemoryUsage(Directory dir) async {
+    var files = await dir.list(recursive: true).toList();
     var sizeInBytes =
         files.fold(0, (int sum, file) => sum + file.statSync().size);
     return (sizeInBytes / 1000).ceil(); // let's never round down
   }
 
-  Future<DateTime> _getTimestamp() async {
-    DateTime timestamp = DateTime.now();
-
-    try {
-      await for (var file in _dir.list(recursive: false, followLinks: false)) {
-        if (file is File) {
-          FileStat stat = await FileStat.stat(file.path);
-          timestamp = stat.changed;
-          break;
-        }
-      }
-    } catch (e) {
-      String msg = "Error getting timestamp: $e";
-      debugPrint(msg);
-      throw Exception(msg);
-    }
-    debugPrint(timestamp.toString());
-    return timestamp;
-  }
-
-  /// returns 0 if there was some error
-  Future<int> _fetchLatestCommits() async {
-    // TODO this should be rewritten a bit: what exactly do we return here?
-    if (_timestamp == null) {
-      return 0;
-    }
-    var t = _timestamp!.subtract(const Duration(
-        days: 0)); // TODO just for testing, use timestamp instead
+  /// Query git html repository whether there are updates available:
+  /// How many commits are in our data repository since [since]?
+  /// Return values: 0 = no updates available; > 0: updates available; -1: error
+  Future<int> _fetchCommitCount(DateTime since) async {
+    // since = since.subtract(const Duration(days: 100)); // for testing
     var uri = Globals.latestCommitsStart +
         languageCode +
         Globals.latestCommitsEnd +
-        t.toIso8601String();
+        since.toIso8601String();
     debugPrint(uri);
     final response = await http.get(Uri.parse(uri));
 
     if (response.statusCode == 200) {
-      // = OK response
-      var data = json.decode(response.body);
-      int commits = data.length;
-      debugPrint(
-          "Found $commits new commits since download on $t ($languageCode)");
+      int commits = json.decode(response.body).length;
+      debugPrint("Found $commits new commits since $since ($languageCode)");
       return commits;
     } else {
       debugPrint("Failed to fetch latest commits ${response.statusCode}");
-      return 0;
+      return -1;
     }
   }
 
@@ -260,9 +224,10 @@ class LanguageController extends FamilyNotifier<Language, String> {
   /// TODO maybe remove this function on startup. Rather implement gracious
   /// error handling if a page we expect to be there can't be loaded because
   /// a HTML file is missing...
-  Future<void> _checkConsistency(final Map<String, Page> pages) async {
+  Future<void> _checkConsistency(
+      Directory dir, final Map<String, Page> pages) async {
     Set<String> files = {};
-    await for (var file in _dir.list(recursive: false, followLinks: false)) {
+    await for (var file in dir.list(recursive: false, followLinks: false)) {
       if (file is File) {
         files.add(basename(file.path));
       }
@@ -274,11 +239,6 @@ class LanguageController extends FamilyNotifier<Language, String> {
       }
     });
     if (files.isNotEmpty) debugPrint("Warning: Found orphaned files $files");
-  }
-
-  Future<void> removeResources() async {
-    _downloaded = false;
-    await _controller.clearAssets();
   }
 }
 
@@ -325,13 +285,13 @@ class Language {
 
   final Map<String, Image> images;
 
-  final DateTime timestamp; // TODO
-  final int commitsSinceDownload = 0; // TODO
+  /// When were the files downloaded on our device? (file system attribute)
+  final DateTime downloadTimestamp;
 
   /// We use dependency injection (optional parameters [assetsController] and
   /// [fileSystem]) so that we can test the class well
   const Language(this.languageCode, this.pages, this.pageIndex, this.images,
-      this.sizeInKB, this.timestamp)
+      this.sizeInKB, this.downloadTimestamp)
       : remoteUrl = Globals.urlStart + languageCode + Globals.urlEnd;
 
   /// Returns an list with all the worksheet titles in the menu.
@@ -343,15 +303,4 @@ class Language {
     }
     return titles;
   }
-
-  /// Returns the timestamp in a human readable string, converted to local time
-  String formatTimestamp() {
-    DateTime localTime = timestamp.add(DateTime.now().timeZoneOffset);
-    return DateFormat('yyyy-MM-dd HH:mm').format(localTime);
-  }
-}
-
-String imageToBase64(File image) {
-  List<int> imageBytes = image.readAsBytesSync();
-  return base64Encode(imageBytes);
 }
