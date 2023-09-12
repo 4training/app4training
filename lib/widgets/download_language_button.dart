@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:four_training/data/updates.dart';
 import '../data/languages.dart';
 
 class DownloadLanguageButton extends ConsumerWidget {
@@ -15,6 +16,9 @@ class DownloadLanguageButton extends ConsumerWidget {
         onPressed: () async {
           // TODO: Add some feedback while we're loading (Circular progress indicator; snackbar message when finished)
           await lang.init();
+          ref
+              .read(downloadLanguageProvider(languageCode).notifier)
+              .setDownload(true);
         },
         icon: const Icon(Icons.download));
   }

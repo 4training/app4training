@@ -54,3 +54,30 @@ final checkFrequencyProvider =
     NotifierProvider<CheckFrequencyNotifier, CheckFrequency>(() {
   return CheckFrequencyNotifier();
 });
+
+/// Handle persisting the downloadLanguage setting in the SharedPreferences
+class DownloadLanguageNotifier extends FamilyNotifier<bool, String> {
+  String lang = ''; // language code
+
+  @override
+  bool build(String arg) {
+    lang = arg;
+    // Load the value stored in the SharedPreferences
+    return ref.read(sharedPrefsProvider).getBool('download_$lang') ?? false;
+  }
+
+  void setDownload(bool download) {
+    state = download;
+    ref.read(sharedPrefsProvider).setBool('download_$lang', download);
+  }
+}
+
+/// Global state: Should we download specific language and provide it offline?
+/// This setting is saved in the SharedPreferences.
+///
+/// Example: Should we download the German resources?
+/// bool downloadDe = ref.watch(downloadLanguageProvider('de'))
+final downloadLanguageProvider =
+    NotifierProvider.family<DownloadLanguageNotifier, bool, String>(() {
+  return DownloadLanguageNotifier();
+});

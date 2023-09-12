@@ -1,50 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:four_training/data/updates.dart';
 
-class CheckBoxDownloadLanguage extends StatefulWidget {
+/// Should the language be downloaded?
+/// Displays a checkbox icon if yes, otherwise just blank
+/// TODO: This is now no CheckBox anymore - rename this class
+class CheckBoxDownloadLanguage extends ConsumerWidget {
   final String languageCode;
 
-  const CheckBoxDownloadLanguage({Key? key, required this.languageCode})
-      : super(key: key);
+  const CheckBoxDownloadLanguage({super.key, required this.languageCode});
 
   @override
-  State<CheckBoxDownloadLanguage> createState() =>
-      _CheckBoxDownloadLanguageState();
-}
-
-class _CheckBoxDownloadLanguageState extends State<CheckBoxDownloadLanguage> {
-  bool _download = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _getUpdate();
-  }
-
-  Future<void> _getUpdate() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _download = (prefs.getBool('update_${widget.languageCode}') ?? true);
-    });
-  }
-
-  Future<void> _setUpdate(bool? checkboxValue) async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      prefs.setBool('update_${widget.languageCode}', (checkboxValue ?? true));
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Checkbox(
-        value: _download,
-        checkColor: Theme.of(context).colorScheme.primary,
-        onChanged: (bool? value) {
-          setState(() {
-            _download = value!;
-            _setUpdate(value);
-          });
-        });
+  Widget build(BuildContext context, WidgetRef ref) {
+    bool download = ref.watch(downloadLanguageProvider(languageCode));
+    return download
+        ? const Padding(padding: EdgeInsets.all(4), child: Icon(Icons.check))
+        : const SizedBox(width: 32);
   }
 }

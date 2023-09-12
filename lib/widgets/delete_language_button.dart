@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
+import 'package:four_training/data/updates.dart';
 import 'package:four_training/widgets/cant_delete_alert_dialog.dart';
 import '../data/languages.dart';
 
@@ -22,6 +23,9 @@ class DeleteLanguageButton extends ConsumerWidget {
 //                showDialog(
 //                    context: context, builder: buildPopupDialogCantDelete);
               await lang.deleteResources();
+              ref
+                  .read(downloadLanguageProvider(languageCode).notifier)
+                  .setDownload(false);
             },
       icon: const Icon(Icons.delete),
       color: Theme.of(context).colorScheme.primary,
