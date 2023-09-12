@@ -73,7 +73,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
   final DownloadAssetsController _controller;
 
   /// full local path to directory holding all content
-  late final String path;
+// TODO  late final String path;
+  String path = '';
 
   /// Did we download all content?
   bool _downloaded = false;
@@ -82,8 +83,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
   bool _updatesAvailable = false;
   bool get updatesAvailable => _updatesAvailable;
 
-  /// We use dependency injection (optional parameters [assetsController] and
-  /// [fileSystem]) so that we can test the class well
+  /// We use dependency injection (optional parameters [assetsController])
+  /// so that we can test the class well
   LanguageController({DownloadAssetsController? assetsController})
       : _controller = assetsController ?? DownloadAssetsController();
 
@@ -163,6 +164,13 @@ class LanguageController extends FamilyNotifier<Language, String> {
       _controller.clearAssets();
       throw Exception(msg);
     }
+  }
+
+  // TODO: are there race conditions possible in our LanguageController?
+  Future<void> deleteResources() async {
+    _downloaded = false;
+    await _controller.clearAssets();
+    state = Language('', {}, [], {}, 0, DateTime(2023, 1, 1));
   }
 
   /// Download all files for one language via DownloadAssetsController

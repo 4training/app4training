@@ -5,30 +5,24 @@ import 'package:four_training/widgets/cant_delete_alert_dialog.dart';
 import '../data/languages.dart';
 
 class DeleteLanguageButton extends ConsumerWidget {
-  const DeleteLanguageButton({Key? key, required this.languageCode})
-      : super(key: key);
+  final bool isDisabled;
+  const DeleteLanguageButton(
+      {super.key, required this.languageCode, this.isDisabled = false});
 
   final String languageCode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-//    Language language = ref.read(languageProvider);
+    LanguageController lang = ref.read(languageProvider(languageCode).notifier);
 
     return IconButton(
-      onPressed: null,
-/* TODO     isDisabled
+      onPressed: isDisabled
           ? null
           : () async {
-              if (language.languageCode ==
-                  context.global.currentLanguage?.languageCode) {
-                showDialog(
-                    context: context, builder: buildPopupDialogCantDelete);
-              } else {
-                await language.removeResources();
-                if (mounted) context.global.languages.remove(language);
-              }
-              widget.callback();
-            },*/
+//                showDialog(
+//                    context: context, builder: buildPopupDialogCantDelete);
+              await lang.deleteResources();
+            },
       icon: const Icon(Icons.delete),
       color: Theme.of(context).colorScheme.primary,
     );

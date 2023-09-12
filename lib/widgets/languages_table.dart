@@ -45,11 +45,8 @@ class LanguagesTable extends ConsumerWidget {
             height: 32,
             alignment: Alignment.centerLeft,
             child: lang.downloaded
-                ? DownloadLanguageButton(
-                    languageCode: languageCode, callback: () {})
-                : DeleteLanguageButton(
-                    languageCode: languageCode,
-                  )),
+                ? DeleteLanguageButton(languageCode: languageCode)
+                : DownloadLanguageButton(languageCode: languageCode)),
       ]));
     }
 
