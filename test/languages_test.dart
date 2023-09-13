@@ -113,7 +113,6 @@ void main() {
           expect(e.toString(), contains('No such file or directory'));
         }
         expect(deTest.downloaded, false);
-        expect(deTest.path, equals('assets-de/test-html-de-main'));
       });
 
       test('Test error handling when structure is inconsistent', () async {
@@ -171,6 +170,7 @@ void main() {
             'Schritte der Vergebung'
           ]));
       expect(deTest.state.sizeInKB, 79);
+      expect(deTest.state.path, equals('assets-de/test-html-de-main'));
     });
   });
 }

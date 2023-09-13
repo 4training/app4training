@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:four_training/data/updates.dart';
 import 'package:four_training/routes/routes.dart';
 import 'package:four_training/widgets/loading_animation.dart';
 
@@ -17,10 +18,11 @@ class StartupPage extends ConsumerWidget {
 
   /// Make sure we have all the resources downloaded in the languages we want
   /// and load the structure
-  /// TODO currently we're loading all availableLanguages
   Future initResources(WidgetRef ref) async {
     for (String languageCode in Globals.availableLanguages) {
-      await ref.read(languageProvider(languageCode).notifier).init();
+      if (ref.read(downloadLanguageProvider(languageCode))) {
+        await ref.read(languageProvider(languageCode).notifier).init();
+      }
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:four_training/data/app_language.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/l10n/l10n.dart';
 
@@ -63,7 +64,17 @@ class DownloadLanguageNotifier extends FamilyNotifier<bool, String> {
   bool build(String arg) {
     lang = arg;
     // Load the value stored in the SharedPreferences
-    return ref.read(sharedPrefsProvider).getBool('download_$lang') ?? false;
+    bool? value = ref.read(sharedPrefsProvider).getBool('download_$lang');
+    if (value != null) return value;
+
+    // Default: download resources in English + app language
+    // (but user may delete even them)
+    String appLanguage = ref.read(appLanguageProvider).languageCode;
+    if ((lang == 'en') || (lang == appLanguage)) {
+      ref.read(sharedPrefsProvider).setBool('download_$lang', true);
+      return true;
+    }
+    return false;
   }
 
   void setDownload(bool download) {
@@ -77,6 +88,7 @@ class DownloadLanguageNotifier extends FamilyNotifier<bool, String> {
 ///
 /// Example: Should we download the German resources?
 /// bool downloadDe = ref.watch(downloadLanguageProvider('de'))
+/// TODO: This could/should be integrated into [LanguageController]
 final downloadLanguageProvider =
     NotifierProvider.family<DownloadLanguageNotifier, bool, String>(() {
   return DownloadLanguageNotifier();

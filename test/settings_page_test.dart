@@ -31,7 +31,8 @@ class TestLanguageController extends LanguageController {
   @override
   Language build(String arg) {
     // Return dummy Language object using 42 kB
-    return Language('', {}, [], {}, 42, DateTime(2023, 1, 1));
+    return Language(
+        '', const {}, const [], const {}, '', 42, DateTime(2023, 1, 1));
   }
 }
 

@@ -17,16 +17,24 @@ final fileSystemProvider = Provider<FileSystem>((ref) {
 typedef Resource = ({String name, String langCode});
 
 /// Provide image data (base64-encoded)
+/// Returns empty string in case something went wrong
+/// TODO improve error handling
 final imageContentProvider = Provider.family<String, Resource>((ref, res) {
-  final String path = ref.watch(languageProvider(res.langCode).notifier).path;
+  final String path = ref.watch(languageProvider(res.langCode)).path;
+  if (path == '') {
+    debugPrint(
+        "Error: Can't load image ${res.name} in language ${res.langCode}");
+    return '';
+  }
   final fileSystem = ref.watch(fileSystemProvider);
-  // TODO add error handling
   File image = fileSystem.file(join(path, 'files', res.name));
   debugPrint("Successfully loaded ${res.name}");
   return base64Encode(image.readAsBytesSync());
 });
 
 /// Provide HTML content of a specific page in a specific language
+/// Returns empty string in case something went wrong
+/// TODO: improve error handling
 final pageContentProvider =
     FutureProvider.family<String, Resource>((ref, page) async {
   final fileSystem = ref.watch(fileSystemProvider);
@@ -37,11 +45,15 @@ final pageContentProvider =
         "Internal error: Couldn't find page ${page.name}/${page.langCode}");
     return '';
   }
+  if (lang.path == '') {
+    debugPrint('Error: Language ${lang.languageCode} not available.');
+    return '';
+  }
 
   debugPrint("Fetching content of '${page.name}/${page.langCode}'...");
-  String path = ref.watch(languageProvider(page.langCode).notifier).path;
-  String content =
-      await fileSystem.file(join(path, pageDetails.fileName)).readAsString();
+  String content = await fileSystem
+      .file(join(lang.path, pageDetails.fileName))
+      .readAsString();
 
   // Load images directly into the HTML:
   // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
@@ -67,14 +79,9 @@ final languageProvider =
   return LanguageController();
 });
 
-/// late members will be initialized after calling init()
 class LanguageController extends FamilyNotifier<Language, String> {
   String languageCode = '';
   final DownloadAssetsController _controller;
-
-  /// full local path to directory holding all content
-// TODO  late final String path;
-  String path = '';
 
   /// Did we download all content?
   bool _downloaded = false;
@@ -91,7 +98,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
   @override
   Language build(String arg) {
     languageCode = arg;
-    return Language('', {}, [], {}, 0, DateTime(2023, 1, 1));
+    return Language(
+        '', const {}, const [], const {}, '', 0, DateTime(2023, 1, 1));
   }
 
   Future<void> init() async {
@@ -100,7 +108,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
 
     try {
       // Now we store the full path to the language
-      path = _controller.assetsDir! +
+      String path = _controller.assetsDir! +
           Globals.pathStart +
           languageCode +
           Globals.pathEnd;
@@ -154,8 +162,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
           debugPrint("Found unexpected element $file in files/ directory");
         }
       }
-      state =
-          Language(languageCode, pages, pageIndex, images, sizeInKB, timestamp);
+      state = Language(
+          languageCode, pages, pageIndex, images, path, sizeInKB, timestamp);
     } catch (e) {
       String msg = "Error initializing data structure: $e";
       debugPrint(msg);
@@ -170,12 +178,14 @@ class LanguageController extends FamilyNotifier<Language, String> {
   Future<void> deleteResources() async {
     _downloaded = false;
     await _controller.clearAssets();
-    state = Language('', {}, [], {}, 0, DateTime(2023, 1, 1));
+    state =
+        Language('', const {}, const [], const {}, '', 0, DateTime(2023, 1, 1));
   }
 
   /// Download all files for one language via DownloadAssetsController
   Future _download() async {
     debugPrint("Starting downloadLanguage: $languageCode ...");
+    // URL of the zip file to be downloaded
     String remoteUrl = Globals.urlStart + languageCode + Globals.urlEnd;
 
     await _controller.startDownload(
@@ -188,7 +198,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
           for (int i = 0; i < 20; i++) {
             progress += (i <= progressValue) ? "|" : ".";
           }
-          //debugPrint("$progress ${progressValue.round()}");
+          debugPrint("$progress ${progressValue.round()}");
         } else {
           debugPrint("Download completed");
         }
@@ -250,7 +260,9 @@ class LanguageController extends FamilyNotifier<Language, String> {
   }
 }
 
-/// A page with HTML code: content is loaded on demand
+/// Holds properties of a page.
+/// HTML content is loaded on demand via the pageContentProvider
+@immutable
 class Page {
   /// English identifier
   final String name;
@@ -263,25 +275,21 @@ class Page {
 
   final String version;
 
-  Page(this.name, this.title, this.fileName, this.version);
+  const Page(this.name, this.title, this.fileName, this.version);
 }
 
-/// Images to be used in pages: content is loaded on demand
+/// Holds properties of an image.
+/// Content is loaded on demand via the imageContentProvider
+@immutable
 class Image {
   final String name;
 
-  Image(this.name);
+  const Image(this.name);
 }
 
 @immutable
 class Language {
   final String languageCode;
-
-  /// URL of the zip file to be downloaded
-  final String remoteUrl;
-
-  /// The size of the downloaded directory (kB = kilobytes)
-  final int sizeInKB;
 
   /// Holds our pages identified by their English name (e.g. "Hearing_from_God")
   final Map<String, Page> pages;
@@ -293,14 +301,17 @@ class Language {
 
   final Map<String, Image> images;
 
+  /// local path to the directory holding all content
+  final String path;
+
+  /// The size of the downloaded directory (kB = kilobytes)
+  final int sizeInKB;
+
   /// When were the files downloaded on our device? (file system attribute)
   final DateTime downloadTimestamp;
 
-  /// We use dependency injection (optional parameters [assetsController] and
-  /// [fileSystem]) so that we can test the class well
   const Language(this.languageCode, this.pages, this.pageIndex, this.images,
-      this.sizeInKB, this.downloadTimestamp)
-      : remoteUrl = Globals.urlStart + languageCode + Globals.urlEnd;
+      this.path, this.sizeInKB, this.downloadTimestamp);
 
   /// Returns an list with all the worksheet titles in the menu.
   /// The list is ordered as identifier -> translated title
