@@ -22,9 +22,10 @@ class LanguagesTable extends ConsumerWidget {
 
     // Add a table row for each language
     for (var languageCode in Globals.availableLanguages) {
+      // watch this to rebuild if a Language object gets renewed
+      ref.watch(languageProvider(languageCode));
       LanguageController lang =
           ref.watch(languageProvider(languageCode).notifier);
-      Language language = ref.watch(languageProvider(languageCode));
       rows.add(TableRow(children: [
         Container(
             height: 32,
@@ -39,14 +40,14 @@ class LanguagesTable extends ConsumerWidget {
             height: 32,
             alignment: Alignment.centerLeft,
             child: lang.downloaded && lang.updatesAvailable
-                ? UpdateLanguageButton(language: language, callback: () {})
+                ? UpdateLanguageButton(languageCode)
                 : const Text("")),
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
             child: lang.downloaded
-                ? DeleteLanguageButton(languageCode: languageCode)
-                : DownloadLanguageButton(languageCode: languageCode)),
+                ? DeleteLanguageButton(languageCode)
+                : DownloadLanguageButton(languageCode)),
       ]));
     }
 

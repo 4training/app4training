@@ -59,7 +59,7 @@ class _CheckNowButtonState extends State<CheckNowButton> {
             await newLanguage.init();
             if(mounted) context.global.languages.add(newLanguage);
           } TODO */
-          await Future.delayed(Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 2));
           setState(() {
             _isLoading = false;
           });

@@ -6,11 +6,10 @@ import 'package:four_training/widgets/cant_delete_alert_dialog.dart';
 import '../data/languages.dart';
 
 class DeleteLanguageButton extends ConsumerWidget {
-  final bool isDisabled;
-  const DeleteLanguageButton(
-      {super.key, required this.languageCode, this.isDisabled = false});
-
   final String languageCode;
+  final bool isDisabled;
+  const DeleteLanguageButton(this.languageCode,
+      {super.key, this.isDisabled = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

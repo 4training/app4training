@@ -1,35 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:four_training/data/globals.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:four_training/data/updates.dart';
 import '../data/languages.dart';
 
-class UpdateLanguageButton extends StatefulWidget {
-  const UpdateLanguageButton(
-      {Key? key, required this.language, required this.callback})
-      : super(key: key);
-
-  final Language language;
-  final Function callback;
+class UpdateLanguageButton extends ConsumerWidget {
+  final String languageCode;
+  const UpdateLanguageButton(this.languageCode, {super.key});
 
   @override
-  State<UpdateLanguageButton> createState() => _UpdateLanguageButtonState();
-}
-
-class _UpdateLanguageButtonState extends State<UpdateLanguageButton> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    LanguageController lang = ref.read(languageProvider(languageCode).notifier);
     return IconButton(
-        onPressed: null,
-        /* TODO () async {
-          // Delete language
-          String languageCode = widget.language.languageCode;
-          await widget.language.removeResources();
-          if(mounted) context.global.languages.remove(widget.language);
-          // Download language
-          Language newLanguage = Language(languageCode);
-          await newLanguage.init();
-          if(mounted) context.global.languages.add(newLanguage);
-          widget.callback();
-        },*/
+        onPressed: () async {
+          await lang.deleteResources();
+          await lang.init();
+          ref
+              .read(downloadLanguageProvider(languageCode).notifier)
+              .setDownload(true);
+        },
         icon: const Icon(Icons.refresh));
   }
 }

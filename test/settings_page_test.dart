@@ -27,9 +27,10 @@ class TestSettingsPage extends ConsumerWidget {
   }
 }
 
-class TestLanguageController extends LanguageController {
+class DummyLanguageController extends LanguageController {
   @override
   Language build(String arg) {
+    languageCode = arg;
     // Return dummy Language object using 42 kB
     return Language(
         '', const {}, const [], const {}, '', 42, DateTime(2023, 1, 1));
@@ -81,7 +82,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final testLanguageProvider =
         NotifierProvider.family<LanguageController, Language, String>(() {
-      return TestLanguageController();
+      return DummyLanguageController();
     });
 
     await tester.pumpWidget(ProviderScope(overrides: [

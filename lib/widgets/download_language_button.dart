@@ -5,7 +5,7 @@ import '../data/languages.dart';
 
 class DownloadLanguageButton extends ConsumerWidget {
   final String languageCode;
-  const DownloadLanguageButton({super.key, required this.languageCode});
+  const DownloadLanguageButton(this.languageCode, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
