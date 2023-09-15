@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/data/languages.dart';
+import 'package:four_training/data/updates.dart';
 import 'package:four_training/widgets/checkbox_download_language.dart';
 import 'package:four_training/widgets/delete_language_button.dart';
 import 'package:four_training/widgets/download_language_button.dart';
@@ -24,8 +25,7 @@ class LanguagesTable extends ConsumerWidget {
     for (var languageCode in Globals.availableLanguages) {
       // watch this to rebuild if a Language object gets renewed
       Language lang = ref.watch(languageProvider(languageCode));
-      LanguageController langController =
-          ref.watch(languageProvider(languageCode).notifier);
+      LanguageStatus status = ref.watch(languageStatusProvider(languageCode));
       rows.add(TableRow(children: [
         Container(
             height: 32,
@@ -39,7 +39,7 @@ class LanguagesTable extends ConsumerWidget {
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child: lang.downloaded && langController.updatesAvailable
+            child: lang.downloaded && status.updatesAvailable
                 ? UpdateLanguageButton(languageCode)
                 : const Text("")),
         Container(

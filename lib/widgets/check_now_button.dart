@@ -1,40 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:four_training/data/updates.dart';
 import '../data/globals.dart';
 
 /// Button on the settings page to check for available updates
-class CheckNowButton extends StatefulWidget {
-  const CheckNowButton(
-      {Key? key, required this.buttonText, required this.callback})
-      : super(key: key);
-
+class CheckNowButton extends ConsumerStatefulWidget {
   final String buttonText;
-  final Function callback;
+  const CheckNowButton({super.key, required this.buttonText});
 
   @override
-  State<CheckNowButton> createState() => _CheckNowButtonState();
+  ConsumerState<CheckNowButton> createState() => _CheckNowButtonState();
 }
 
-class _CheckNowButtonState extends State<CheckNowButton> {
-  final List<String> _updateList = [];
-  bool _isLoading = false;
-
-  // Get the data which languages should be updated
-  Future<void> _getUpdate() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      for (String languageCode in Globals.availableLanguages) {
-        bool update = prefs.getBool('update_$languageCode') ?? false;
-        if (update) _updateList.add(languageCode);
-      }
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _getUpdate();
-  }
+/// While we're checking for updates a loading animation is shown in the button
+class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
+  bool _isLoading = false; // our state
 
   @override
   Widget build(BuildContext context) {
@@ -42,28 +22,27 @@ class _CheckNowButtonState extends State<CheckNowButton> {
         style: ElevatedButton.styleFrom(
             shape: const StadiumBorder(), fixedSize: const Size(150, 36)),
         onPressed: () async {
-          // Loading animation while loading
           setState(() {
             _isLoading = true;
           });
 
+          DateTime timestamp = DateTime.now();
+          bool hasError = false;
           // Each language in the list first gets deleted and then initialized again
-/*          for (String languageCode in _updateList) {
-            Language language = context.global.languages
-                .firstWhere((element) => element.languageCode == languageCode);
-            await language.removeResources();
-            if(mounted) context.global.languages.remove(language);
-
-            Language newLanguage = Language(languageCode);
-            await newLanguage.init();
-            if(mounted) context.global.languages.add(newLanguage);
-          } TODO */
-          await Future.delayed(const Duration(seconds: 2));
+          for (String languageCode in Globals.availableLanguages) {
+            // We don't check languages that are not downloaded
+            if (!ref.watch(downloadLanguageProvider(languageCode))) continue;
+            int result = await ref
+                .read(languageStatusProvider(languageCode).notifier)
+                .check();
+            if (result < 0) hasError = true;
+          }
+          if (!hasError) {
+            ref.read(lastCheckedProvider.notifier).state = timestamp;
+          }
           setState(() {
             _isLoading = false;
           });
-
-          widget.callback();
         },
         child: _isLoading // Show Text or loading animation depending on state
             ? SizedBox(

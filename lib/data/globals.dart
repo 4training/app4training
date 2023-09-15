@@ -17,9 +17,6 @@ class ProviderNotOverriddenException implements Exception {
   }
 }
 
-/// Are there updates available in any of our languages?
-final updatesAvailableProvider = StateProvider<bool>((ref) => false);
-
 /// global constants
 class Globals {
   static const List<String> availableLanguages = ["en", "de"];

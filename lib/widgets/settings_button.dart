@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/data/globals.dart';
+import 'package:four_training/data/updates.dart';
 
 /// Button in the top right corner of the main view to open the settings page
 /// Adds a colorful mark to the icon in case there are updates available

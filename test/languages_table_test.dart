@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:four_training/data/languages.dart';
+import 'package:four_training/data/updates.dart';
 import 'package:four_training/widgets/languages_table.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'settings_page_test.dart';
 
-// Simulate that German is downloaded and has updates available
+// Simulate that German is downloaded
 class TestLanguageController extends DummyLanguageController {
   @override
   Language build(String arg) {
@@ -17,12 +18,13 @@ class TestLanguageController extends DummyLanguageController {
     return Language(
         languageCode, const {}, const [], const {}, '', 0, DateTime(2023));
   }
+}
 
-// ignore: avoid_public_notifier_properties
+// Simulate that German has updates available
+class TestLanguageStatusNotifier extends LanguageStatusNotifier {
   @override
-  bool get updatesAvailable {
-    if (languageCode == 'de') return true;
-    return false;
+  LanguageStatus build(String arg) {
+    return LanguageStatus(arg == 'de', DateTime(2023));
   }
 }
 
@@ -55,13 +57,19 @@ void main() {
         NotifierProvider.family<LanguageController, Language, String>(() {
       return TestLanguageController();
     });
+    final testLanguageStatusProvider =
+        NotifierProvider.family<LanguageStatusNotifier, LanguageStatus, String>(
+            () {
+      return TestLanguageStatusNotifier();
+    });
 
     SharedPreferences.setMockInitialValues(
         {'download_de': true, 'download_en': false});
     final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
+      languageProvider.overrideWithProvider(testLanguageProvider),
+      languageStatusProvider.overrideWithProvider(testLanguageStatusProvider)
     ], child: const MaterialApp(home: Scaffold(body: LanguagesTable()))));
 
     expect(find.text('DE'), findsOneWidget);

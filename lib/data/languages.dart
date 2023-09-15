@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart';
-import 'package:http/http.dart' as http;
 
 final fileSystemProvider = Provider<FileSystem>((ref) {
   return const LocalFileSystem();
@@ -84,11 +83,6 @@ class LanguageController extends FamilyNotifier<Language, String> {
   String languageCode = '';
   final DownloadAssetsController _controller;
 
-  bool _updatesAvailable = false;
-  // TODO: this should go probably into the Language class - see #87
-  // ignore: avoid_public_notifier_properties
-  bool get updatesAvailable => _updatesAvailable;
-
   /// We use dependency injection (optional parameters [assetsController])
   /// so that we can test the class well
   LanguageController({DownloadAssetsController? assetsController})
@@ -126,12 +120,6 @@ class LanguageController extends FamilyNotifier<Language, String> {
       FileStat stat =
           await FileStat.stat(join(path, 'structure', 'contents.json'));
       DateTime timestamp = stat.changed; // TODO is this UTC or local time?
-
-      // TODO: Move this somewhere else (See #87)
-      if (await _fetchCommitCount(timestamp) > 0) {
-        _updatesAvailable = true;
-        ref.read(updatesAvailableProvider.notifier).state = true;
-      }
 
       // Read structure/contents.json as our source of truth:
       // Which pages are available, what is the order in the menu
@@ -209,28 +197,6 @@ class LanguageController extends FamilyNotifier<Language, String> {
     var sizeInBytes =
         files.fold(0, (int sum, file) => sum + file.statSync().size);
     return (sizeInBytes / 1000).ceil(); // let's never round down
-  }
-
-  /// Query git html repository whether there are updates available:
-  /// How many commits are in our data repository since [since]?
-  /// Return values: 0 = no updates available; > 0: updates available; -1: error
-  Future<int> _fetchCommitCount(DateTime since) async {
-    // since = since.subtract(const Duration(days: 100)); // for testing
-    var uri = Globals.latestCommitsStart +
-        languageCode +
-        Globals.latestCommitsEnd +
-        since.toIso8601String();
-    debugPrint(uri);
-    final response = await http.get(Uri.parse(uri));
-
-    if (response.statusCode == 200) {
-      int commits = json.decode(response.body).length;
-      debugPrint("Found $commits new commits since $since ($languageCode)");
-      return commits;
-    } else {
-      debugPrint("Failed to fetch latest commits ${response.statusCode}");
-      return -1;
-    }
   }
 
   /// Check whether all files mentioned in structure/contents.json are present

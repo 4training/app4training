@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:four_training/data/globals.dart';
+import 'package:four_training/data/updates.dart';
 import 'package:four_training/l10n/l10n.dart';
 import 'package:four_training/widgets/check_now_button.dart';
 import 'package:four_training/widgets/dropdownbutton_theme.dart';
 import 'package:four_training/widgets/languages_table.dart';
+import 'package:intl/intl.dart';
 import '../data/languages.dart';
 import '../widgets/dropdownbutton_app_language.dart';
 import '../widgets/dropdownbutton_check_frequency.dart';
@@ -82,12 +84,11 @@ class UpdateSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO
-    // DateTime lastCheck = ref.watch(updatesAvailableProvider);
+    DateTime lastCheck = ref.watch(lastCheckedProvider);
+    // TODO lastCheckProvider should be in UTC and then we need the following conversion
     // Convert into human readable string in local time
     // DateTime localTime = lastCheck.add(DateTime.now().timeZoneOffset);
-    // String timestamp = DateFormat('yyyy-MM-dd HH:mm').format(localTime);
-    String timestamp = 'TODO see #87';
+    String timestamp = DateFormat('yyyy-MM-dd HH:mm').format(lastCheck);
 
     return Column(children: [
       Align(
@@ -118,9 +119,7 @@ class UpdateSettings extends ConsumerWidget {
       const SizedBox(height: 10),
       Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          CheckNowButton(buttonText: context.l10n.checkNow, callback: () {})
-        ],
+        children: [CheckNowButton(buttonText: context.l10n.checkNow)],
       )
     ]);
   }
