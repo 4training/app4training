@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:four_training/data/updates.dart';
+import 'package:app4training/data/updates.dart';
 
 void main() {
   test('Test stringToCheckFrequency: graceful error handling', () {

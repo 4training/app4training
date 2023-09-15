@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/routes/routes.dart';
+import 'package:app4training/routes/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/app_language.dart';
 import 'data/globals.dart';
@@ -13,11 +13,11 @@ void main() async {
 
   runApp(ProviderScope(
       overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-      child: const MyApp()));
+      child: const App4Training()));
 }
 
-class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
+class App4Training extends ConsumerWidget {
+  const App4Training({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

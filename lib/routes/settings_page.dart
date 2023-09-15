@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/data/globals.dart';
-import 'package:four_training/data/updates.dart';
-import 'package:four_training/l10n/l10n.dart';
-import 'package:four_training/widgets/check_now_button.dart';
-import 'package:four_training/widgets/dropdownbutton_theme.dart';
-import 'package:four_training/widgets/languages_table.dart';
+import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/updates.dart';
+import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/widgets/check_now_button.dart';
+import 'package:app4training/widgets/dropdownbutton_theme.dart';
+import 'package:app4training/widgets/languages_table.dart';
 import 'package:intl/intl.dart';
 import '../data/languages.dart';
 import '../widgets/dropdownbutton_app_language.dart';

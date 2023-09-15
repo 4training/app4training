@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/data/app_language.dart';
-import 'package:four_training/data/globals.dart';
-import 'package:four_training/data/languages.dart';
-import 'package:four_training/l10n/l10n.dart';
+import 'package:app4training/data/app_language.dart';
+import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/languages.dart';
+import 'package:app4training/l10n/l10n.dart';
 import 'package:http/http.dart' as http;
 
 /// How often should the app check for updates?

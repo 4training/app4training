@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/data/globals.dart';
-import 'package:four_training/routes/settings_page.dart';
-import 'package:four_training/routes/startup_page.dart';
-import 'package:four_training/routes/view_page.dart';
+import 'package:app4training/data/globals.dart';
+import 'package:app4training/routes/settings_page.dart';
+import 'package:app4training/routes/startup_page.dart';
+import 'package:app4training/routes/view_page.dart';
 
 /// TODO get rid of that page or change it in a way that it's not a dead end anymore
 class ErrorPage extends StatelessWidget {

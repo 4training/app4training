@@ -5,7 +5,7 @@ import 'package:file/memory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:four_training/data/languages.dart';
+import 'package:app4training/data/languages.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as path;
 

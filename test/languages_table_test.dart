@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:four_training/data/globals.dart';
-import 'package:four_training/data/languages.dart';
-import 'package:four_training/data/updates.dart';
-import 'package:four_training/widgets/languages_table.dart';
+import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/languages.dart';
+import 'package:app4training/data/updates.dart';
+import 'package:app4training/widgets/languages_table.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'settings_page_test.dart';

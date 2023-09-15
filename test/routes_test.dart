@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:four_training/data/globals.dart';
-import 'package:four_training/l10n/l10n.dart';
-import 'package:four_training/routes/routes.dart';
-import 'package:four_training/routes/settings_page.dart';
-import 'package:four_training/routes/startup_page.dart';
-import 'package:four_training/routes/view_page.dart';
+import 'package:app4training/data/globals.dart';
+import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/routes/routes.dart';
+import 'package:app4training/routes/settings_page.dart';
+import 'package:app4training/routes/startup_page.dart';
+import 'package:app4training/routes/view_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // For observing the routes that get pushed

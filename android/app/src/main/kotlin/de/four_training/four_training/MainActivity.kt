@@ -1,4 +1,4 @@
-package de.four_training.four_training
+package net.app4training
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/widgets/upward_expansion_tile.dart';
+import 'package:app4training/widgets/upward_expansion_tile.dart';
 
 import '../data/languages.dart';
 import '../routes/view_page.dart';

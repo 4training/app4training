@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:four_training/data/globals.dart';
-import 'package:four_training/widgets/dropdownbutton_app_language.dart';
+import 'package:app4training/data/globals.dart';
+import 'package:app4training/widgets/dropdownbutton_app_language.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

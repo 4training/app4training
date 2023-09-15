@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/data/languages.dart';
-import 'package:four_training/widgets/loading_animation.dart';
-import 'package:four_training/widgets/main_drawer.dart';
-import 'package:four_training/widgets/settings_button.dart';
+import 'package:app4training/data/languages.dart';
+import 'package:app4training/widgets/loading_animation.dart';
+import 'package:app4training/widgets/main_drawer.dart';
+import 'package:app4training/widgets/settings_button.dart';
 
 /// The standard view of this app:
 /// Show a page (worksheet)

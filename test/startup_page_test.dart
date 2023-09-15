@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:four_training/routes/startup_page.dart';
+import 'package:app4training/routes/startup_page.dart';
 
 void main() {
   // Mocking the globalInit() function:

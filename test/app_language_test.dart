@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:four_training/data/app_language.dart';
+import 'package:app4training/data/app_language.dart';
 
 void main() {
   test('Test LocaleWrapper', () {

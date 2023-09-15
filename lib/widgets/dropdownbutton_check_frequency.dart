@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/data/updates.dart';
+import 'package:app4training/data/updates.dart';
 
 class DropdownButtonCheckFrequency extends ConsumerWidget {
   const DropdownButtonCheckFrequency({super.key});

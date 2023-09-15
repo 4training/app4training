@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:four_training/design/colors.dart';
-import 'package:four_training/design/textthemes.dart';
+import 'package:app4training/design/colors.dart';
+import 'package:app4training/design/textthemes.dart';
 import 'appbar_theme.dart';
 import 'color_schemes.dart';
 

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/data/globals.dart';
-import 'package:four_training/data/languages.dart';
-import 'package:four_training/data/updates.dart';
-import 'package:four_training/widgets/checkbox_download_language.dart';
-import 'package:four_training/widgets/delete_language_button.dart';
-import 'package:four_training/widgets/download_language_button.dart';
-import 'package:four_training/widgets/update_language_button.dart';
+import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/languages.dart';
+import 'package:app4training/data/updates.dart';
+import 'package:app4training/widgets/checkbox_download_language.dart';
+import 'package:app4training/widgets/delete_language_button.dart';
+import 'package:app4training/widgets/download_language_button.dart';
+import 'package:app4training/widgets/update_language_button.dart';
 
 /// For the settings page: Show table with list of available languages.
 /// Features:

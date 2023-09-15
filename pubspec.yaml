@@ -1,5 +1,5 @@
-name: four_training
-description: A new Flutter project.
+name: app4training
+description: 4training.net app
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -31,8 +31,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-
   flutter_html: ^3.0.0-beta.2
   path_provider: ^2.0.11
   download_assets: ^3.1.0

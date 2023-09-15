@@ -4,7 +4,7 @@ import 'package:download_assets/download_assets.dart';
 import 'package:file/local.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/data/globals.dart';
+import 'package:app4training/data/globals.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart';
 

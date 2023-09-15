@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:four_training/data/updates.dart';
-import 'package:four_training/routes/routes.dart';
-import 'package:four_training/widgets/loading_animation.dart';
+import 'package:app4training/data/updates.dart';
+import 'package:app4training/routes/routes.dart';
+import 'package:app4training/widgets/loading_animation.dart';
 
 import '../data/globals.dart';
 import '../data/languages.dart';

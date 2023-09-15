@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:four_training/l10n/l10n.dart';
+import 'package:app4training/l10n/l10n.dart';
 
 AlertDialog buildPopupDialogCantDelete(BuildContext context) {
   return AlertDialog(

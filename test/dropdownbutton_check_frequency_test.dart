@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:four_training/data/globals.dart';
-import 'package:four_training/l10n/l10n.dart';
-import 'package:four_training/widgets/dropdownbutton_check_frequency.dart';
+import 'package:app4training/data/globals.dart';
+import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/widgets/dropdownbutton_check_frequency.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

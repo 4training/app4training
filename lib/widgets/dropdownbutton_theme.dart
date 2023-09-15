@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// TODO currently not used - this needs to be refactored by introducing
+// a provider that takes care of persistence into SharedPrefences
 class DropDownButtonTheme extends StatefulWidget {
   const DropDownButtonTheme({Key? key}) : super(key: key);
 
