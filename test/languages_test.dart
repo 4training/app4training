@@ -115,10 +115,10 @@ void main() {
       test('Test error handling when structure is inconsistent', () async {
         var fileSystem = MemoryFileSystem();
         await fileSystem
-            .directory('assets-de/test-html-de-main/structure')
+            .directory('assets-de/html-de-main/structure')
             .create(recursive: true);
-        var contentsJson = fileSystem
-            .file('assets-de/test-html-de-main/structure/contents.json');
+        var contentsJson =
+            fileSystem.file('assets-de/html-de-main/structure/contents.json');
         contentsJson.writeAsString('invalid');
         final container = ProviderContainer(overrides: [
           languageProvider
@@ -164,10 +164,19 @@ void main() {
           deTest.state.getPageTitles().values,
           orderedEquals(const [
             'Gottes Geschichte (fünf Finger)',
-            'Schritte der Vergebung'
+            'Schritte der Vergebung',
+            'MissingTest'
           ]));
-      expect(deTest.state.sizeInKB, 79);
-      expect(deTest.state.path, equals('assets-de/test-html-de-main'));
+      expect(deTest.state.sizeInKB, 80);
+      expect(deTest.state.path, equals('assets-de/html-de-main'));
+
+      // Test some error handling
+      content = await container.read(
+          pageContentProvider((name: 'MissingTest', langCode: 'de')).future);
+      expect(content, contains("Couldn't read page"));
+      content = await container
+          .read(pageContentProvider((name: 'Invalid', langCode: 'de')).future);
+      expect(content, equals(''));
     });
   });
 }

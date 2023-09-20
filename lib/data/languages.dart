@@ -17,7 +17,6 @@ typedef Resource = ({String name, String langCode});
 
 /// Provide image data (base64-encoded)
 /// Returns empty string in case something went wrong
-/// TODO improve error handling
 final imageContentProvider = Provider.family<String, Resource>((ref, res) {
   final String path = ref.watch(languageProvider(res.langCode)).path;
   if (path == '') {
@@ -26,14 +25,18 @@ final imageContentProvider = Provider.family<String, Resource>((ref, res) {
     return '';
   }
   final fileSystem = ref.watch(fileSystemProvider);
-  File image = fileSystem.file(join(path, 'files', res.name));
-  debugPrint("Successfully loaded ${res.name}");
-  return base64Encode(image.readAsBytesSync());
+  try {
+    File image = fileSystem.file(join(path, 'files', res.name));
+    debugPrint('Successfully loaded ${res.name}');
+    return base64Encode(image.readAsBytesSync());
+  } on FileSystemException catch (e) {
+    debugPrint("Couldn't load ${res.name}: $e");
+    return '';
+  }
 });
 
 /// Provide HTML content of a specific page in a specific language
 /// Returns empty string in case something went wrong
-/// TODO: improve error handling
 final pageContentProvider =
     FutureProvider.family<String, Resource>((ref, page) async {
   final fileSystem = ref.watch(fileSystemProvider);
@@ -50,24 +53,28 @@ final pageContentProvider =
   }
 
   debugPrint("Fetching content of '${page.name}/${page.langCode}'...");
-  String content = await fileSystem
-      .file(join(lang.path, pageDetails.fileName))
-      .readAsString();
-
-  // Load images directly into the HTML:
-  // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
-  content =
-      content.replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'), (match) {
-    if (!lang.images.containsKey(match.group(1))) {
-      debugPrint(
-          'Warning: image ${match.group(1)} missing (in ${pageDetails.fileName})');
-      return match.group(0)!;
-    }
-    String imageData = ref.watch(
-        imageContentProvider((name: match.group(1)!, langCode: page.langCode)));
-    return 'src="data:image/png;base64,$imageData"';
-  });
-  return content;
+  try {
+    String content = await fileSystem
+        .file(join(lang.path, pageDetails.fileName))
+        .readAsString();
+    // Load images directly into the HTML:
+    // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
+    content =
+        content.replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'), (match) {
+      if (!lang.images.containsKey(match.group(1))) {
+        debugPrint(
+            'Warning: image ${match.group(1)} missing (in ${pageDetails.fileName})');
+        return match.group(0)!;
+      }
+      String imageData = ref.watch(imageContentProvider(
+          (name: match.group(1)!, langCode: page.langCode)));
+      return 'src="data:image/png;base64,$imageData"';
+    });
+    return content;
+  } on FileSystemException catch (e) {
+    debugPrint(e.toString());
+    return "Internal error: Couldn't read page";
+  }
 });
 
 /// Usage:
@@ -101,10 +108,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
 
     try {
       // Now we store the full path to the language
-      String path = _controller.assetsDir! +
-          Globals.pathStart +
-          languageCode +
-          Globals.pathEnd;
+      String path =
+          '${_controller.assetsDir!}/${Globals.getLocalPath(languageCode)}';
       debugPrint("Path: $path");
       Directory dir = fileSystem.directory(path);
 
@@ -171,7 +176,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
   Future _download() async {
     debugPrint("Starting downloadLanguage: $languageCode ...");
     // URL of the zip file to be downloaded
-    String remoteUrl = Globals.urlStart + languageCode + Globals.urlEnd;
+    String remoteUrl = Globals.getRemoteUrl(languageCode);
 
     await _controller.startDownload(
       assetsUrls: [remoteUrl],

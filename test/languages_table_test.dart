@@ -29,6 +29,7 @@ class TestLanguageStatusNotifier extends LanguageStatusNotifier {
 }
 
 void main() {
+  final int countLanguages = Globals.availableLanguages.length;
   testWidgets('Basic test with no language downloaded',
       (WidgetTester tester) async {
     final testLanguageProvider =
@@ -48,7 +49,7 @@ void main() {
     expect(find.text('EN'), findsOneWidget);
     expect(find.byIcon(Icons.check), findsNothing);
     expect(find.byIcon(Icons.delete), findsNothing);
-    expect(find.byIcon(Icons.download), findsNWidgets(2));
+    expect(find.byIcon(Icons.download), findsNWidgets(countLanguages));
     expect(find.byIcon(Icons.refresh), findsNothing);
   });
   testWidgets('Basic test with only German downloaded',
@@ -78,7 +79,7 @@ void main() {
 
     expect(find.byIcon(Icons.delete), findsOneWidget);
     expect(find.byIcon(Icons.refresh), findsOneWidget);
-    expect(find.byIcon(Icons.download), findsOneWidget);
+    expect(find.byIcon(Icons.download), findsNWidgets(countLanguages - 1));
   });
   // TODO add more tests to check whether icons change according to user interaction
 }

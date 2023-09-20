@@ -19,18 +19,67 @@ class ProviderNotOverriddenException implements Exception {
 
 /// global constants
 class Globals {
-  static const List<String> availableLanguages = ["en", "de"];
+  static const List<String> availableLanguages = [
+    'tr',
+    'zh',
+    'vi',
+    'ro',
+    'ky',
+    'pl',
+    'id',
+    'xh',
+    'uz',
+    'af',
+    'ta',
+    'sr',
+    'ms',
+    'az',
+    'ti',
+    'sw',
+    'nb',
+    'ku',
+    'sv',
+    'ml',
+    'hi',
+    'lg',
+    'kn',
+    'it',
+    'cs',
+    'fa',
+    'ar',
+    'ru',
+    'nl',
+    'fr',
+    'es',
+    'sq',
+    'en',
+    'de'
+  ];
 
   /// Which page is loaded after startup?
   static const String defaultPage = "God's_Story_(five_fingers)";
 
   /// Remote Repository
-  static const String urlStart = "https://github.com/holybiber/test-html-";
-  static const String urlEnd = "/archive/refs/heads/main.zip";
-  static const String pathStart = "/test-html-";
-  static const String pathEnd = "-main";
+  static const String githubUser = '4training';
+  static const String branch = 'main';
+  static const String htmlPath = 'html';
+  static const String remoteZipUrl = '/archive/refs/heads/$branch.zip';
 
-  static const String latestCommitsStart =
-      "https://api.github.com/repos/holybiber/test-html-";
-  static const String latestCommitsEnd = "/commits?since=";
+  /// Url of the zip file for the HTML resources of a language
+  static String getRemoteUrl(String languageCode) {
+    return 'https://github.com/$githubUser/$htmlPath-$languageCode$remoteZipUrl';
+  }
+
+  /// File system path (relative to assets directory)
+  /// of the resources in a language
+  /// Must be the main folder name that is inside the zip file we download
+  static String getLocalPath(String languageCode) {
+    return '$htmlPath-$languageCode-$branch';
+  }
+
+  /// Url of Github API: have been commits since [timestamp]?
+  static String getCommitsSince(String languageCode, DateTime timestamp) {
+    return 'https://api.github.com/repos/$githubUser/$htmlPath-$languageCode'
+        '/commits?since=${timestamp.toIso8601String()}';
+  }
 }

@@ -87,10 +87,8 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
   Future<int> check() async {
     assert(_languageCode != '');
     // since = since.subtract(const Duration(days: 100)); // for testing
-    var uri = Globals.latestCommitsStart +
-        _languageCode +
-        Globals.latestCommitsEnd +
-        state.lastCheckedTimestamp.toIso8601String();
+    var uri =
+        Globals.getCommitsSince(_languageCode, state.lastCheckedTimestamp);
     debugPrint(uri);
     final response = await http.get(Uri.parse(uri));
 

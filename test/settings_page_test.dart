@@ -89,6 +89,7 @@ void main() {
       sharedPrefsProvider.overrideWithValue(prefs),
       languageProvider.overrideWithProvider(testLanguageProvider)
     ], child: const TestSettingsPage()));
-    expect(find.textContaining('84 kB'), findsOneWidget);
+    int expectedSize = 42 * Globals.availableLanguages.length;
+    expect(find.textContaining('$expectedSize kB'), findsOneWidget);
   });
 }
