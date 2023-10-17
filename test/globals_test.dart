@@ -9,8 +9,8 @@ void main() {
             'https://github.com/4training/html-de/archive/refs/heads/main.zip'));
     expect(Globals.getLocalPath('de'), equals('html-de-main'));
     expect(
-        Globals.getCommitsSince('de', DateTime(2023)),
+        Globals.getCommitsSince('de', DateTime.utc(2023)),
         equals(
-            'https://api.github.com/repos/4training/html-de/commits?since=2023-01-01T00:00:00.000'));
+            'https://api.github.com/repos/4training/html-de/commits?since=2023-01-01T00:00:00.000Z'));
   });
 }

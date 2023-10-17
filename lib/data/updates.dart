@@ -65,7 +65,7 @@ final checkFrequencyProvider =
 @immutable
 class LanguageStatus {
   final bool updatesAvailable;
-  final DateTime lastCheckedTimestamp; // local time TODO: save as UTC
+  final DateTime lastCheckedTimestamp; // UTC
   const LanguageStatus(this.updatesAvailable, this.lastCheckedTimestamp);
 }
 
@@ -76,8 +76,8 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
   LanguageStatus build(String arg) {
     _languageCode = arg;
     DateTime timestamp = ref.watch(languageProvider(arg)).downloadTimestamp;
-    debugPrint(
-        'Language $arg: lastCheckedTimestamp = $timestamp; isUTC? ${timestamp.isUtc}');
+    assert(timestamp.isUtc);
+    debugPrint('Language $arg: lastCheckedTimestamp = $timestamp (UTC)');
     return LanguageStatus(false, timestamp);
   }
 
@@ -98,7 +98,7 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
       if (commits > 0) {
         ref.read(updatesAvailableProvider.notifier).state = true;
       }
-      state = LanguageStatus(commits > 0, DateTime.now());
+      state = LanguageStatus(commits > 0, DateTime.now().toUtc());
       return commits;
     } else {
       debugPrint("Failed to fetch latest commits ${response.statusCode}");
@@ -120,12 +120,11 @@ final languageStatusProvider =
 /// Are there updates available in any of our languages?
 final updatesAvailableProvider = StateProvider<bool>((ref) => false);
 
-/// When was the last time we checked for updates?
+/// When was the last time we checked for updates? (UTC)
 /// We have this property for each language in the LanguageStatus,
 /// here we have the summary: the oldest of these (in case they're not the same)
-/// TODO this is currently local time, but UTC would probably be better
 final lastCheckedProvider = StateProvider<DateTime>((ref) {
-  DateTime timestamp = DateTime.now();
+  DateTime timestamp = DateTime.now().toUtc();
   bool downloadedSomeLanguage = false;
   for (String languageCode in Globals.availableLanguages) {
     if (!ref.read(languageProvider(languageCode)).downloaded) continue;
@@ -136,8 +135,10 @@ final lastCheckedProvider = StateProvider<DateTime>((ref) {
   }
   // For the edge case that not a single language is downloaded
   if (!downloadedSomeLanguage) {
-    return DateTime(2023);
+    return DateTime.utc(2023);
   }
+  assert(timestamp.isUtc);
+  debugPrint('Last checked for updates: $timestamp');
   return timestamp;
 });
 

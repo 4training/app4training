@@ -99,7 +99,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
   Language build(String arg) {
     languageCode = arg;
     return Language(
-        '', const {}, const [], const {}, '', 0, DateTime(2023, 1, 1));
+        '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
   }
 
   Future<void> init() async {
@@ -124,7 +124,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
       // Get the timestamp: When were our contents stored on the device?
       FileStat stat =
           await FileStat.stat(join(path, 'structure', 'contents.json'));
-      DateTime timestamp = stat.changed; // TODO is this UTC or local time?
+      DateTime timestamp = stat.changed.toUtc(); // Always store UTC internally
 
       // Read structure/contents.json as our source of truth:
       // Which pages are available, what is the order in the menu
@@ -168,8 +168,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
   // TODO: are there race conditions possible in our LanguageController?
   Future<void> deleteResources() async {
     await _controller.clearAssets();
-    state =
-        Language('', const {}, const [], const {}, '', 0, DateTime(2023, 1, 1));
+    state = Language(
+        '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
   }
 
   /// Download all files for one language via DownloadAssetsController
@@ -278,7 +278,7 @@ class Language {
   /// The size of the downloaded directory (kB = kilobytes)
   final int sizeInKB;
 
-  /// When were the files downloaded on our device? (file system attribute)
+  /// When were the files downloaded on our device? file system attribute, UTC
   final DateTime downloadTimestamp;
 
   const Language(this.languageCode, this.pages, this.pageIndex, this.images,

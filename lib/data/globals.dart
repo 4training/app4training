@@ -79,6 +79,7 @@ class Globals {
 
   /// Url of Github API: have been commits since [timestamp]?
   static String getCommitsSince(String languageCode, DateTime timestamp) {
+    assert(timestamp.isUtc);
     return 'https://api.github.com/repos/$githubUser/$htmlPath-$languageCode'
         '/commits?since=${timestamp.toIso8601String()}';
   }

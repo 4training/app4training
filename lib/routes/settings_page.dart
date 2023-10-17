@@ -85,10 +85,9 @@ class UpdateSettings extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     DateTime lastCheck = ref.watch(lastCheckedProvider);
-    // TODO lastCheckProvider should be in UTC and then we need the following conversion
     // Convert into human readable string in local time
-    // DateTime localTime = lastCheck.add(DateTime.now().timeZoneOffset);
-    String timestamp = DateFormat('yyyy-MM-dd HH:mm').format(lastCheck);
+    DateTime localTime = lastCheck.add(DateTime.now().timeZoneOffset);
+    String timestamp = DateFormat('yyyy-MM-dd HH:mm').format(localTime);
 
     return Column(children: [
       Align(

@@ -33,7 +33,7 @@ class DummyLanguageController extends LanguageController {
     languageCode = arg;
     // Return dummy Language object using 42 kB
     return Language(
-        '', const {}, const [], const {}, '', 42, DateTime(2023, 1, 1));
+        '', const {}, const [], const {}, '', 42, DateTime.utc(2023, 1, 1));
   }
 }
 

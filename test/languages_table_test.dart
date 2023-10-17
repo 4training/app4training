@@ -16,7 +16,7 @@ class TestLanguageController extends DummyLanguageController {
     languageCode = (arg == 'de') ? 'de' : '';
     // For 'de', Language.downloaded will be true, for the rest it will be false
     return Language(
-        languageCode, const {}, const [], const {}, '', 0, DateTime(2023));
+        languageCode, const {}, const [], const {}, '', 0, DateTime.utc(2023));
   }
 }
 
@@ -24,7 +24,7 @@ class TestLanguageController extends DummyLanguageController {
 class TestLanguageStatusNotifier extends LanguageStatusNotifier {
   @override
   LanguageStatus build(String arg) {
-    return LanguageStatus(arg == 'de', DateTime(2023));
+    return LanguageStatus(arg == 'de', DateTime.utc(2023));
   }
 }
 

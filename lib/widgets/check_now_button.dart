@@ -26,7 +26,7 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
             _isLoading = true;
           });
 
-          DateTime timestamp = DateTime.now();
+          DateTime timestamp = DateTime.now().toUtc();
           bool hasError = false;
           // Each language in the list first gets deleted and then initialized again
           for (String languageCode in Globals.availableLanguages) {
