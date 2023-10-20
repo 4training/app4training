@@ -72,7 +72,8 @@ class Globals {
 
   /// File system path (relative to assets directory)
   /// of the resources in a language
-  /// Must be the main folder name that is inside the zip file we download
+  /// Must be the main folder name that is inside the zip file we download,
+  /// e.g. 'html-en-main'
   static String getLocalPath(String languageCode) {
     return '$htmlPath-$languageCode-$branch';
   }

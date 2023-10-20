@@ -145,13 +145,15 @@ class LanguageController extends FamilyNotifier<Language, String> {
       await _checkConsistency(dir, pages);
 
       // Register available images
-      await for (var file in fileSystem
-          .directory(join(path, 'files'))
-          .list(recursive: false, followLinks: false)) {
-        if (file is File) {
-          images[basename(file.path)] = Image(basename(file.path));
-        } else {
-          debugPrint("Found unexpected element $file in files/ directory");
+      var filesDir = fileSystem.directory(join(path, 'files'));
+      if (await filesDir.exists()) {
+        await for (var file
+            in filesDir.list(recursive: false, followLinks: false)) {
+          if (file is File) {
+            images[basename(file.path)] = Image(basename(file.path));
+          } else {
+            debugPrint("Found unexpected element $file in files/ directory");
+          }
         }
       }
       state = Language(

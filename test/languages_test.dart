@@ -134,6 +134,31 @@ void main() {
         }
         expect(deTest.state.downloaded, false);
       });
+
+      test('A missing files/ dir should be no problem', () async {
+        // We construct a file system in memory with structure/contents.json
+        // filled correctly but where HTML files and the files/ dir are missing
+        var fileSystem = MemoryFileSystem();
+        await fileSystem
+            .directory('assets-de/html-de-main/structure')
+            .create(recursive: true);
+        var readFileSystem = ChrootFileSystem(
+            const LocalFileSystem(), path.canonicalize('test/'));
+        String jsonPath = 'assets-de/html-de-main/structure/contents.json';
+        var contentsJson = fileSystem.file(jsonPath);
+        contentsJson
+            .writeAsString(await readFileSystem.file(jsonPath).readAsString());
+        final container = ProviderContainer(overrides: [
+          languageProvider
+              .overrideWith(() => LanguageController(assetsController: mock)),
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+        ]);
+
+        // init() should work (even if expected HTML files are missing)
+        final deTest = container.read(languageProvider('de').notifier);
+        await deTest.init();
+        expect(deTest.state.downloaded, true);
+      });
     });
 
     test('Test everything with real content from test/assets-de/', () async {
