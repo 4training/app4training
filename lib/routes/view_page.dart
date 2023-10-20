@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html_table/flutter_html_table.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:html/parser.dart' show parse;
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/widgets/loading_animation.dart';
 import 'package:app4training/widgets/main_drawer.dart';
@@ -44,15 +46,48 @@ class MainHtmlView extends StatelessWidget {
     return SingleChildScrollView(
         child: Column(
       children: [
-        Html(
-            data: content,
-            onAnchorTap: (url, _, __) {
-              debugPrint("Link tapped: $url");
-              if (url != null) {
-                Navigator.pushNamed(context, '/view$url');
-              }
-            })
+        SelectionArea(
+//            child: Html(
+//                data: content,
+            child: Html.fromDom(
+                document: sanitize(content),
+                extensions: const [TableHtmlExtension()],
+                style: {
+                  "table": Style(
+                      // set table width, otherwise they're broken
+                      width: Width(MediaQuery.of(context).size.width - 50))
+                },
+                onAnchorTap: (url, _, __) {
+                  debugPrint("Link tapped: $url");
+                  if (url != null) {
+                    Navigator.pushNamed(context, '/view$url');
+                  }
+                }))
       ],
     ));
   }
+}
+
+/// FIXME: Bad workaround for bug in flutter_html 3.0.0-beta2:
+/// https://github.com/Sub6Resources/flutter_html/issues/1188
+/// Remove all <ul> and <p> in table cells.
+/// That means some content isn't displayed! But that's still better than
+/// a completely unusable app (turns completely white) when clicking
+/// on some worksheets like "Training Meeting Outline" and "Hearing from God"
+///
+/// Hopefully flutter_html 3.0.0 is soon released and fixes the issue
+sanitize(String html) {
+  var dom = parse(html);
+//  debugPrint("Number of p in td: ${dom.querySelectorAll('td p').length}");
+
+  for (var element in dom.querySelectorAll('td p')) {
+    debugPrint('Warning: Removing <p> element in <td> as workaround for a bug');
+    element.remove();
+  }
+  for (var element in dom.querySelectorAll('td ul')) {
+    debugPrint(
+        'Warning: Removing <ul> element in <td> as workaround for a bug');
+    element.remove();
+  }
+  return dom;
 }

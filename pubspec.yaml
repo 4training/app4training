@@ -32,6 +32,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_html: ^3.0.0-beta.2
+  flutter_html_table: ^3.0.0-beta.2
   path_provider: ^2.0.11
   download_assets: ^3.1.0
   path: ^1.8.2
@@ -45,6 +46,7 @@ dependencies:
   file: ^6.1.4
   shared_preferences: ^2.2.0
   flutter_riverpod: ^2.3.7
+  html: ^0.15.4
 
 
 dev_dependencies:

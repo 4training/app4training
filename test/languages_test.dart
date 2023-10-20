@@ -45,6 +45,7 @@ class FakeDownloadAssetsController extends Fake
   @override
   Future startDownload(
       {required List<String> assetsUrls,
+      List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
       Function(double p1)? onProgress,
       Function()? onCancel,
       Map<String, dynamic>? requestQueryParams,
