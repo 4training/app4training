@@ -1,3 +1,4 @@
+import 'package:app4training/data/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html_table/flutter_html_table.dart';
@@ -28,7 +29,11 @@ class ViewPage extends ConsumerWidget {
         drawer: MainDrawer(langCode),
         body: pageContent.when(
             loading: () => loadingAnimation("Loading content..."),
-            data: (content) => MainHtmlView(content),
+            data: (content) => MainHtmlView(
+                content,
+                (Globals.rtlLanguages.contains(langCode))
+                    ? TextDirection.rtl
+                    : TextDirection.ltr),
             error: (e, st) => Text(
                 "Couldn't find the content you are looking for: ${e.toString()}\nLanguage: $langCode")));
   }
@@ -39,7 +44,10 @@ class ViewPage extends ConsumerWidget {
 class MainHtmlView extends StatelessWidget {
   /// HTML code to display
   final String content;
-  const MainHtmlView(this.content, {super.key});
+
+  /// left-to-right or right-to-left (LTR / RTL)?
+  final TextDirection direction;
+  const MainHtmlView(this.content, this.direction, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,22 +55,24 @@ class MainHtmlView extends StatelessWidget {
         child: Column(
       children: [
         SelectionArea(
+            child: Directionality(
+                textDirection: direction,
 //            child: Html(
 //                data: content,
-            child: Html.fromDom(
-                document: sanitize(content),
-                extensions: const [TableHtmlExtension()],
-                style: {
-                  "table": Style(
-                      // set table width, otherwise they're broken
-                      width: Width(MediaQuery.of(context).size.width - 50))
-                },
-                onAnchorTap: (url, _, __) {
-                  debugPrint("Link tapped: $url");
-                  if (url != null) {
-                    Navigator.pushNamed(context, '/view$url');
-                  }
-                }))
+                child: Html.fromDom(
+                    document: sanitize(content),
+                    extensions: const [TableHtmlExtension()],
+                    style: {
+                      "table": Style(
+                          // set table width, otherwise they're broken
+                          width: Width(MediaQuery.of(context).size.width - 50))
+                    },
+                    onAnchorTap: (url, _, __) {
+                      debugPrint("Link tapped: $url");
+                      if (url != null) {
+                        Navigator.pushNamed(context, '/view$url');
+                      }
+                    })))
       ],
     ));
   }

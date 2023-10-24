@@ -56,6 +56,9 @@ class Globals {
     'de'
   ];
 
+  /// Which of these languages are right-to-left? (RTL)
+  static const rtlLanguages = ['ar', 'fa'];
+
   /// Which page is loaded after startup?
   static const String defaultPage = "God's_Story_(five_fingers)";
 

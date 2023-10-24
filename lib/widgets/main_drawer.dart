@@ -26,7 +26,12 @@ class MainDrawer extends ConsumerWidget {
                 Text("Content", style: Theme.of(context).textTheme.titleLarge)),
       ),
       // Menu with all the pages
-      Expanded(child: ListView(children: _buildPageList(context, ref))),
+      Expanded(
+          child: Directionality(
+              textDirection: Globals.rtlLanguages.contains(langCode)
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
+              child: ListView(children: _buildPageList(context, ref)))),
       const LanguageSelection()
     ]));
   }
