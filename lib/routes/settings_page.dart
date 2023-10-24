@@ -20,8 +20,7 @@ class SettingsPage extends StatelessWidget {
       appBar: AppBar(title: Text(context.l10n.title)),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-            child: Column(children: [
+        child: Column(children: [
           // Set app language
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -32,11 +31,11 @@ class SettingsPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          const LanguageSettings(),
+          const Expanded(child: LanguageSettings()),
           const UpdateSettings()
           // const SizedBox(height: 10),
           // const DesignSettings()
-        ])),
+        ]),
       ),
     );
   }
@@ -68,7 +67,7 @@ class LanguageSettings extends ConsumerWidget {
         style: Theme.of(context).textTheme.bodyMedium,
       ),
       const SizedBox(height: 10),
-      const LanguagesTable(),
+      const Expanded(child: SingleChildScrollView(child: LanguagesTable())),
       Text(
         "${context.l10n.diskUsage}: $sizeInKB kB",
         style: Theme.of(context).textTheme.bodyMedium,
@@ -94,19 +93,15 @@ class UpdateSettings extends ConsumerWidget {
           alignment: Alignment.topLeft,
           child: Text(context.l10n.automaticUpdate,
               style: Theme.of(context).textTheme.titleLarge)),
-      const SizedBox(height: 10),
       Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(context.l10n.updateText,
-              style: Theme.of(context).textTheme.bodyMedium),
-        ],
-      ),
-      const SizedBox(height: 10),
-      const Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          DropdownButtonCheckFrequency(),
+          Expanded(
+              child: Text(context.l10n.updateText,
+                  style: Theme.of(context).textTheme.bodyMedium)),
+          const SizedBox(width: 20),
+          const DropdownButtonCheckFrequency(),
         ],
       ),
       const SizedBox(height: 10),
