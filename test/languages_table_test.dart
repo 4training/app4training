@@ -1,3 +1,5 @@
+import 'package:app4training/data/app_language.dart';
+import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,9 +30,25 @@ class TestLanguageStatusNotifier extends LanguageStatusNotifier {
   }
 }
 
+// To simplify testing the LanguagesTable widget in different locales
+class TestLanguagesTable extends ConsumerWidget {
+  const TestLanguagesTable({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppLanguage appLanguage = ref.watch(appLanguageProvider);
+
+    return MaterialApp(
+        locale: appLanguage.locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: LanguagesTable()));
+  }
+}
+
 void main() {
   final int countLanguages = Globals.availableLanguages.length;
-  testWidgets('Basic test with no language downloaded',
+  testWidgets('Basic test with no language downloaded, English as appLanguage',
       (WidgetTester tester) async {
     final testLanguageProvider =
         NotifierProvider.family<LanguageController, Language, String>(() {
@@ -43,16 +61,16 @@ void main() {
     await tester.pumpWidget(ProviderScope(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
       languageProvider.overrideWithProvider(testLanguageProvider)
-    ], child: const MaterialApp(home: Scaffold(body: LanguagesTable()))));
+    ], child: const TestLanguagesTable()));
 
-    expect(find.text('DE'), findsOneWidget);
-    expect(find.text('EN'), findsOneWidget);
+    expect(find.text('German (de)'), findsOneWidget);
+    expect(find.text('English (en)'), findsOneWidget);
     expect(find.byIcon(Icons.check), findsNothing);
     expect(find.byIcon(Icons.delete), findsNothing);
     expect(find.byIcon(Icons.download), findsNWidgets(countLanguages));
     expect(find.byIcon(Icons.refresh), findsNothing);
   });
-  testWidgets('Basic test with only German downloaded',
+  testWidgets('Basic test with only German downloaded, German as appLanguage',
       (WidgetTester tester) async {
     final testLanguageProvider =
         NotifierProvider.family<LanguageController, Language, String>(() {
@@ -67,14 +85,17 @@ void main() {
     SharedPreferences.setMockInitialValues(
         {'download_de': true, 'download_en': false});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(overrides: [
+    final container = ProviderContainer(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
       languageProvider.overrideWithProvider(testLanguageProvider),
       languageStatusProvider.overrideWithProvider(testLanguageStatusProvider)
-    ], child: const MaterialApp(home: Scaffold(body: LanguagesTable()))));
+    ]);
+    container.read(appLanguageProvider.notifier).setLocale('de');
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container, child: const TestLanguagesTable()));
 
-    expect(find.text('DE'), findsOneWidget);
-    expect(find.text('EN'), findsOneWidget);
+    expect(find.text('Deutsch (de)'), findsOneWidget);
+    expect(find.text('Englisch (en)'), findsOneWidget);
     expect(find.byIcon(Icons.check), findsOneWidget);
 
     expect(find.byIcon(Icons.delete), findsOneWidget);

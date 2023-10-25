@@ -17,20 +17,20 @@ void main() {
 
     // Verify initial value
     expect(prefs.getString('appLanguage'), 'system');
-    expect(find.text('SYSTEM'), findsOneWidget);
-    expect(find.text('DE'), findsNothing);
+    expect(find.text('System default'), findsOneWidget);
+    expect(find.text('Deutsch (de)'), findsNothing);
 
     // Click on the button to expand it: Find the other options as well
     await tester.tap(find.byType(DropdownButtonAppLanguage));
     await tester.pump();
-    expect(find.text('DE'), findsOneWidget);
-    expect(find.text('EN'), findsOneWidget);
+    expect(find.text('Deutsch (de)'), findsOneWidget);
+    expect(find.text('English (en)'), findsOneWidget);
 
     // Select German and verify correct UI and saving in SharedPreferences
-    await tester.tap(find.text('DE'));
+    await tester.tap(find.text('Deutsch (de)'));
     await tester.pump();
-    expect(find.text('DE'), findsOneWidget);
-    expect(find.text('SYSTEM'), findsNothing);
+    expect(find.text('Deutsch (de)'), findsOneWidget);
+    expect(find.text('System default'), findsNothing);
     expect(prefs.getString('appLanguage'), 'de');
   });
 
@@ -45,20 +45,20 @@ void main() {
 
     // Verify initial value
     expect(prefs.getString('appLanguage'), 'de');
-    expect(find.text('DE'), findsOneWidget);
-    expect(find.text('SYSTEM'), findsNothing);
+    expect(find.text('Deutsch (de)'), findsOneWidget);
+    expect(find.text('System default'), findsNothing);
 
     // Click on the button to expand it: Find the other options as well
     await tester.tap(find.byType(DropdownButtonAppLanguage));
     await tester.pump();
-    expect(find.text('SYSTEM'), findsOneWidget);
-    expect(find.text('EN'), findsOneWidget);
+    expect(find.text('System default'), findsOneWidget);
+    expect(find.text('English (en)'), findsOneWidget);
 
     // Select SYSTEM and verify correct UI and saving in SharedPreferences
-    await tester.tap(find.text('SYSTEM'));
+    await tester.tap(find.text('System default'));
     await tester.pump();
-    expect(find.text('SYSTEM'), findsOneWidget);
-    expect(find.text('DE'), findsNothing);
+    expect(find.text('System default'), findsOneWidget);
+    expect(find.text('Deutsch (de)'), findsNothing);
     expect(prefs.getString('appLanguage'), 'system');
   });
 }

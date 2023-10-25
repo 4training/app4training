@@ -65,9 +65,7 @@ void main() {
     expect(prefs.getString('appLanguage'), 'en');
     await tester.tap(find.byType(DropdownButtonAppLanguage));
     await tester.pump();
-    // There is another text label 'DE' on the settings page...
-    expect(find.text('DE'), findsNWidgets(2));
-    await tester.tap(find.text('DE').at(1));
+    await tester.tap(find.text('Deutsch (de)'));
     await tester.pump();
     expect(AppLocalizations.of(context).appLanguage,
         equals(AppLocalizationsDe().appLanguage));

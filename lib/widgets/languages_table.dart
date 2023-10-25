@@ -1,3 +1,4 @@
+import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/globals.dart';
@@ -34,7 +35,7 @@ class LanguagesTable extends ConsumerWidget {
         Container(
             height: 32,
             alignment: Alignment.centerLeft,
-            child: Text(languageCode.toUpperCase(),
+            child: Text(context.l10n.getLanguageName(languageCode),
                 style: Theme.of(context).textTheme.bodyMedium)),
         Container(
             height: 32,

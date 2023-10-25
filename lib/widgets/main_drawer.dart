@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/widgets/upward_expansion_tile.dart';
@@ -66,7 +67,7 @@ class LanguageSelection extends ConsumerWidget {
 
     for (var language in Globals.availableLanguages) {
       if (!ref.watch(languageProvider(language)).downloaded) continue;
-      String title = language.toUpperCase();
+      String title = context.l10n.getLanguageName(language);
       allLanguages.add(ListTile(
         title: Text(title, style: Theme.of(context).textTheme.labelMedium),
         onTap: () {

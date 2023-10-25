@@ -24,7 +24,7 @@ class AppLanguage {
   /// [str] can be a language code ('en', 'de', ...) or 'system'
   /// In case of 'system': Use the [defaultLangCode]
   static fromString(String str, String defaultLangCode) {
-    if (!availableAppLanguages.contains(str)) str = 'system';
+    if (!availableAppLanguages.keys.contains(str)) str = 'system';
     bool isSystemLanguage = str == 'system';
 
     String languageCode = str;
@@ -32,16 +32,21 @@ class AppLanguage {
       languageCode = defaultLangCode;
     }
     if ((languageCode == 'system') ||
-        !availableAppLanguages.contains(languageCode)) {
+        !availableAppLanguages.keys.contains(languageCode)) {
       // English is default in case we can't make sense of our parameters
       languageCode = 'en';
     }
     return AppLanguage(isSystemLanguage, languageCode);
   }
 
-  /// App Languages (settings)
-  // TODO get the list from the repository - maybe create applanguage class
-  static const List<String> availableAppLanguages = ["system", "en", "de"];
+  /// The languages available for the whole app:
+  /// identifier (language code) => description shown (autonym of language)
+  /// TODO get this from supportedLocales?
+  static const Map<String, String> availableAppLanguages = {
+    'system': 'System default',
+    'en': 'English (en)',
+    'de': 'Deutsch (de)'
+  };
 }
 
 /// This class also takes care of persistance and reads/writes
