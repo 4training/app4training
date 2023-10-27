@@ -54,5 +54,36 @@
     "diskUsage" : "Disk usage",
     "warning" : "Warning",
     "cannotDelete" : "You can't delete the language that is currently selected. Switch language and try again.",
-    "close" : "Close"
+    "close" : "Close",
+    "deletedLanguage": "{languageName} was deleted",
+    "@deletedLanguage": {
+        "description": "Snackbar info message",
+        "placeholders": {
+            "languageName": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "downloadedLanguage": "{languageName} is now available",
+    "@downloadedLanguage": {
+        "description": "Snackbar info message",
+        "placeholders": {
+            "languageName": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "nUpdatesAvailable": "{count, plural, =0{Languages are already up-to-date} =1{Language update available} other{Updates available in {count} languages}}",
+    "@nUpdatesAvailable": {
+        "description": "Whether updates are available in 0, 1 or more languages",
+        "placeholders": {
+            "count": {
+                "type": "num",
+                "format": "compact"
+            }
+        }
+    },
+    "errorCheckingUpdates": "Error while checking updates. Please try again later"
 }

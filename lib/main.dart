@@ -32,6 +32,7 @@ class App4Training extends ConsumerWidget {
       locale: appLanguage.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      scaffoldMessengerKey: ref.watch(scaffoldMessengerKeyProvider),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,6 +17,20 @@ class ProviderNotOverriddenException implements Exception {
     return 'The value for this provider must be set by an override on ProviderScope';
   }
 }
+
+/// Global key of the ScaffoldMessenger (to simplify snackback handling)
+final scaffoldMessengerKeyProvider = Provider((ref) {
+  return GlobalKey<ScaffoldMessengerState>();
+});
+
+/// Provider to access the ScaffoldMessenger from everywhere to show a snackbar
+/// Usage: ref.watch(scaffoldMessengerProvider).showSnackbar()
+///
+/// This is better than using ScaffoldMessenger.of(context).showSnackbar()
+/// as we don't need a BuildContext (which is not available in async callbacks)
+final scaffoldMessengerProvider = Provider((ref) {
+  return ref.watch(scaffoldMessengerKeyProvider).currentState!;
+});
 
 /// global constants
 class Globals {

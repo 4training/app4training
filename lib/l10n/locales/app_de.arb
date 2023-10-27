@@ -54,5 +54,36 @@
     "diskUsage" : "Speicherverbrauch",
     "warning" : "Warnung",
     "cannotDelete" : "Du kannst die aktuelle Sprache nicht löschen. Wechsle zunächst die Sprache und versuche es dann erneut.",
-    "close" : "Schließen"
+    "close" : "Schließen",
+    "deletedLanguage": "{languageName} wurde gelöscht",
+    "@deletedLanguage": {
+        "description": "Snackbar info message",
+        "placeholders": {
+            "languageName": {
+                "type": "String",
+                "example": "Deutsch (de)"
+            }
+        }
+    },
+    "downloadedLanguage": "{languageName} ist nun verfügbar",
+    "@downloadedLanguage": {
+        "description": "Snackbar info message",
+        "placeholders": {
+            "languageName": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "nUpdatesAvailable": "{count, plural, =0{Alle Sprachen sind bereits aktuell} =1{Sprachupdate verfügbar} other{Updates für {count} Sprachen verfügbar}}",
+    "@nUpdatesAvailable": {
+        "description": "Whether updates are available in 0, 1 or more languages",
+        "placeholders": {
+            "count": {
+                "type": "num",
+                "format": "compact"
+            }
+        }
+    },
+    "errorCheckingUpdates": "Fehler beim Überprüfen auf Updates. Bitte probiere es später noch einmal"
 }

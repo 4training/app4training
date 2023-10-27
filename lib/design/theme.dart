@@ -12,7 +12,8 @@ ThemeData lightTheme = ThemeData(
     visualDensity: VisualDensity.adaptivePlatformDensity,
     brightness: Brightness.light,
     textTheme: lightTextTheme,
-    scaffoldBackgroundColor: lightBackground);
+    scaffoldBackgroundColor: lightBackground,
+    snackBarTheme: SnackBarThemeData(backgroundColor: lightOnBackground));
 
 ThemeData darkTheme = ThemeData(
     colorScheme: darkColorScheme,
@@ -22,4 +23,5 @@ ThemeData darkTheme = ThemeData(
     visualDensity: VisualDensity.adaptivePlatformDensity,
     brightness: Brightness.dark,
     textTheme: darkTextTheme,
-    scaffoldBackgroundColor: darkBackground);
+    scaffoldBackgroundColor: darkBackground,
+    snackBarTheme: SnackBarThemeData(backgroundColor: darkOnBackground));
