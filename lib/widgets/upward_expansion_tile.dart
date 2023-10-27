@@ -492,21 +492,24 @@ class _UpwardExpansionTileState extends State<UpwardExpansionTile>
     final bool shouldRemoveChildren = closed && !widget.maintainState;
 
     final Widget result = Offstage(
-      offstage: closed,
-      child: TickerMode(
-        enabled: !closed,
-        child: Padding(
-          padding: widget.childrenPadding ??
-              expansionTileTheme.childrenPadding ??
-              EdgeInsets.zero,
-          child: Column(
-            crossAxisAlignment:
-                widget.expandedCrossAxisAlignment ?? CrossAxisAlignment.center,
-            children: widget.children,
-          ),
-        ),
-      ),
-    );
+        offstage: closed,
+        child: TickerMode(
+            enabled: !closed,
+            child: Padding(
+              padding: widget.childrenPadding ??
+                  expansionTileTheme.childrenPadding ??
+                  EdgeInsets.zero,
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxHeight: 400,
+                  ),
+                  child: ListView(
+                    children: widget.children,
+                  ),
+                ),
+              ),
+            )));
 
     return AnimatedBuilder(
       animation: _controller.view,
