@@ -15,6 +15,7 @@
     "checkNow" : "Check now",
     "languages" : "Languages",
     "languagesText" : "These are the languages available. You can download, update or delete them manually.",
+    "allLanguages" : "Alle Sprachen",
     "language" : "Language",
     "language_tr": "Turkish",
     "language_zh": "Chinese",
@@ -65,6 +66,16 @@
             }
         }
     },
+    "deletedNLanguages": "{count} languages deleted",
+    "@deletedNLanguages": {
+        "description": "Snackbar message after clicking on the button to delete all languages and >1 language were deleted",
+        "placeholders": {
+            "count": {
+                "type": "num",
+                "format": "compact"
+            }
+        }
+    },
     "downloadedLanguage": "{languageName} is now available",
     "@downloadedLanguage": {
         "description": "Snackbar info message",
@@ -72,6 +83,16 @@
             "languageName": {
                 "type": "String",
                 "example": "German (de)"
+            }
+        }
+    },
+    "downloadedNLanguages": "{count} languages downloaded",
+    "@downloadedNLanguages": {
+        "description": "Snackbar message after clicking on the button to download all languages and >1 language were downloaded",
+        "placeholders": {
+            "count": {
+                "type": "num",
+                "format": "compact"
             }
         }
     },

@@ -32,9 +32,10 @@ final scaffoldMessengerProvider = Provider((ref) {
   return ref.watch(scaffoldMessengerKeyProvider).currentState!;
 });
 
-/// global constants
-class Globals {
-  static const List<String> availableLanguages = [
+const int countAvailableLanguages = 34;
+
+final availableLanguagesProvider = Provider<List<String>>((ref) {
+  return [
     'tr',
     'zh',
     'vi',
@@ -70,7 +71,10 @@ class Globals {
     'en',
     'de'
   ];
+});
 
+/// global constants
+class Globals {
   /// Which of these languages are right-to-left? (RTL)
   static const rtlLanguages = ['ar', 'fa'];
 

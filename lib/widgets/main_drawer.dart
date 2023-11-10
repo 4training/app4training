@@ -65,7 +65,7 @@ class LanguageSelection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     List<ListTile> allLanguages = [];
 
-    for (var language in Globals.availableLanguages) {
+    for (var language in ref.read(availableLanguagesProvider)) {
       if (!ref.watch(languageProvider(language)).downloaded) continue;
       String title = context.l10n.getLanguageName(language);
       allLanguages.add(ListTile(

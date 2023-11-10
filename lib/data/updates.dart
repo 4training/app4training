@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
@@ -126,7 +125,7 @@ final updatesAvailableProvider = StateProvider<bool>((ref) => false);
 final lastCheckedProvider = StateProvider<DateTime>((ref) {
   DateTime timestamp = DateTime.now().toUtc();
   bool downloadedSomeLanguage = false;
-  for (String languageCode in Globals.availableLanguages) {
+  for (String languageCode in ref.read(availableLanguagesProvider)) {
     if (!ref.read(languageProvider(languageCode)).downloaded) continue;
     downloadedSomeLanguage = true;
     DateTime languageTimestamp =
@@ -140,42 +139,4 @@ final lastCheckedProvider = StateProvider<DateTime>((ref) {
   assert(timestamp.isUtc);
   debugPrint('Last checked for updates: $timestamp');
   return timestamp;
-});
-
-/// Handle persisting the downloadLanguage setting in the SharedPreferences
-class DownloadLanguageNotifier extends FamilyNotifier<bool, String> {
-  String _lang = ''; // language code
-
-  @override
-  bool build(String arg) {
-    _lang = arg;
-    // Load the value stored in the SharedPreferences
-    bool? value = ref.read(sharedPrefsProvider).getBool('download_$_lang');
-    if (value != null) return value;
-
-    // Default: download resources in English + app language
-    // (but user may delete even them)
-    String appLanguage = ref.read(appLanguageProvider).languageCode;
-    if ((_lang == 'en') || (_lang == appLanguage)) {
-      ref.read(sharedPrefsProvider).setBool('download_$_lang', true);
-      return true;
-    }
-    return false;
-  }
-
-  void setDownload(bool download) {
-    state = download;
-    ref.read(sharedPrefsProvider).setBool('download_$_lang', download);
-  }
-}
-
-/// Global state: Should we download specific language and provide it offline?
-/// This setting is saved in the SharedPreferences.
-///
-/// Example: Should we download the German resources?
-/// bool downloadDe = ref.watch(downloadLanguageProvider('de'))
-/// TODO: This could/should be integrated into [LanguageController]
-final downloadLanguageProvider =
-    NotifierProvider.family<DownloadLanguageNotifier, bool, String>(() {
-  return DownloadLanguageNotifier();
 });

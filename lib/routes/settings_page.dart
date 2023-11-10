@@ -50,7 +50,7 @@ class LanguageSettings extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // TODO move this calculation somewhere else?
     int sizeInKB = 0;
-    for (String langCode in Globals.availableLanguages) {
+    for (String langCode in ref.read(availableLanguagesProvider)) {
       sizeInKB += ref.watch(languageProvider(langCode)).sizeInKB;
     }
 
@@ -67,7 +67,7 @@ class LanguageSettings extends ConsumerWidget {
         style: Theme.of(context).textTheme.bodyMedium,
       ),
       const SizedBox(height: 10),
-      const Expanded(child: SingleChildScrollView(child: LanguagesTable())),
+      const Expanded(child: LanguagesTable()),
       Text(
         "${context.l10n.diskUsage}: $sizeInKB kB",
         style: Theme.of(context).textTheme.bodyMedium,

@@ -2,7 +2,6 @@ import 'package:app4training/data/globals.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app4training/data/updates.dart';
 import '../data/languages.dart';
 
 /// Button to download a language. Shows a CircularProgressIndicator while
@@ -37,15 +36,70 @@ class _DownloadLanguageButtonState
               final snackBar = SnackBar(
                   content: Text(context.l10n.downloadedLanguage(
                       context.l10n.getLanguageName(widget.languageCode))));
-              await lang.init();
-              ref
-                  .read(downloadLanguageProvider(widget.languageCode).notifier)
-                  .setDownload(true);
+              await lang.download();
               ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
               setState(() {
                 _isLoading = false;
               });
             },
-            icon: const Icon(Icons.download));
+            icon: const Icon(Icons.download),
+            padding: EdgeInsets.zero);
+  }
+}
+
+/// Button to download all languages. Shows a CircularProgressIndicator while
+/// the download is in progress (that's why the class is stateful)
+class DownloadAllLanguagesButton extends ConsumerStatefulWidget {
+  const DownloadAllLanguagesButton({super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _DownloadAllLanguagesButtonState();
+}
+
+class _DownloadAllLanguagesButtonState
+    extends ConsumerState<DownloadAllLanguagesButton> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return _isLoading
+        ? const Center(
+            child: SizedBox(
+                height: 24, width: 24, child: CircularProgressIndicator()))
+        : IconButton(
+            onPressed: () async {
+              setState(() {
+                _isLoading = true;
+              });
+              // Get l10n now as we can't access context after async gap later
+              final l10n = context.l10n;
+              int countDownloads = 0;
+              String lastLanguage = '';
+              for (var languageCode in ref.read(availableLanguagesProvider)) {
+                if (!ref.watch(languageProvider(languageCode)).downloaded) {
+                  // TODO error handling
+                  await ref
+                      .read(languageProvider(languageCode).notifier)
+                      .download();
+                  countDownloads++;
+                  lastLanguage = languageCode;
+                }
+              }
+              if (countDownloads > 0) {
+                // Show info message in snackbar
+                String text = (countDownloads == 1)
+                    ? l10n
+                        .downloadedLanguage(l10n.getLanguageName(lastLanguage))
+                    : l10n.downloadedNLanguages(countDownloads);
+                final snackBar = SnackBar(content: Text(text));
+                ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
+              }
+              setState(() {
+                _isLoading = false;
+              });
+            },
+            icon: const Icon(Icons.download),
+            padding: EdgeInsets.zero);
   }
 }

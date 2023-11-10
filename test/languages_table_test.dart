@@ -47,7 +47,6 @@ class TestLanguagesTable extends ConsumerWidget {
 }
 
 void main() {
-  final int countLanguages = Globals.availableLanguages.length;
   testWidgets('Basic test with no language downloaded, English as appLanguage',
       (WidgetTester tester) async {
     final testLanguageProvider =
@@ -66,8 +65,9 @@ void main() {
     expect(find.text('German (de)'), findsOneWidget);
     expect(find.text('English (en)'), findsOneWidget);
     expect(find.byIcon(Icons.check), findsNothing);
-    expect(find.byIcon(Icons.delete), findsNothing);
-    expect(find.byIcon(Icons.download), findsNWidgets(countLanguages));
+    expect(find.byIcon(Icons.delete), findsOneWidget);
+    expect(find.byIcon(Icons.download),
+        findsNWidgets(countAvailableLanguages + 1));
     expect(find.byIcon(Icons.refresh), findsNothing);
   });
   testWidgets('Basic test with only German downloaded, German as appLanguage',
@@ -88,7 +88,8 @@ void main() {
     final container = ProviderContainer(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
       languageProvider.overrideWithProvider(testLanguageProvider),
-      languageStatusProvider.overrideWithProvider(testLanguageStatusProvider)
+      languageStatusProvider.overrideWithProvider(testLanguageStatusProvider),
+      availableLanguagesProvider.overrideWithValue(['de', 'en', 'fr'])
     ]);
     container.read(appLanguageProvider.notifier).setLocale('de');
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -96,11 +97,11 @@ void main() {
 
     expect(find.text('Deutsch (de)'), findsOneWidget);
     expect(find.text('Englisch (en)'), findsOneWidget);
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(Icons.check), findsNWidgets(1));
 
-    expect(find.byIcon(Icons.delete), findsOneWidget);
+    expect(find.byIcon(Icons.delete), findsNWidgets(2));
     expect(find.byIcon(Icons.refresh), findsOneWidget);
-    expect(find.byIcon(Icons.download), findsNWidgets(countLanguages - 1));
+    expect(find.byIcon(Icons.download), findsNWidgets(3));
   });
   // TODO add more tests to check whether icons change according to user interaction
 }

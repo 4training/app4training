@@ -1,3 +1,4 @@
+import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,9 +34,9 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
           final nUpdatesAvailable = context.l10n.nUpdatesAvailable;
           final errorMessage = context.l10n.errorCheckingUpdates;
           // Each language in the list first gets deleted and then initialized again
-          for (String languageCode in Globals.availableLanguages) {
+          for (String languageCode in ref.read(availableLanguagesProvider)) {
             // We don't check languages that are not downloaded
-            if (!ref.watch(downloadLanguageProvider(languageCode))) continue;
+            if (!ref.watch(languageProvider(languageCode)).downloaded) continue;
             int result = await ref
                 .read(languageStatusProvider(languageCode).notifier)
                 .check();

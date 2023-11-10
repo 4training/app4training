@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'package:app4training/data/app_language.dart';
 import 'package:download_assets/download_assets.dart';
 import 'package:file/local.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +103,39 @@ class LanguageController extends FamilyNotifier<Language, String> {
         '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
   }
 
+  /// Download this language and make it available. Save that we want this
+  /// language downloaded also in the SharedPreferences.
+  /// If [force] is true, delete the existing structure and reload everything.
+  Future<void> download({bool force = false}) async {
+    assert(languageCode != '');
+    if (force) {
+      await deleteResources();
+    }
+    assert(!state.downloaded);
+    ref.read(sharedPrefsProvider).setBool('download_$languageCode', true);
+    await _load();
+  }
+
+  /// Check SharedPreferences: should we download this language? if yes, load it
   Future<void> init() async {
+    assert(languageCode != '');
+    bool? shouldDownload =
+        ref.read(sharedPrefsProvider).getBool('download_$languageCode');
+
+    // Default: download resources in English + app language
+    // (but user may delete even them)
+    if ((languageCode == ref.read(appLanguageProvider).languageCode) ||
+        (languageCode == 'en') ||
+        (shouldDownload == true)) {
+      ref.read(sharedPrefsProvider).setBool('download_$languageCode', true);
+      await _load();
+    }
+  }
+
+  /// Load our Language structure from the file system resources.
+  /// Download the language if it's not already downloaded.
+  /// This function doesn't touch SharedPreferences.
+  Future<void> _load() async {
     final fileSystem = ref.watch(fileSystemProvider);
     await _controller.init(assetDir: "assets-$languageCode");
 
@@ -167,11 +200,14 @@ class LanguageController extends FamilyNotifier<Language, String> {
     }
   }
 
+  /// Delete this language from the device. Also stores that we don't want to
+  /// download this language in the SharedPreferences.
   // TODO: are there race conditions possible in our LanguageController?
   Future<void> deleteResources() async {
     await _controller.clearAssets();
     state = Language(
         '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
+    ref.read(sharedPrefsProvider).setBool('download_$languageCode', false);
   }
 
   /// Download all files for one language via DownloadAssetsController
