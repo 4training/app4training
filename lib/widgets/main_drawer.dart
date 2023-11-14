@@ -20,9 +20,9 @@ class MainDrawer extends ConsumerWidget {
         child: Column(children: [
       // Header
       Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 10),
+        padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
         child: Align(
-            alignment: Alignment.topLeft,
+            alignment: Alignment.center,
             child:
                 Text("Content", style: Theme.of(context).textTheme.titleLarge)),
       ),
@@ -32,7 +32,9 @@ class MainDrawer extends ConsumerWidget {
               textDirection: Globals.rtlLanguages.contains(langCode)
                   ? TextDirection.rtl
                   : TextDirection.ltr,
-              child: ListView(children: _buildPageList(context, ref)))),
+              child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: _buildPageList(context, ref)))),
       const LanguageSelection()
     ]));
   }
@@ -46,7 +48,7 @@ class MainDrawer extends ConsumerWidget {
     allTitles.forEach((englishName, translatedName) {
       allPages.add(ListTile(
         title: Text(translatedName,
-            style: Theme.of(context).textTheme.labelMedium),
+            style: Theme.of(context).textTheme.titleMedium),
         onTap: () {
           Navigator.pop(context);
           Navigator.pushNamed(context, '/view/$englishName/$langCode');
