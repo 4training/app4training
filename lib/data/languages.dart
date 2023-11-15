@@ -157,7 +157,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
       // Get the timestamp: When were our contents stored on the device?
       FileStat stat =
           await FileStat.stat(join(path, 'structure', 'contents.json'));
-      DateTime timestamp = stat.changed.toUtc(); // Always store UTC internally
+      DateTime timestamp = stat.modified.toUtc(); // Always store UTC internally
 
       // Read structure/contents.json as our source of truth:
       // Which pages are available, what is the order in the menu

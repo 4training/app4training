@@ -33,7 +33,7 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
           int countAvailableUpdates = 0;
           final nUpdatesAvailable = context.l10n.nUpdatesAvailable;
           final errorMessage = context.l10n.errorCheckingUpdates;
-          // Each language in the list first gets deleted and then initialized again
+
           for (String languageCode in ref.read(availableLanguagesProvider)) {
             // We don't check languages that are not downloaded
             if (!ref.watch(languageProvider(languageCode)).downloaded) continue;

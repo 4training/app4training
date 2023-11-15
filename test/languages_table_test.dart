@@ -26,7 +26,7 @@ class TestLanguageController extends DummyLanguageController {
 class TestLanguageStatusNotifier extends LanguageStatusNotifier {
   @override
   LanguageStatus build(String arg) {
-    return LanguageStatus(arg == 'de', DateTime.utc(2023));
+    return LanguageStatus(arg == 'de', DateTime.utc(2023), DateTime.utc(2023));
   }
 }
 
