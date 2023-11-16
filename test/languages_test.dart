@@ -58,6 +58,16 @@ class FakeDownloadAssetsController extends Fake
   }
 }
 
+class DummyLanguageController extends LanguageController {
+  @override
+  Language build(String arg) {
+    languageCode = arg;
+    // Return dummy Language object using 42 kB
+    return Language(
+        '', const {}, const [], const {}, '', 42, DateTime.utc(2023, 1, 1));
+  }
+}
+
 void main() {
   late DownloadAssetsController mock;
 
@@ -225,5 +235,12 @@ void main() {
           .read(pageContentProvider((name: 'Invalid', langCode: 'de')).future);
       expect(content, equals(''));
     });
+  });
+
+  test('Test diskUsageProvider', () {
+    final container = ProviderContainer(overrides: [
+      languageProvider.overrideWith(() => DummyLanguageController()),
+    ]);
+    expect(container.read(diskUsageProvider), countAvailableLanguages * 42);
   });
 }

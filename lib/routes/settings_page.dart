@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/updates.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/check_now_button.dart';
@@ -17,7 +16,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.title)),
+      appBar: AppBar(title: Text(context.l10n.settings)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(children: [
@@ -48,12 +47,7 @@ class LanguageSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO move this calculation somewhere else?
-    int sizeInKB = 0;
-    for (String langCode in ref.read(availableLanguagesProvider)) {
-      sizeInKB += ref.watch(languageProvider(langCode)).sizeInKB;
-    }
-
+    int sizeInKB = ref.watch(diskUsageProvider);
     return Column(children: [
       Align(
           alignment: Alignment.topLeft,
@@ -91,14 +85,14 @@ class UpdateSettings extends ConsumerWidget {
     return Column(children: [
       Align(
           alignment: Alignment.topLeft,
-          child: Text(context.l10n.automaticUpdate,
+          child: Text(context.l10n.updates,
               style: Theme.of(context).textTheme.titleLarge)),
       Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
-              child: Text(context.l10n.updateText,
+              child: Text(context.l10n.checkFrequency,
                   style: Theme.of(context).textTheme.bodyMedium)),
           const SizedBox(width: 20),
           const DropdownButtonCheckFrequency(),
@@ -106,7 +100,7 @@ class UpdateSettings extends ConsumerWidget {
       ),
       const SizedBox(height: 10),
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text("${context.l10n.lastTime} ",
+        Text("${context.l10n.lastCheck} ",
             style: Theme.of(context).textTheme.bodyMedium),
         Text(timestamp, style: Theme.of(context).textTheme.bodyMedium)
       ]),

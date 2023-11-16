@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'settings_page_test.dart';
+import 'languages_test.dart';
 
 /// Simulate that Language gets downloaded initially
 /// and deleted when deleteResources() gets called

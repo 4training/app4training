@@ -339,3 +339,12 @@ class Language {
     return titles;
   }
 }
+
+/// Provide combined disk usage of all languages (in KB)
+final diskUsageProvider = Provider<int>((ref) {
+  int sizeInKB = 0;
+  for (String langCode in ref.watch(availableLanguagesProvider)) {
+    sizeInKB += ref.watch(languageProvider(langCode)).sizeInKB;
+  }
+  return sizeInKB;
+});

@@ -9,7 +9,7 @@ import 'package:app4training/data/updates.dart';
 import 'package:app4training/widgets/languages_table.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'settings_page_test.dart';
+import 'languages_test.dart';
 
 // Simulate that German is downloaded
 class TestLanguageController extends DummyLanguageController {

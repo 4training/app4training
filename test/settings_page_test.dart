@@ -12,6 +12,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations_en.dart';
 
+import 'languages_test.dart';
+
 class TestSettingsPage extends ConsumerWidget {
   const TestSettingsPage({super.key});
 
@@ -24,16 +26,6 @@ class TestSettingsPage extends ConsumerWidget {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const SettingsPage());
-  }
-}
-
-class DummyLanguageController extends LanguageController {
-  @override
-  Language build(String arg) {
-    languageCode = arg;
-    // Return dummy Language object using 42 kB
-    return Language(
-        '', const {}, const [], const {}, '', 42, DateTime.utc(2023, 1, 1));
   }
 }
 
