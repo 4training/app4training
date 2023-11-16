@@ -65,7 +65,7 @@ void main() {
       return TestLanguageController();
     });
 
-    SharedPreferences.setMockInitialValues({'appLanguage': 'fr'});
+    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(overrides: [
       languageProvider.overrideWithProvider(testLanguageProvider),
@@ -81,18 +81,16 @@ void main() {
             scaffoldMessengerKey: container.read(scaffoldMessengerKeyProvider),
             home: const Scaffold(body: DeleteAllLanguagesButton()))));
 
-    expect(find.byIcon(Icons.delete), findsOneWidget);
+    expect(container.read(languageProvider('ar')).downloaded, true);
 
+    expect(find.byIcon(Icons.delete), findsOneWidget);
     await tester.tap(find.byType(DeleteAllLanguagesButton));
     await tester.pump();
+
     expect(container.read(languageProvider('ar')).downloaded, false);
     expect(container.read(languageProvider('en')).downloaded, true);
-    // TODO: Why is appLanguageProvider returning English, not French?
-    // print('appLanguage: ${container.read(appLanguageProvider).languageCode}');
-    // expect(container.read(languageProvider('fr')).downloaded, true);
-    expect(container.read(languageProvider('de')).downloaded, false);
-
-    // TODO Snackbar visible?
-//    expect(find.text('32 Sprachen gelöscht'), findsOneWidget);
+    expect(container.read(languageProvider('de')).downloaded, true);
+    // Snackbar visible?
+    expect(find.text('32 Sprachen gelöscht'), findsOneWidget);
   });
 }

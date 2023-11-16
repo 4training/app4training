@@ -88,10 +88,10 @@ class _DownloadAllLanguagesButtonState
                       .read(languageProvider(languageCode).notifier)
                       .download()) {
                     countDownloads++;
+                    lastLanguage = languageCode;
                   } else {
                     countErrors++;
                   }
-                  lastLanguage = languageCode;
                 }
               }
               if (countDownloads > 0) {

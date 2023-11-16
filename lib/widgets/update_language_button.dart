@@ -82,30 +82,34 @@ class _UpdateAllLanguagesButtonState
               });
               // Get l10n now as we can't access context after async gap later
               final l10n = context.l10n;
-              int countDownloads = 0;
+              int countUpdates = 0;
               int countErrors = 0;
               String lastLanguage = '';
               for (var languageCode in ref.read(availableLanguagesProvider)) {
                 final status = ref.read(languageStatusProvider(languageCode));
                 if (status.updatesAvailable &&
                     ref.read(languageProvider(languageCode)).downloaded) {
-                  ref
+                  if (await ref
                       .read(languageProvider(languageCode).notifier)
-                      .download(force: true);
+                      .download(force: true)) {
+                    countUpdates++;
+                    lastLanguage = languageCode;
+                  } else {
+                    countErrors++;
+                  }
                 }
               }
-              if (countDownloads > 0) {
+              if (countUpdates > 0) {
                 // Show info message in snackbar
-                String text = (countDownloads == 1)
-                    ? l10n
-                        .downloadedLanguage(l10n.getLanguageName(lastLanguage))
-                    : l10n.downloadedNLanguages(countDownloads, countErrors);
+                String text = (countUpdates == 1)
+                    ? l10n.updatedLanguage(l10n.getLanguageName(lastLanguage))
+                    : l10n.updatedNLanguages(countUpdates, countErrors);
                 final snackBar = SnackBar(content: Text(text));
                 ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
               } else if (countErrors > 0) {
                 ref
                     .watch(scaffoldMessengerProvider)
-                    .showSnackBar(SnackBar(content: Text(l10n.downloadError)));
+                    .showSnackBar(SnackBar(content: Text(l10n.updateError)));
               }
               setState(() {
                 _isLoading = false;
