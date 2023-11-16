@@ -31,8 +31,8 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
           DateTime timestamp = DateTime.now().toUtc();
           bool hasError = false;
           int countAvailableUpdates = 0;
-          final nUpdatesAvailable = context.l10n.nUpdatesAvailable;
-          final errorMessage = context.l10n.errorCheckingUpdates;
+          // Get l10n now as we can't access context after async gap later
+          AppLocalizations l10n = context.l10n;
 
           for (String languageCode in ref.read(availableLanguagesProvider)) {
             // We don't check languages that are not downloaded
@@ -43,14 +43,14 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
             if (result < 0) hasError = true;
             if (result > 0) countAvailableUpdates++;
           }
+
           if (!hasError) {
             ref.read(lastCheckedProvider.notifier).state = timestamp;
             ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
-                content: Text(nUpdatesAvailable(countAvailableUpdates))));
+                content: Text(l10n.nUpdatesAvailable(countAvailableUpdates))));
           } else {
-            ref
-                .watch(scaffoldMessengerProvider)
-                .showSnackBar(SnackBar(content: Text(errorMessage)));
+            ref.watch(scaffoldMessengerProvider).showSnackBar(
+                SnackBar(content: Text(l10n.checkingUpdatesError)));
           }
           setState(() {
             _isLoading = false;

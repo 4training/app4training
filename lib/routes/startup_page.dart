@@ -19,12 +19,8 @@ class StartupPage extends ConsumerWidget {
   /// and load the structure
   Future initResources(WidgetRef ref) async {
     for (String languageCode in ref.read(availableLanguagesProvider)) {
-      try {
-        await ref.read(languageProvider(languageCode).notifier).init();
-      } catch (e) {
-        // TODO
-        debugPrint('Caught $e');
-      }
+      await ref.read(languageProvider(languageCode).notifier).init();
+      // TODO: look at return value and show snackBar when there was an error
     }
   }
 

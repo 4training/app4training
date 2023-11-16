@@ -86,16 +86,46 @@
             }
         }
     },
-    "downloadedNLanguages": "{count} Sprachen heruntergeladen",
+    "downloadedNLanguages": "{count} Sprachen heruntergeladen{error, plural, =0{} other{, {error} fehlgeschlagen}}",
     "@downloadedNLanguages": {
         "description": "Snackbar message after clicking on the button to download all languages and >1 language were downloaded",
         "placeholders": {
             "count": {
                 "type": "num",
                 "format": "compact"
+            },
+            "error": {
+                "type": "num",
+                "format": "compact"
             }
         }
     },
+    "downloadError": "Download fehlgeschlagen. Bitte versuche es später noch einmal.",
+    "updatedLanguage": "{languageName} ist nun auf dem aktuellsten Stand",
+    "@updatedLanguage": {
+        "description": "Snackbar info message",
+        "placeholders": {
+            "languageName": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "updatedNLanguages": "{count} Sprachen aktualisiert{error, plural, =0{} other{, {error} fehlgeschlagen}}",
+    "@updatedNLanguages": {
+        "description": "Snackbar message after clicking on the button to update all languages and >1 language were updated. Or if at least one update failed",
+        "placeholders": {
+            "count": {
+                "type": "num",
+                "format": "compact"
+            },
+            "error": {
+                "type": "num",
+                "format": "compact"
+            }
+        }
+    },
+    "updateError": "Aktualisierung fehlgeschlagen. Bitte versuche es später noch einmal.",
     "nUpdatesAvailable": "{count, plural, =0{Alle Sprachen sind bereits aktuell} =1{Sprachupdate verfügbar} other{Updates für {count} Sprachen verfügbar}}",
     "@nUpdatesAvailable": {
         "description": "Whether updates are available in 0, 1 or more languages",
@@ -106,5 +136,5 @@
             }
         }
     },
-    "errorCheckingUpdates": "Fehler beim Überprüfen auf Updates. Bitte probiere es später noch einmal"
+    "checkingUpdatesError": "Fehler beim Überprüfen auf Updates. Bitte versuche es später noch einmal."
 }

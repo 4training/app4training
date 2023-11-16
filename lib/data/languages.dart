@@ -106,18 +106,20 @@ class LanguageController extends FamilyNotifier<Language, String> {
   /// Download this language and make it available. Save that we want this
   /// language downloaded also in the SharedPreferences.
   /// If [force] is true, delete the existing structure and reload everything.
-  Future<void> download({bool force = false}) async {
+  /// Returns whether everything went well
+  Future<bool> download({bool force = false}) async {
     assert(languageCode != '');
     if (force) {
       await deleteResources();
     }
     assert(!state.downloaded);
     ref.read(sharedPrefsProvider).setBool('download_$languageCode', true);
-    await _load();
+    return await _load();
   }
 
   /// Check SharedPreferences: should we download this language? if yes, load it
-  Future<void> init() async {
+  /// Returns true on success, false when there was an error
+  Future<bool> init() async {
     assert(languageCode != '');
     bool? shouldDownload =
         ref.read(sharedPrefsProvider).getBool('download_$languageCode');
@@ -128,14 +130,16 @@ class LanguageController extends FamilyNotifier<Language, String> {
         (languageCode == 'en') ||
         (shouldDownload == true)) {
       ref.read(sharedPrefsProvider).setBool('download_$languageCode', true);
-      await _load();
+      return await _load();
     }
+    return true;
   }
 
   /// Load our Language structure from the file system resources.
   /// Download the language if it's not already downloaded.
   /// This function doesn't touch SharedPreferences.
-  Future<void> _load() async {
+  /// Returns whether everything went well
+  Future<bool> _load() async {
     final fileSystem = ref.watch(fileSystemProvider);
     await _controller.init(assetDir: "assets-$languageCode");
 
@@ -191,12 +195,15 @@ class LanguageController extends FamilyNotifier<Language, String> {
       }
       state = Language(
           languageCode, pages, pageIndex, images, path, sizeInKB, timestamp);
+      return true;
     } catch (e) {
       String msg = "Error initializing data structure: $e";
       debugPrint(msg);
       // Delete the whole folder
       _controller.clearAssets();
-      throw Exception(msg);
+      state = Language(
+          '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
+      return false;
     }
   }
 

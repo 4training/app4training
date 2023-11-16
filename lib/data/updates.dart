@@ -64,6 +64,10 @@ final checkFrequencyProvider =
 });
 
 /// Status of one language: Are there updates available?
+/// LanguageStatusNotifier.build() is watching the languageProvider, which means
+/// this gets rebuilt when we delete + download a language:
+/// - a new LanguageStatus object is created
+/// - updatesAvailable is set to false
 @immutable
 class LanguageStatus {
   /// Same as [Language.downloadTimestamp]; doesn't change here
@@ -106,9 +110,6 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
       if (response.statusCode == 200) {
         int commits = json.decode(response.body).length;
         debugPrint("Found $commits new commits ($_languageCode)");
-        if (commits > 0) {
-          ref.read(updatesAvailableProvider.notifier).state = true;
-        }
         state = LanguageStatus(
             commits > 0, state.downloadTimestamp, DateTime.now().toUtc());
         return commits;
@@ -134,7 +135,16 @@ final languageStatusProvider =
 });
 
 /// Are there updates available in any of our languages?
-final updatesAvailableProvider = StateProvider<bool>((ref) => false);
+final updatesAvailableProvider = StateProvider<bool>((ref) {
+  bool updatesAvailable = false;
+  for (String languageCode in ref.watch(availableLanguagesProvider)) {
+    if (ref.watch(languageStatusProvider(languageCode)).updatesAvailable) {
+      updatesAvailable = true;
+      // Don't break the loop - we need to watch all languageStatusProviders
+    }
+  }
+  return updatesAvailable;
+});
 
 /// When was the last time we checked for updates? (UTC)
 /// We have this property for each language in the LanguageStatus,
@@ -142,7 +152,7 @@ final updatesAvailableProvider = StateProvider<bool>((ref) => false);
 final lastCheckedProvider = StateProvider<DateTime>((ref) {
   DateTime timestamp = DateTime.now().toUtc();
   bool downloadedSomeLanguage = false;
-  for (String languageCode in ref.read(availableLanguagesProvider)) {
+  for (String languageCode in ref.watch(availableLanguagesProvider)) {
     if (!ref.read(languageProvider(languageCode)).downloaded) continue;
     downloadedSomeLanguage = true;
     DateTime languageTimestamp =

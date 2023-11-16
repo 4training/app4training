@@ -100,7 +100,7 @@ void main() {
     expect(find.byIcon(Icons.check), findsNWidgets(1));
 
     expect(find.byIcon(Icons.delete), findsNWidgets(2));
-    expect(find.byIcon(Icons.refresh), findsOneWidget);
+    expect(find.byIcon(Icons.refresh), findsNWidgets(2));
     expect(find.byIcon(Icons.download), findsNWidgets(3));
   });
   // TODO add more tests to check whether icons change according to user interaction

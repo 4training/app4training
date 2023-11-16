@@ -46,7 +46,7 @@ class DeleteAllLanguagesButton extends ConsumerWidget {
         onPressed: () async {
           // snackbar to be shown after the resources are deleted
           // Get l10n now as we can't access context after async gap later
-          final l10n = context.l10n;
+          AppLocalizations l10n = context.l10n;
           int countDeleted = 0;
           String lastLanguage = '';
           for (var languageCode in ref.read(availableLanguagesProvider)) {
@@ -56,7 +56,6 @@ class DeleteAllLanguagesButton extends ConsumerWidget {
               continue;
             }
             if (ref.watch(languageProvider(languageCode)).downloaded) {
-              // TODO error handling
               await ref
                   .read(languageProvider(languageCode).notifier)
                   .deleteResources();

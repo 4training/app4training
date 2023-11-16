@@ -33,11 +33,16 @@ class _DownloadLanguageButtonState
               setState(() {
                 _isLoading = true;
               });
-              final snackBar = SnackBar(
-                  content: Text(context.l10n.downloadedLanguage(
-                      context.l10n.getLanguageName(widget.languageCode))));
-              await lang.download();
-              ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
+              // Get l10n now as we can't access context after async gap later
+              AppLocalizations l10n = context.l10n;
+
+              bool success = await lang.download();
+
+              ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
+                  content: Text(success
+                      ? l10n.downloadedLanguage(
+                          l10n.getLanguageName(widget.languageCode))
+                      : l10n.downloadError)));
               setState(() {
                 _isLoading = false;
               });
@@ -75,14 +80,17 @@ class _DownloadAllLanguagesButtonState
               // Get l10n now as we can't access context after async gap later
               final l10n = context.l10n;
               int countDownloads = 0;
+              int countErrors = 0;
               String lastLanguage = '';
               for (var languageCode in ref.read(availableLanguagesProvider)) {
                 if (!ref.watch(languageProvider(languageCode)).downloaded) {
-                  // TODO error handling
-                  await ref
+                  if (await ref
                       .read(languageProvider(languageCode).notifier)
-                      .download();
-                  countDownloads++;
+                      .download()) {
+                    countDownloads++;
+                  } else {
+                    countErrors++;
+                  }
                   lastLanguage = languageCode;
                 }
               }
@@ -91,9 +99,13 @@ class _DownloadAllLanguagesButtonState
                 String text = (countDownloads == 1)
                     ? l10n
                         .downloadedLanguage(l10n.getLanguageName(lastLanguage))
-                    : l10n.downloadedNLanguages(countDownloads);
+                    : l10n.downloadedNLanguages(countDownloads, countErrors);
                 final snackBar = SnackBar(content: Text(text));
                 ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
+              } else if (countErrors > 0) {
+                ref
+                    .watch(scaffoldMessengerProvider)
+                    .showSnackBar(SnackBar(content: Text(l10n.downloadError)));
               }
               setState(() {
                 _isLoading = false;

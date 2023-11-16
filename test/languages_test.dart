@@ -123,12 +123,7 @@ void main() {
         final deTest = container.read(languageProvider('de').notifier);
 
         expect(prefs.getBool('download_de'), null);
-        try {
-          await deTest.download();
-          fail('Test.init() should throw a FileSystemException');
-        } catch (e) {
-          expect(e.toString(), contains('No such file or directory'));
-        }
+        expect(await deTest.download(), false);
         expect(deTest.state.downloaded, false);
         expect(prefs.getBool('download_de'), true);
       });
@@ -151,12 +146,7 @@ void main() {
           sharedPrefsProvider.overrideWithValue(prefs)
         ]);
         final deTest = container.read(languageProvider('de').notifier);
-        try {
-          await deTest.download();
-          fail('Test.init() should throw while decoding contents.json');
-        } catch (e) {
-          expect(e.toString(), contains('FormatException'));
-        }
+        expect(await deTest.download(), false);
         expect(deTest.state.downloaded, false);
       });
 

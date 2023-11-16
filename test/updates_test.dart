@@ -150,6 +150,73 @@ void main() {
     expect(deStatus.updatesAvailable, false);
   });
 
-  // TODO: Test check() throwing an exception
-  // TODO: Test availableUpdatesProvider
+  test('Test correct behavior when checking for updates fails', () async {
+    SharedPreferences.setMockInitialValues({'download_de': false});
+    final prefs = await SharedPreferences.getInstance();
+    final container = ProviderContainer(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      httpClientProvider.overrideWith((ref) => MockClient((request) async {
+            throw (ClientException);
+          })),
+      languageProvider.overrideWith(() =>
+          LanguageController(assetsController: FakeDownloadAssetsController())),
+    ]);
+
+    final deStatusNotifier =
+        container.read(languageStatusProvider('de').notifier);
+    expect(await deStatusNotifier.check(), -1);
+
+    // The lastCheckedTimestamp should not be changed
+    LanguageStatus deStatus = container.read(languageStatusProvider('de'));
+    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(deStatus.updatesAvailable, false);
+  });
+
+  test('Test updatesAvailableProvider', () async {
+    SharedPreferences.setMockInitialValues({'download_de': false});
+    final prefs = await SharedPreferences.getInstance();
+    final container = ProviderContainer(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      httpClientProvider.overrideWith((ref) => MockClient((request) async {
+            expect(
+                request.url.toString(),
+                equals(
+                    Globals.getCommitsSince('de', DateTime.utc(2023, 1, 1))));
+            // The real response is more complex but as we don't care about
+            // all the properties that's enough to simulate two new commits
+            return Response(json.encode([0, 1]), 200);
+          })),
+      languageProvider.overrideWith(() =>
+          LanguageController(assetsController: FakeDownloadAssetsController())),
+    ]);
+
+    // No updates available
+    LanguageStatus deStatus = container.read(languageStatusProvider('de'));
+    expect(deStatus.updatesAvailable, false);
+    expect(container.read(updatesAvailableProvider), false);
+
+    // An update for German is available
+    final deStatusNotifier =
+        container.read(languageStatusProvider('de').notifier);
+    expect(await deStatusNotifier.check(), 2);
+    deStatus = container.read(languageStatusProvider('de'));
+    expect(deStatus.updatesAvailable, true);
+    expect(container.read(updatesAvailableProvider), true);
+
+    // Updating the German resources
+    try {
+      await container
+          .read(languageProvider('de').notifier)
+          .download(force: true);
+      fail('download() should throw because no files are there');
+    } catch (e) {
+      expect(e, isA<Exception>());
+    }
+
+    // Now there should again be no updates available
+    deStatus = container.read(languageStatusProvider('de'));
+    expect(deStatus.updatesAvailable, false);
+    expect(container.read(updatesAvailableProvider), false);
+  });
 }
