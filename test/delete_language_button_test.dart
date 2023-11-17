@@ -28,14 +28,17 @@ class TestLanguageController extends DummyLanguageController {
 
 void main() {
   testWidgets('Test DeleteLanguageButton', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
     final testLanguageController = TestLanguageController();
     final testLanguageProvider =
         NotifierProvider.family<LanguageController, Language, String>(() {
       return testLanguageController;
     });
 
+    final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(overrides: [
-      languageProvider.overrideWithProvider(testLanguageProvider)
+      languageProvider.overrideWithProvider(testLanguageProvider),
+      sharedPrefsProvider.overrideWithValue(prefs),
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -48,6 +51,7 @@ void main() {
             home: const Scaffold(body: DeleteLanguageButton('en')))));
 
     expect(find.byIcon(Icons.delete), findsOneWidget);
+    expect(find.byType(ColorFiltered), findsNothing);
     expect(testLanguageController.state.downloaded, true);
     expect(container.read(languageProvider('en')).downloaded, true);
 
@@ -57,6 +61,56 @@ void main() {
     expect(container.read(languageProvider('en')).downloaded, false);
     // Snackbar visible?
     expect(find.text('Englisch (en) wurde gelöscht'), findsOneWidget);
+  });
+
+  // Trying to delete the currently selected app language is discouraged
+  testWidgets('Test DeleteLanguageButton for app language',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+    final testLanguageController = TestLanguageController();
+    final testLanguageProvider =
+        NotifierProvider.family<LanguageController, Language, String>(() {
+      return testLanguageController;
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    final container = ProviderContainer(overrides: [
+      languageProvider.overrideWithProvider(testLanguageProvider),
+      sharedPrefsProvider.overrideWithValue(prefs),
+    ]);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+            locale: const Locale('de'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            scaffoldMessengerKey: container.read(scaffoldMessengerKeyProvider),
+            home: const Scaffold(body: DeleteLanguageButton('de')))));
+
+    expect(find.byIcon(Icons.delete), findsOneWidget);
+    expect(find.byType(ColorFiltered), findsOneWidget);
+    expect(container.read(languageProvider('de')).downloaded, true);
+
+    await tester.tap(find.byType(DeleteLanguageButton));
+    await tester.pump();
+    // The ConfirmDeletionDialog should be visible now: we cancel
+    expect(find.byType(ConfirmDeletionDialog), findsOneWidget);
+    expect(find.text('Abbrechen'), findsOneWidget);
+    expect(find.text('Löschen'), findsOneWidget);
+    await (tester.tap(find.text('Abbrechen')));
+    await tester.pump();
+    expect(find.byType(ConfirmDeletionDialog), findsNothing);
+    expect(container.read(languageProvider('de')).downloaded, true);
+
+    // This time we really delete
+    await tester.tap(find.byType(DeleteLanguageButton));
+    await tester.pump();
+    expect(find.text('Löschen'), findsOneWidget);
+    await (tester.tap(find.text('Löschen')));
+    await tester.pump();
+    expect(find.byType(ConfirmDeletionDialog), findsNothing);
+    expect(container.read(languageProvider('de')).downloaded, false);
   });
 
   testWidgets('Test DeleteAllLanguagesButton', (WidgetTester tester) async {
@@ -88,9 +142,9 @@ void main() {
     await tester.pump();
 
     expect(container.read(languageProvider('ar')).downloaded, false);
-    expect(container.read(languageProvider('en')).downloaded, true);
+    expect(container.read(languageProvider('en')).downloaded, false);
     expect(container.read(languageProvider('de')).downloaded, true);
     // Snackbar visible?
-    expect(find.text('32 Sprachen gelöscht'), findsOneWidget);
+    expect(find.text('33 Sprachen gelöscht'), findsOneWidget);
   });
 }

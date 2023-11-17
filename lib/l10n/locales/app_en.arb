@@ -68,8 +68,9 @@
     "language_de": "German",
     "diskUsage" : "Disk usage",
     "warning" : "Warning",
-    "cannotDelete" : "You can't delete the language that is currently selected. Switch language and try again.",
-    "close" : "Close",
+    "warnBeforeDelete" : "You are trying to delete the currently selected app language. Are you sure?",
+    "cancel": "Cancel",
+    "delete": "Delete",
     "deletedLanguage": "{languageName} was deleted",
     "@deletedLanguage": {
         "description": "Snackbar info message",

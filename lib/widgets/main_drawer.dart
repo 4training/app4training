@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/menu_tree.dart';

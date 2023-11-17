@@ -68,8 +68,9 @@
     "language_de": "Deutsch",
     "diskUsage" : "Speicherverbrauch",
     "warning" : "Warnung",
-    "cannotDelete" : "Du kannst die aktuelle Sprache nicht löschen. Wechsle zunächst die Sprache und versuche es dann erneut.",
-    "close" : "Schließen",
+    "warnBeforeDelete" : "Du versuchst, die aktuell ausgewählte App-Sprache zu löschen. Bist du sicher?",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
     "deletedLanguage": "{languageName} wurde gelöscht",
     "@deletedLanguage": {
         "description": "Snackbar info message",
