@@ -19,7 +19,7 @@ class DropdownButtonCheckFrequency extends ConsumerWidget {
             )
         ],
         onChanged: (String? value) {
-          ref.read(checkFrequencyProvider.notifier).setCheckFrequency(value!);
+          ref.read(checkFrequencyProvider.notifier).setCheckFrequency(value);
         });
   }
 }

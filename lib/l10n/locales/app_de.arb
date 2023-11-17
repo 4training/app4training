@@ -8,13 +8,26 @@
     "@updates" : {
         "description": "Headline on the settings page"
     },
-    "checkFrequency" : "Wie oft soll die App nach Updates suchen?",
+    "checkFrequency" : "Nach Aktualisierungen suchen",
     "never" : "niemals",
     "daily" : "täglich",
     "weekly" : "wöchentlich",
     "monthly" : "monatlich",
     "lastCheck" : "Letzte Überprüfung:",
     "checkNow" : "Jetzt überprüfen",
+    "doAutomaticUpdates" : "Automatische Aktualisierungen durchführen",
+    "requireConfirmation" : "Bestätigung verlangen",
+    "@requireConfirmation" : {
+        "description": "Option for {doAutomaticUpdates}"
+    },
+    "onlyOnWifi" : "ja, aber nur über WLAN",
+    "@onlyOnWife" : {
+        "description": "Option for {doAutomaticUpdates}"
+    },
+    "yesAlways" : "ja, auch über mobile Daten",
+    "@yesAlways" : {
+        "description": "Option for {doAutomaticUpdates}. TODO: ja, auch bei mobiler Datenverbindung would be nicer but too long"
+    },
     "appearance" : "Darstellung",
     "theme" : "Design",
     "light" : "hell",

@@ -1,3 +1,4 @@
+import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,6 +74,59 @@ final availableLanguagesProvider = Provider<List<String>>((ref) {
   ];
 });
 
+/// Should the app do automatic updates?
+/// Default: yes but only when in Wifi
+enum AutomaticUpdates {
+  never,
+  requireConfirmation,
+  onlyOnWifi,
+  yesAlways;
+
+  /// Safe conversion method that handles invalid values as well as null
+  /// Default value is AutomaticUpdates.yesOnWifi
+  static AutomaticUpdates fromString(String? selection) {
+    if (selection == null) return AutomaticUpdates.onlyOnWifi;
+    try {
+      return AutomaticUpdates.values.byName(selection);
+    } on ArgumentError {
+      return AutomaticUpdates.onlyOnWifi;
+    }
+  }
+
+  static String getLocalized(BuildContext context, AutomaticUpdates value) {
+    switch (value) {
+      case AutomaticUpdates.never:
+        return context.l10n.never;
+      case AutomaticUpdates.requireConfirmation:
+        return context.l10n.requireConfirmation;
+      case AutomaticUpdates.onlyOnWifi:
+        return context.l10n.onlyOnWifi;
+      case AutomaticUpdates.yesAlways:
+        return context.l10n.yesAlways;
+    }
+  }
+}
+
+/// Handling our ConfirmDataUsage and persisting it to the SharedPreferences
+class AutomaticUpdatesNotifier extends Notifier<AutomaticUpdates> {
+  @override
+  AutomaticUpdates build() {
+    return AutomaticUpdates.fromString(
+        ref.read(sharedPrefsProvider).getString('automaticUpdates'));
+  }
+
+  /// Our one function to change our global setting
+  void setAutomaticUpdates(String? selection) {
+    state = AutomaticUpdates.fromString(selection);
+    ref.read(sharedPrefsProvider).setString('automaticUpdates', state.name);
+  }
+}
+
+final automaticUpdatesProvider =
+    NotifierProvider<AutomaticUpdatesNotifier, AutomaticUpdates>(() {
+  return AutomaticUpdatesNotifier();
+});
+
 /// global constants
 class Globals {
   /// Which of these languages are right-to-left? (RTL)
@@ -100,7 +154,8 @@ class Globals {
     return '$htmlPath-$languageCode-$branch';
   }
 
-  /// Url of Github API: have been commits since [timestamp]?
+  /// URL of Github API to query whether there are new commits since [timestamp]
+  /// Documentation: https://docs.github.com/en/rest/commits/commits
   static String getCommitsSince(String languageCode, DateTime timestamp) {
     assert(timestamp.isUtc);
     return 'https://api.github.com/repos/$githubUser/$htmlPath-$languageCode'

@@ -1,3 +1,4 @@
+import 'package:app4training/widgets/dropdownbutton_automatic_updates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/updates.dart';
@@ -83,13 +84,15 @@ class UpdateSettings extends ConsumerWidget {
     String timestamp = DateFormat('yyyy-MM-dd HH:mm').format(localTime);
 
     return Column(children: [
+      // Updates (headline)
       Align(
           alignment: Alignment.topLeft,
           child: Text(context.l10n.updates,
               style: Theme.of(context).textTheme.titleLarge)),
+      // Check for updates
       Row(
         mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
               child: Text(context.l10n.checkFrequency,
@@ -99,16 +102,32 @@ class UpdateSettings extends ConsumerWidget {
         ],
       ),
       const SizedBox(height: 10),
+      // Last check with date
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Text("${context.l10n.lastCheck} ",
             style: Theme.of(context).textTheme.bodyMedium),
         Text(timestamp, style: Theme.of(context).textTheme.bodyMedium)
       ]),
       const SizedBox(height: 10),
+      // Check now
       Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [CheckNowButton(buttonText: context.l10n.checkNow)],
-      )
+      ),
+      const SizedBox(height: 10),
+
+      // Do automatic updates
+      Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+              child: Text(context.l10n.doAutomaticUpdates,
+                  style: Theme.of(context).textTheme.bodyMedium)),
+          const SizedBox(width: 20),
+          const DropdownButtonAutomaticUpdates(),
+        ],
+      ),
     ]);
   }
 }

@@ -52,7 +52,7 @@ class CheckFrequencyNotifier extends Notifier<CheckFrequency> {
   }
 
   /// Our one function to change our global setting
-  void setCheckFrequency(String selection) {
+  void setCheckFrequency(String? selection) {
     state = CheckFrequency.fromString(selection);
     ref.read(sharedPrefsProvider).setString('checkFrequency', state.name);
   }
