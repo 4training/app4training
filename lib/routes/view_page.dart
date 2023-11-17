@@ -26,7 +26,7 @@ class ViewPage extends ConsumerWidget {
           title: const Text(title),
           actions: const [SettingsButton()],
         ),
-        drawer: MainDrawer(langCode),
+        drawer: MainDrawer(page, langCode),
         body: pageContent.when(
             loading: () => loadingAnimation("Loading content..."),
             data: (content) => MainHtmlView(
