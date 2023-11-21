@@ -1,27 +1,38 @@
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:app4training/design/colors.dart';
-import 'package:app4training/design/textthemes.dart';
-import 'appbar_theme.dart';
-import 'color_schemes.dart';
 
-ThemeData lightTheme = ThemeData(
-    colorScheme: lightColorScheme,
-    //typography: materialTypography,
-    appBarTheme: lightAppBarTheme,
-    //buttonTheme: materialLightButtonThemeData,
-    visualDensity: VisualDensity.adaptivePlatformDensity,
-    brightness: Brightness.light,
-    textTheme: lightTextTheme,
-    scaffoldBackgroundColor: lightBackground,
-    snackBarTheme: SnackBarThemeData(backgroundColor: lightOnBackground));
+/// Our primary red color (a little bit darker than the red of FlexScheme.red)
+Color lightPrimaryColor = Colors.red[900]!;
 
-ThemeData darkTheme = ThemeData(
-    colorScheme: darkColorScheme,
-    //typography: materialTypography,
-    appBarTheme: darkAppBarTheme,
-    //buttonTheme: materialDarkButtonThemeData,
-    visualDensity: VisualDensity.adaptivePlatformDensity,
-    brightness: Brightness.dark,
-    textTheme: darkTextTheme,
-    scaffoldBackgroundColor: darkBackground,
-    snackBarTheme: SnackBarThemeData(backgroundColor: darkOnBackground));
+/// Using the red theme of flex_color_scheme - see
+/// https://rydmike.com/flexcolorscheme/themesplayground-latest/
+/// and select "red tornado"
+ThemeData _defaultLightTheme =
+    FlexThemeData.light(scheme: FlexScheme.red, useMaterial3: true);
+
+/// Customize the design of our app bar
+AppBarTheme lightAppBarTheme = AppBarTheme(
+    backgroundColor: lightPrimaryColor,
+    centerTitle: true,
+    // increase font size and make it bold
+    titleTextStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+    // let the burger menu icon be white (instead of black)
+    iconTheme: const IconThemeData(color: Colors.white));
+
+AppBarTheme darkAppBarTheme = AppBarTheme(
+  backgroundColor: _defaultLightTheme.colorScheme.primary,
+  centerTitle: true,
+  titleTextStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+);
+
+/// Our standard (light) theme
+ThemeData lightTheme = _defaultLightTheme.copyWith(
+    // change the primary red color a bit
+    colorScheme:
+        _defaultLightTheme.colorScheme.copyWith(primary: lightPrimaryColor),
+    appBarTheme: lightAppBarTheme);
+
+/// Our dark theme
+ThemeData darkTheme =
+    FlexThemeData.dark(scheme: FlexScheme.red, useMaterial3: true)
+        .copyWith(appBarTheme: darkAppBarTheme);
