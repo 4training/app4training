@@ -168,19 +168,52 @@ htmldom.Document sanitize(String inputHtml) {
 
   // For God's Story (five fingers):
   // Remove <div style="margin-left:25px"
-  for (var element in dom.querySelectorAll('div')) {
+/*  for (var element in dom.querySelectorAll('div')) {
     if (element.attributes['style'] == 'margin-left:25px') {
       element.attributes['style'] = '';
     }
-  }
-
-  // For God's Story (five fingers):
-  // TODO put the finger images besides the explanation
-  // Replace <div class="floatleft"><img .../></div><div><p><i>...</i></p>...
-  // with <table><tr><td><img .../></td><td><i>...</i></td></tr></table>
-/*  for (var element in dom.querySelectorAll('div img')) {
-    var divParent = element.parent!;
   }*/
 
+  // For God's Story (five fingers):
+  // put the finger images besides the explanation
+  // Replace <div class="floatleft"><img .../></div><div style="margin-left:25px"><p><i>...</i></p>...
+  // with <table><tr><td><img .../></td><td><i>...</i></td></tr></table><div>...
+  //
+  // TODO: Make this workaround obsolete somehow
+  // (change the HTML source in the python backend
+  //  or patch flutter-html so that it can handle the float property...)
+  for (var imgElement in dom.querySelectorAll('div.floatleft img')) {
+    var divNode = imgElement.parent!;
+    htmldom.Element parentNode = divNode.parent!;
+
+    // Get the sibling div node (which has style="margin-left:25px")
+    for (var element in parentNode.children) {
+      if (element.attributes['style'] == 'margin-left:25px') {
+        debugPrint('Found the second <div>');
+        // Now get the child <p> node
+        for (var childElement in element.children) {
+          if (childElement.localName!.toLowerCase() == 'p') {
+            debugPrint('Found <p>');
+            // Now construct our new Html
+            var tableElement = htmldom.Element.tag('table');
+            var trElement = htmldom.Element.tag('tr');
+            var tdElement = htmldom.Element.tag('td');
+            tdElement.innerHtml = imgElement.outerHtml;
+            var tdElement2 = htmldom.Element.tag('td');
+            tdElement2.innerHtml = childElement.innerHtml;
+            trElement.children.add(tdElement);
+            trElement.children.add(tdElement2);
+            tableElement.children.add(trElement);
+
+            divNode.replaceWith(tableElement);
+            childElement.remove();
+            element.attributes['style'] = '';
+            break;
+          }
+        }
+        break;
+      }
+    }
+  }
   return dom;
 }
