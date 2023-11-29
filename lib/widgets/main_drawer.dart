@@ -1,12 +1,6 @@
-import 'package:app4training/data/globals.dart';
-import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/menu_tree.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app4training/widgets/upward_expansion_tile.dart';
-
-import '../data/languages.dart';
-import '../routes/view_page.dart';
 
 /// Our main menu with the list of pages and the language selection at the end
 class MainDrawer extends ConsumerWidget {
@@ -16,8 +10,7 @@ class MainDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Drawer(
-        child: Column(children: [
+    return Drawer(child: MenuTree(page, langCode) //Column(children: [
 /*      // Header
       Padding(
         padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
@@ -26,8 +19,8 @@ class MainDrawer extends ConsumerWidget {
             child:
                 Text("Content", style: Theme.of(context).textTheme.titleLarge)),
       ),*/
-      // Menu with all the pages
-      Expanded(child: MenuTree(page, langCode)),
+        // Menu with all the pages
+//      Expanded(child: MenuTree(page, langCode)),
 /*          child: Directionality(
               textDirection: Globals.rtlLanguages.contains(langCode)
                   ? TextDirection.rtl
@@ -35,8 +28,7 @@ class MainDrawer extends ConsumerWidget {
               child: ListView(
                   padding: EdgeInsets.zero,
                   children: _buildPageList(context, ref)))),*/
-      const LanguageSelection()
-    ]));
+        );
   }
 
   /// Return ListTiles for the ListView of all pages in the selected language
@@ -57,35 +49,4 @@ class MainDrawer extends ConsumerWidget {
     });
     return allPages;
   }*/
-}
-
-/// Language selection (opens upwards)
-class LanguageSelection extends ConsumerWidget {
-  const LanguageSelection({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    List<ListTile> allLanguages = [];
-
-    for (var language in ref.read(availableLanguagesProvider)) {
-      if (!ref.watch(languageProvider(language)).downloaded) continue;
-      String title = context.l10n.getLanguageName(language);
-      allLanguages.add(ListTile(
-        title: Text(title, style: Theme.of(context).textTheme.labelMedium),
-        onTap: () {
-          String currentPage =
-              context.findAncestorWidgetOfExactType<ViewPage>()!.page;
-          Navigator.pop(context);
-          Navigator.pushNamed(context, "/view/$currentPage/$language");
-        },
-      ));
-    }
-
-    return UpwardExpansionTile(
-      title: Text("Languages", style: Theme.of(context).textTheme.labelLarge),
-      leading: const Icon(Icons.language),
-      expandedAlignment: Alignment.topCenter,
-      children: allLanguages,
-    );
-  }
 }

@@ -151,5 +151,9 @@
             }
         }
     },
-    "checkingUpdatesError": "Error while checking updates. Please try again later"
+    "checkingUpdatesError": "Error while checking updates. Please try again later",
+    "languageSelectionHeader": "Show current page in:",
+    "@languageSelectionHeader": {
+        "description": "Text shown before the list of languages when users taps the language selection button"
+    }
 }

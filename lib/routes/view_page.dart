@@ -8,6 +8,7 @@ import 'package:html/dom.dart' as htmldom;
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/widgets/loading_animation.dart';
 import 'package:app4training/widgets/main_drawer.dart';
+import 'package:app4training/widgets/language_selection.dart';
 import 'package:app4training/widgets/settings_button.dart';
 
 /// The standard view of this app:
@@ -25,7 +26,7 @@ class ViewPage extends ConsumerWidget {
     return Scaffold(
         appBar: AppBar(
           title: const Text(title),
-          actions: const [SettingsButton()],
+          actions: const [LanguagesButton(), SettingsButton()],
         ),
         drawer: MainDrawer(page, langCode),
         body: pageContent.when(

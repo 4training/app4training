@@ -151,5 +151,9 @@
             }
         }
     },
-    "checkingUpdatesError": "Fehler beim Überprüfen auf Updates. Bitte versuche es später noch einmal."
+    "checkingUpdatesError": "Fehler beim Überprüfen auf Updates. Bitte versuche es später noch einmal.",
+    "languageSelectionHeader": "Seite anzeigen auf:",
+    "@languageSelectionHeader": {
+        "description": "Text shown before the list of languages when users taps the language selection button"
+    }
 }
