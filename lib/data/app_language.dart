@@ -23,7 +23,7 @@ class AppLanguage {
 
   /// [str] can be a language code ('en', 'de', ...) or 'system'
   /// In case of 'system': Use the [defaultLangCode]
-  static fromString(String str, String defaultLangCode) {
+  static AppLanguage fromString(String str, String defaultLangCode) {
     if (!availableAppLanguages.keys.contains(str)) str = 'system';
     bool isSystemLanguage = str == 'system';
 
