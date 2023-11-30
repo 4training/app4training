@@ -62,6 +62,8 @@ void main() {
       languageProvider.overrideWithProvider(testLanguageProvider)
     ], child: const TestLanguagesTable()));
 
+    expect(
+        find.text('All languages ($countAvailableLanguages)'), findsOneWidget);
     expect(find.text('German (de)'), findsOneWidget);
     expect(find.text('English (en)'), findsOneWidget);
     expect(find.byIcon(Icons.check), findsNothing);
@@ -95,6 +97,8 @@ void main() {
     await tester.pumpWidget(UncontrolledProviderScope(
         container: container, child: const TestLanguagesTable()));
 
+    expect(
+        find.text('Alle Sprachen ($countAvailableLanguages)'), findsOneWidget);
     expect(find.text('Deutsch (de)'), findsOneWidget);
     expect(find.text('Englisch (en)'), findsOneWidget);
     expect(find.byIcon(Icons.check), findsNWidgets(1));

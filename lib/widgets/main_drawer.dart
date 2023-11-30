@@ -33,7 +33,7 @@ class MainDrawer extends ConsumerWidget {
             child:
                 Text("Content", style: Theme.of(context).textTheme.titleLarge)),
       ),
-      ...categories.map<ExpansionTile>((String category) {
+      ...Category.values.map<ExpansionTile>((Category category) {
         return _buildCategory(context, ref, category);
       }),
       const Divider(),
@@ -51,7 +51,7 @@ class MainDrawer extends ConsumerWidget {
 
   /// Construct ExpansionTile for one category
   ExpansionTile _buildCategory(
-      BuildContext context, WidgetRef ref, String category) {
+      BuildContext context, WidgetRef ref, Category category) {
     String appLanguage = ref.watch(appLanguageProvider).languageCode;
     LinkedHashMap<String, String> allTitles =
         ref.watch(languageProvider(appLanguage)).getPageTitles();
@@ -100,7 +100,7 @@ class MainDrawer extends ConsumerWidget {
       }
     });
     return ExpansionTile(
-        title: Text(category),
+        title: Text(Category.getLocalized(context, category)),
         collapsedBackgroundColor: (worksheetCategories[page] == category)
             ? Theme.of(context).highlightColor
             : null,

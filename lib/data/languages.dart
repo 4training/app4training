@@ -86,6 +86,17 @@ final languageProvider =
   return LanguageController();
 });
 
+/// Are there updates available in any of our languages?
+final countDownloadedLanguagesProvider = StateProvider<int>((ref) {
+  int countDownloadedLanguages = 0;
+  for (String languageCode in ref.watch(availableLanguagesProvider)) {
+    if (ref.watch(languageProvider(languageCode)).downloaded) {
+      countDownloadedLanguages++;
+    }
+  }
+  return countDownloadedLanguages;
+});
+
 class LanguageController extends FamilyNotifier<Language, String> {
   @protected
   String languageCode = '';

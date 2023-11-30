@@ -3,7 +3,7 @@
     "appLanguage" : "App language",
     "languages" : "Languages",
     "languagesText" : "These are the languages available. You can download, update or delete them manually.",
-    "allLanguages" : "Alle Sprachen",
+    "allLanguages" : "All languages",
     "updates" : "Updates",
     "@updates" : {
         "description": "Headline on the settings page"
@@ -67,6 +67,16 @@
     "language_en": "English",
     "language_de": "German",
     "diskUsage" : "Disk usage",
+    "countLanguages": "({count} {count, plural, =0{languages} =1{language} other{languages}})",
+    "@countLanguages": {
+        "description": "right besides {diskUsage}",
+        "placeholders": {
+            "count": {
+                "type": "num",
+                "format": "compact"
+            }
+        }
+    },
     "warning" : "Warning",
     "warnBeforeDelete" : "You are trying to delete the currently selected app language. Are you sure?",
     "cancel": "Cancel",
@@ -155,5 +165,11 @@
     "languageSelectionHeader": "Show current page in:",
     "@languageSelectionHeader": {
         "description": "Text shown before the list of languages when users taps the language selection button"
-    }
+    },
+    "content": "Content",
+    "essentials": "Essentials",
+    "essentialsForTrainers": "Essentials - for trainers",
+    "innerHealing": "Inner Healing",
+    "innerHealingForTrainers": "Inner Healing - for trainers"
+
 }

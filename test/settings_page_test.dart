@@ -81,5 +81,7 @@ void main() {
     ], child: const TestSettingsPage()));
     int expectedSize = 42 * countAvailableLanguages;
     expect(find.textContaining('$expectedSize kB'), findsOneWidget);
+    // language counter visibility basic test
+    expect(find.textContaining('(0 languages)'), findsOneWidget);
   });
 }

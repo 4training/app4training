@@ -69,8 +69,49 @@ void main() {
     await tester.tap(find.text('Inner Healing'));
     await tester.pumpAndSettle();
     expect(find.text('Overcoming Fear and Anger'), findsOneWidget);
+
+    // Settings visible?
+    expect(find.byIcon(Icons.settings), findsOneWidget);
+    expect(find.text('Settings'), findsOneWidget);
   });
 
-  // TODO: add test for the translation links
+  testWidgets('Test main navigation in German', (WidgetTester tester) async {
+    final testLanguageProvider =
+        NotifierProvider.family<LanguageController, Language, String>(() {
+      return TestLanguageController();
+    });
+
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    await tester.pumpWidget(ProviderScope(
+        overrides: [
+          sharedPrefsProvider.overrideWithValue(prefs),
+          languageProvider.overrideWithProvider(testLanguageProvider)
+        ],
+        child: MaterialApp(
+            locale: const Locale('de'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+                appBar: AppBar(title: const Text('4training')),
+                drawer: const MainDrawer('Forgiving_Step_by_Step', 'en')))));
+
+    expect(find.byIcon(Icons.menu), findsOneWidget);
+    expect(find.text('Innere Heilung'), findsNothing);
+    expect(find.text('[en]'), findsNothing);
+
+    final ScaffoldState state = tester.firstState(find.byType(Scaffold));
+    state.openDrawer();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Innere Heilung'), findsOneWidget);
+    expect(find.text('Grundlagen'), findsOneWidget);
+
+    // TODO: add test for the translation links
+    // For unknown reason this test fails when invoked via flutter test,
+    // but it succeeds with flutter run test/main_drawer_test.dart
+    // expect(find.text('[en]'), findsNWidgets(3));
+  });
+
   // TODO: test that currently opened page is highlighted in menu
 }

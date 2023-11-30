@@ -73,7 +73,8 @@ class LanguagesTable extends ConsumerWidget {
                   Container(
                       height: 32,
                       alignment: Alignment.centerLeft,
-                      child: Text(context.l10n.allLanguages,
+                      child: Text(
+                          '${context.l10n.allLanguages} ($countAvailableLanguages)',
                           style: const TextStyle(fontWeight: FontWeight.bold))),
                   const SizedBox(
                       height: 32, width: 32, child: UpdateAllLanguagesButton()),

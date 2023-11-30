@@ -14,7 +14,7 @@
     "weekly" : "wöchentlich",
     "monthly" : "monatlich",
     "lastCheck" : "Letzte Überprüfung:",
-    "checkNow" : "Jetzt überprüfen",
+    "checkNow" : "Jetzt prüfen",
     "doAutomaticUpdates" : "Automatische Aktualisierungen durchführen",
     "requireConfirmation" : "Bestätigung verlangen",
     "@requireConfirmation" : {
@@ -67,6 +67,16 @@
     "language_en": "Englisch",
     "language_de": "Deutsch",
     "diskUsage" : "Speicherverbrauch",
+    "countLanguages": "({count} {count, plural, =0{Sprachen} =1{Sprache} other{Sprachen}})",
+    "@countLanguages": {
+        "description": "right besides {diskUsage}",
+        "placeholders": {
+            "count": {
+                "type": "num",
+                "format": "compact"
+            }
+        }
+    },
     "warning" : "Warnung",
     "warnBeforeDelete" : "Du versuchst, die aktuell ausgewählte App-Sprache zu löschen. Bist du sicher?",
     "cancel": "Abbrechen",
@@ -155,5 +165,10 @@
     "languageSelectionHeader": "Seite anzeigen auf:",
     "@languageSelectionHeader": {
         "description": "Text shown before the list of languages when users taps the language selection button"
-    }
+    },
+    "content": "Inhalt",
+    "essentials": "Grundlagen",
+    "essentialsForTrainers": "Grundlagen - für Trainer",
+    "innerHealing": "Innere Heilung",
+    "innerHealingForTrainers": "Innere Heilung - für Trainer"
 }

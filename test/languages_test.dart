@@ -11,6 +11,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'language_selection_test.dart';
+
 class MockLanguageController extends Mock implements LanguageController {}
 
 class MockDownloadAssetsController extends Mock
@@ -242,5 +244,13 @@ void main() {
       languageProvider.overrideWith(() => DummyLanguageController()),
     ]);
     expect(container.read(diskUsageProvider), countAvailableLanguages * 42);
+  });
+
+  test('Test countDownloadedLanguagesProvider', () {
+    final container = ProviderContainer(overrides: [
+      languageProvider
+          .overrideWith(() => TestLanguageController(['de', 'fr', 'en'])),
+    ]);
+    expect(container.read(countDownloadedLanguagesProvider), 3);
   });
 }
