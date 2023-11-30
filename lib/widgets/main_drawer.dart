@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/categories.dart';
 import 'package:app4training/data/languages.dart';
+import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,8 +31,8 @@ class MainDrawer extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
         child: Align(
             alignment: Alignment.center,
-            child:
-                Text("Content", style: Theme.of(context).textTheme.titleLarge)),
+            child: Text(context.l10n.content,
+                style: Theme.of(context).textTheme.titleLarge)),
       ),
       ...Category.values.map<ExpansionTile>((Category category) {
         return _buildCategory(context, ref, category);
