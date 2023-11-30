@@ -1,8 +1,20 @@
-import 'package:app4training/widgets/menu_tree.dart';
+import 'dart:collection';
+
+import 'package:app4training/data/app_language.dart';
+import 'package:app4training/data/categories.dart';
+import 'package:app4training/data/languages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Our main menu with the list of pages and the language selection at the end
+/// Our main menu with the list of pages, organized into categories.
+/// The currently shown page is highlighted and the category it belongs to
+/// is expanded.
+/// Also add links to translations in case we're currently looking at a
+/// translated worksheet (different language than the app language).
+///
+/// Implemented with ExpansionTile - ExpansionPanelList would have been also
+/// an option but ExpansionPanel has less customization options
+/// (looks like you can't change the position of the expansion icon)
 class MainDrawer extends ConsumerWidget {
   final String page; // The currently opened page
   final String langCode;
@@ -10,43 +22,81 @@ class MainDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Drawer(child: MenuTree(page, langCode) //Column(children: [
-/*      // Header
+    return Drawer(
+        child: SingleChildScrollView(
+            child: Column(children: [
+      // Header
       Padding(
         padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
         child: Align(
             alignment: Alignment.center,
             child:
                 Text("Content", style: Theme.of(context).textTheme.titleLarge)),
-      ),*/
-        // Menu with all the pages
-//      Expanded(child: MenuTree(page, langCode)),
-/*          child: Directionality(
-              textDirection: Globals.rtlLanguages.contains(langCode)
-                  ? TextDirection.rtl
-                  : TextDirection.ltr,
-              child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: _buildPageList(context, ref)))),*/
-        );
+      ),
+      ...categories.map<ExpansionTile>((String category) {
+        return _buildCategory(context, ref, category);
+      }),
+    ])));
   }
 
-  /// Return ListTiles for the ListView of all pages in the selected language
-/*  List<ListTile> _buildPageList(BuildContext context, WidgetRef ref) {
+  /// Construct ExpansionTile for one category
+  ExpansionTile _buildCategory(
+      BuildContext context, WidgetRef ref, String category) {
+    String appLanguage = ref.watch(appLanguageProvider).languageCode;
     LinkedHashMap<String, String> allTitles =
-        ref.watch(languageProvider(langCode)).getPageTitles();
-    List<ListTile> allPages = [];
+        ref.watch(languageProvider(appLanguage)).getPageTitles();
 
+    // Construct the list of worksheets that belong to our category
+    List<Widget> categoryContent = [];
     allTitles.forEach((englishName, translatedName) {
-      allPages.add(ListTile(
-        title: Text(translatedName,
-            style: Theme.of(context).textTheme.titleMedium),
-        onTap: () {
-          Navigator.pop(context);
-          Navigator.pushNamed(context, '/view/$englishName/$langCode');
-        },
-      ));
+      if (worksheetCategories[englishName] == category) {
+        // If we're currently looking at a translation:
+        // Show direct links to (existing) translated worksheets
+        bool showTranslationLink = (langCode != appLanguage) &&
+            ref
+                .watch(languageProvider(langCode))
+                .pages
+                .containsKey(englishName);
+
+        categoryContent.add(Row(children: [
+          const SizedBox(width: 10),
+          Expanded(
+              child: TextButton(
+                  style: ButtonStyle(
+                      alignment: Alignment.centerLeft,
+                      shape: const MaterialStatePropertyAll(
+                          RoundedRectangleBorder()),
+                      backgroundColor: MaterialStatePropertyAll(
+                          (englishName == page)
+                              ? Theme.of(context).focusColor
+                              : null)),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                        context, '/view/$englishName/$appLanguage');
+                  },
+                  child: Text(translatedName,
+                      style: Theme.of(context).textTheme.titleMedium))),
+          showTranslationLink
+              ? TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                        context, '/view/$englishName/$langCode');
+                  },
+                  child: Text('[$langCode]'))
+              : const SizedBox()
+        ]));
+      }
     });
-    return allPages;
-  }*/
+    return ExpansionTile(
+        title: Text(category),
+        collapsedBackgroundColor: (worksheetCategories[page] == category)
+            ? Theme.of(context).highlightColor
+            : null,
+        controlAffinity: ListTileControlAffinity.leading,
+        shape: const Border(), // remove border when tile is expanded
+        initiallyExpanded: worksheetCategories[page] == category,
+        children: categoryContent);
+  }
 }

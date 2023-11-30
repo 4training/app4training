@@ -312,7 +312,7 @@ class Language {
 
   /// Define the order of pages in the menu: List of page names
   /// Not all pages must be in the menu, so every item in this list must be
-  /// in _pages, but not every item of _pages must be in this list
+  /// in pages, but not every item of pages must be in this list
   final List<String> pageIndex;
 
   final Map<String, Image> images;

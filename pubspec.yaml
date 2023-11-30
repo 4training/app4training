@@ -47,7 +47,6 @@ dependencies:
   shared_preferences: ^2.2.0
   flutter_riverpod: ^2.3.7
   html: ^0.15.4
-  animated_tree_view: ^2.1.0
   flex_color_scheme: ^7.3.1
 
 
