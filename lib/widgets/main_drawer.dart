@@ -36,6 +36,16 @@ class MainDrawer extends ConsumerWidget {
       ...categories.map<ExpansionTile>((String category) {
         return _buildCategory(context, ref, category);
       }),
+      const Divider(),
+      ListTile(
+        title: const Text('Settings'),
+        leading: const Icon(Icons.settings),
+        onTap: () {
+          // TODO drawer should be closed when user leaves the settings page
+          // ref.watch(scaffoldKeyProvider).currentState?.closeDrawer();
+          Navigator.pushNamed(context, '/settings');
+        },
+      )
     ])));
   }
 

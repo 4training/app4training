@@ -9,7 +9,6 @@ import 'package:app4training/data/languages.dart';
 import 'package:app4training/widgets/loading_animation.dart';
 import 'package:app4training/widgets/main_drawer.dart';
 import 'package:app4training/widgets/language_selection.dart';
-import 'package:app4training/widgets/settings_button.dart';
 
 /// The standard view of this app:
 /// Show a page (worksheet)
@@ -24,9 +23,10 @@ class ViewPage extends ConsumerWidget {
     AsyncValue<String> pageContent =
         ref.watch(pageContentProvider((name: page, langCode: langCode)));
     return Scaffold(
+// TODO        key: ref.watch(scaffoldKeyProvider),
         appBar: AppBar(
           title: const Text(title),
-          actions: const [LanguagesButton(), SettingsButton()],
+          actions: const [LanguagesButton()],
         ),
         drawer: MainDrawer(page, langCode),
         body: pageContent.when(

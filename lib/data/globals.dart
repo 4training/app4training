@@ -19,7 +19,7 @@ class ProviderNotOverriddenException implements Exception {
   }
 }
 
-/// Global key of the ScaffoldMessenger (to simplify snackback handling)
+/// Global key of the ScaffoldMessenger (to simplify snackbar handling)
 final scaffoldMessengerKeyProvider = Provider((ref) {
   return GlobalKey<ScaffoldMessengerState>();
 });
@@ -31,6 +31,14 @@ final scaffoldMessengerKeyProvider = Provider((ref) {
 /// as we don't need a BuildContext (which is not available in async callbacks)
 final scaffoldMessengerProvider = Provider((ref) {
   return ref.watch(scaffoldMessengerKeyProvider).currentState!;
+});
+
+/// Global key of the Scaffold (to open/close drawer)
+/// TODO: refactor so that we have only one place to create a Scaffold
+/// (currently after some interactions the following exception is thrown:
+/// Duplicate GlobalKey detected in widget tree)
+final scaffoldKeyProvider = Provider((ref) {
+  return GlobalKey<ScaffoldState>();
 });
 
 const int countAvailableLanguages = 34;
