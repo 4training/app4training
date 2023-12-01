@@ -42,8 +42,8 @@ class MainDrawer extends ConsumerWidget {
         title: const Text('Settings'),
         leading: const Icon(Icons.settings),
         onTap: () {
-          // TODO drawer should be closed when user leaves the settings page
-          // ref.watch(scaffoldKeyProvider).currentState?.closeDrawer();
+          // Drawer should be closed when user leaves the settings page
+          context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
           Navigator.pushNamed(context, '/settings');
         },
       )

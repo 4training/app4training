@@ -1,5 +1,6 @@
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/routes/routes.dart';
 import 'package:app4training/widgets/main_drawer.dart';
 import 'package:flutter/material.dart' hide Page;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,28 +28,39 @@ class TestLanguageController extends LanguageController {
   }
 }
 
+/// Build everything we need to test MainDrawer:
+/// i18n to test translated menu; onGenerateRoute for opening settings
+class TestApp extends ConsumerWidget {
+  final String appLanguage;
+  const TestApp(this.appLanguage, {super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp(
+        onGenerateRoute: (settings) => generateRoutes(settings, ref),
+        locale: Locale(appLanguage),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+            appBar: AppBar(title: const Text('4training')),
+            drawer: const MainDrawer('Forgiving_Step_by_Step', 'en')));
+  }
+}
+
 void main() {
+  final testLanguageProvider =
+      NotifierProvider.family<LanguageController, Language, String>(() {
+    return TestLanguageController();
+  });
+
   testWidgets('Basic drawer test: categories + their content visible?',
       (WidgetTester tester) async {
-    final testLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return TestLanguageController();
-    });
-
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [
-          sharedPrefsProvider.overrideWithValue(prefs),
-          languageProvider.overrideWithProvider(testLanguageProvider)
-        ],
-        child: MaterialApp(
-            locale: const Locale('en'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(
-                appBar: AppBar(title: const Text('4training')),
-                drawer: const MainDrawer('Forgiving_Step_by_Step', 'en')))));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      languageProvider.overrideWithProvider(testLanguageProvider)
+    ], child: const TestApp('en')));
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
     expect(find.text('Inner Healing'), findsNothing);
@@ -79,25 +91,12 @@ void main() {
   });
 
   testWidgets('Test main navigation in German', (WidgetTester tester) async {
-    final testLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return TestLanguageController();
-    });
-
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [
-          sharedPrefsProvider.overrideWithValue(prefs),
-          languageProvider.overrideWithProvider(testLanguageProvider)
-        ],
-        child: MaterialApp(
-            locale: const Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(
-                appBar: AppBar(title: const Text('4training')),
-                drawer: const MainDrawer('Forgiving_Step_by_Step', 'en')))));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      languageProvider.overrideWithProvider(testLanguageProvider)
+    ], child: const TestApp('de')));
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
     expect(find.text('Innere Heilung'), findsNothing);
@@ -117,6 +116,32 @@ void main() {
     // For unknown reason this test fails when invoked via flutter test,
     // but it succeeds with flutter run test/main_drawer_test.dart
     // expect(find.text('[en]'), findsNWidgets(3));
+  });
+
+  testWidgets('Make sure drawer is closed after returning from settings',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    await tester.pumpWidget(ProviderScope(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+    ], child: const TestApp('en')));
+
+    expect(find.byIcon(Icons.menu), findsOneWidget);
+
+    final ScaffoldState state = tester.firstState(find.byType(Scaffold));
+    state.openDrawer();
+    await tester.pumpAndSettle();
+    expect(find.text('Essentials'), findsOneWidget);
+
+    // Opening settings and closing them again
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    Navigator.of(tester.element(find.byType(Scaffold))).pop();
+    await tester.pumpAndSettle();
+
+    expect(state.isDrawerOpen, false);
+    expect(find.byIcon(Icons.menu), findsOneWidget);
+    expect(find.text('Essentials'), findsNothing);
   });
 
   // TODO: test that currently opened page is highlighted in menu

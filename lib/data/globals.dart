@@ -33,14 +33,6 @@ final scaffoldMessengerProvider = Provider((ref) {
   return ref.watch(scaffoldMessengerKeyProvider).currentState!;
 });
 
-/// Global key of the Scaffold (to open/close drawer)
-/// TODO: refactor so that we have only one place to create a Scaffold
-/// (currently after some interactions the following exception is thrown:
-/// Duplicate GlobalKey detected in widget tree)
-final scaffoldKeyProvider = Provider((ref) {
-  return GlobalKey<ScaffoldState>();
-});
-
 const int countAvailableLanguages = 34;
 
 final availableLanguagesProvider = Provider<List<String>>((ref) {

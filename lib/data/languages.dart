@@ -9,6 +9,7 @@ import 'package:app4training/data/globals.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart';
 
+/// File system access as a provider to enable better testing
 final fileSystemProvider = Provider<FileSystem>((ref) {
   return const LocalFileSystem();
 });
@@ -86,7 +87,7 @@ final languageProvider =
   return LanguageController();
 });
 
-/// Are there updates available in any of our languages?
+/// How many languages do we have available offline?
 final countDownloadedLanguagesProvider = StateProvider<int>((ref) {
   int countDownloadedLanguages = 0;
   for (String languageCode in ref.watch(availableLanguagesProvider)) {

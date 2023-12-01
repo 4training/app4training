@@ -23,7 +23,6 @@ class ViewPage extends ConsumerWidget {
     AsyncValue<String> pageContent =
         ref.watch(pageContentProvider((name: page, langCode: langCode)));
     return Scaffold(
-// TODO        key: ref.watch(scaffoldKeyProvider),
         appBar: AppBar(
           title: const Text(title),
           actions: const [LanguagesButton()],
