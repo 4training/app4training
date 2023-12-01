@@ -166,6 +166,10 @@
     "@languageSelectionHeader": {
         "description": "Text shown before the list of languages when users taps the language selection button"
     },
+    "manageLanguages": "Sprachen verwalten",
+    "@manageLanguages": {
+        "description": "Text shown below the list of languages when users taps the language selection button"
+    },
     "content": "Inhalt",
     "essentials": "Grundlagen",
     "essentialsForTrainers": "Grundlagen - für Trainer",

@@ -82,12 +82,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Overcoming Fear and Anger'), findsOneWidget);
 
-    // Settings visible?
+    // Headline + Settings visible?
+    expect(find.text('Content'), findsOneWidget);
     expect(find.byIcon(Icons.settings), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
-
-    // Headline visible?
-    expect(find.text('Content'), findsOneWidget);
   });
 
   testWidgets('Test main navigation in German', (WidgetTester tester) async {
@@ -109,8 +107,10 @@ void main() {
     expect(find.text('Innere Heilung'), findsOneWidget);
     expect(find.text('Grundlagen'), findsOneWidget);
 
-    // Headline visible?
+    // Headline + Settings visible?
     expect(find.text('Inhalt'), findsOneWidget);
+    expect(find.byIcon(Icons.settings), findsOneWidget);
+    expect(find.text('Einstellungen'), findsOneWidget);
 
     // TODO: add test for the translation links
     // For unknown reason this test fails when invoked via flutter test,

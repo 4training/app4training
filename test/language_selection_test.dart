@@ -73,6 +73,9 @@ void main() {
     expect(find.text('Show current page in:'), findsOneWidget);
     expect(find.text('German (de)'), findsOneWidget);
     expect(find.text('English (en)'), findsNothing);
+
+    expect(find.byIcon(Icons.settings), findsOneWidget);
+    expect(find.text('Manage languages'), findsOneWidget);
   });
 
   testWidgets('Test with 5 languages downloaded, German as appLanguage',
@@ -99,6 +102,9 @@ void main() {
     expect(find.text('Seite anzeigen auf:'), findsOneWidget);
     expect(find.text('Deutsch (de)'), findsOneWidget);
     expect(find.text('Arabisch (ar)'), findsOneWidget);
+
+    expect(find.byIcon(Icons.settings), findsOneWidget);
+    expect(find.text('Sprachen verwalten'), findsOneWidget);
   });
 
   // TODO add test for 2-column layout

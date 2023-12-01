@@ -166,6 +166,10 @@
     "@languageSelectionHeader": {
         "description": "Text shown before the list of languages when users taps the language selection button"
     },
+    "manageLanguages": "Manage languages",
+    "@manageLanguages": {
+        "description": "Text shown below the list of languages when users taps the language selection button"
+    },
     "content": "Content",
     "essentials": "Essentials",
     "essentialsForTrainers": "Essentials - for trainers",

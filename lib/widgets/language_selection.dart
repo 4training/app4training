@@ -31,7 +31,9 @@ class LanguagesButton extends ConsumerWidget {
       ));
     }
 
+    final menuController = MenuController();
     return MenuAnchor(
+        controller: menuController,
         builder:
             (BuildContext context, MenuController controller, Widget? child) {
           return IconButton(
@@ -71,6 +73,16 @@ class LanguagesButton extends ConsumerWidget {
                           ],
                         )
                       : Column(children: menuItems),
+                  const Divider(),
+                  ListTile(
+                    dense: true,
+                    title: Text(context.l10n.manageLanguages),
+                    leading: const Icon(Icons.settings),
+                    onTap: () {
+                      menuController.close();
+                      Navigator.pushNamed(context, '/settings');
+                    },
+                  ),
                 ],
               ))
         ]);

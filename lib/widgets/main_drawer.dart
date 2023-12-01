@@ -39,7 +39,7 @@ class MainDrawer extends ConsumerWidget {
       }),
       const Divider(),
       ListTile(
-        title: const Text('Settings'),
+        title: Text(context.l10n.settings),
         leading: const Icon(Icons.settings),
         onTap: () {
           // Drawer should be closed when user leaves the settings page
