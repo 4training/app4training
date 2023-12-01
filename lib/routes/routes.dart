@@ -1,23 +1,10 @@
+import 'package:app4training/routes/error_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/routes/settings_page.dart';
 import 'package:app4training/routes/startup_page.dart';
 import 'package:app4training/routes/view_page.dart';
-
-/// TODO get rid of that page or change it in a way that it's not a dead end anymore
-class ErrorPage extends StatelessWidget {
-  final String message;
-  const ErrorPage(this.message, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Error')),
-      body: Center(child: Text(message)),
-    );
-  }
-}
 
 Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
   debugPrint('Handling route "${settings.name}"');

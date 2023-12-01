@@ -17,9 +17,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// an option but ExpansionPanel has less customization options
 /// (looks like you can't change the position of the expansion icon)
 class MainDrawer extends ConsumerWidget {
-  final String page; // The currently opened page
-  final String langCode;
-  const MainDrawer(this.page, this.langCode, {super.key});
+  final String? _page; // The currently opened page
+  final String? _langCode; // and its language
+  const MainDrawer(this._page, this._langCode, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,9 +63,10 @@ class MainDrawer extends ConsumerWidget {
       if (worksheetCategories[englishName] == category) {
         // If we're currently looking at a translation:
         // Show direct links to (existing) translated worksheets
-        bool showTranslationLink = (langCode != appLanguage) &&
+        bool showTranslationLink = (_langCode != null) &&
+            (_langCode != appLanguage) &&
             ref
-                .watch(languageProvider(langCode))
+                .watch(languageProvider(_langCode))
                 .pages
                 .containsKey(englishName);
 
@@ -78,7 +79,7 @@ class MainDrawer extends ConsumerWidget {
                       shape: const MaterialStatePropertyAll(
                           RoundedRectangleBorder()),
                       backgroundColor: MaterialStatePropertyAll(
-                          (englishName == page)
+                          (englishName == _page)
                               ? Theme.of(context).focusColor
                               : null)),
                   onPressed: () {
@@ -93,21 +94,21 @@ class MainDrawer extends ConsumerWidget {
                   onPressed: () {
                     Navigator.pop(context);
                     Navigator.pushNamed(
-                        context, '/view/$englishName/$langCode');
+                        context, '/view/$englishName/$_langCode');
                   },
-                  child: Text('[$langCode]'))
+                  child: Text('[$_langCode]'))
               : const SizedBox()
         ]));
       }
     });
     return ExpansionTile(
         title: Text(Category.getLocalized(context, category)),
-        collapsedBackgroundColor: (worksheetCategories[page] == category)
+        collapsedBackgroundColor: (worksheetCategories[_page] == category)
             ? Theme.of(context).highlightColor
             : null,
         controlAffinity: ListTileControlAffinity.leading,
         shape: const Border(), // remove border when tile is expanded
-        initiallyExpanded: worksheetCategories[page] == category,
+        initiallyExpanded: worksheetCategories[_page] == category,
         children: categoryContent);
   }
 }

@@ -1,4 +1,4 @@
-import 'package:app4training/routes/view_page.dart';
+import 'package:app4training/widgets/html_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

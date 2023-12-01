@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'package:app4training/data/app_language.dart';
+import 'package:app4training/data/exceptions.dart';
 import 'package:download_assets/download_assets.dart';
 import 'package:file/local.dart';
 import 'package:flutter/material.dart';
@@ -38,20 +39,23 @@ final imageContentProvider = Provider.family<String, Resource>((ref, res) {
 });
 
 /// Provide HTML content of a specific page in a specific language
-/// Returns empty string in case something went wrong
+/// throws [LanguageNotDownloadedException]: just download the language again
+/// throws [PageNotFoundException]: Hm, errorneous link?
+/// throws [LanguageCorruptedException]: oops,
+/// hope this goes away by deleting + re-downloading the language
 final pageContentProvider =
     FutureProvider.family<String, Resource>((ref, page) async {
   final fileSystem = ref.watch(fileSystemProvider);
   final lang = ref.watch(languageProvider(page.langCode));
+  if (lang.downloaded == false) {
+    throw LanguageNotDownloadedException(page.langCode);
+  }
   Page? pageDetails = lang.pages[page.name];
   if (pageDetails == null) {
-    debugPrint(
-        "Internal error: Couldn't find page ${page.name}/${page.langCode}");
-    return '';
+    throw PageNotFoundException(page.name, page.langCode);
   }
   if (lang.path == '') {
-    debugPrint('Error: Language ${lang.languageCode} not available.');
-    return '';
+    throw LanguageCorruptedException(page.langCode, 'Empty path');
   }
 
   debugPrint("Fetching content of '${page.name}/${page.langCode}'...");
@@ -74,8 +78,8 @@ final pageContentProvider =
     });
     return content;
   } on FileSystemException catch (e) {
-    debugPrint(e.toString());
-    return "Internal error: Couldn't read page";
+    throw LanguageCorruptedException(
+        page.langCode, 'Error while reading from local storage.', e);
   }
 });
 

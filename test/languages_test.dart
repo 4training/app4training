@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:download_assets/download_assets.dart';
 import 'package:file/chroot.dart';
@@ -230,12 +233,20 @@ void main() {
       expect(deTest.state.path, equals('assets-de/html-de-main'));
 
       // Test some error handling
-      content = await container.read(
-          pageContentProvider((name: 'MissingTest', langCode: 'de')).future);
-      expect(content, contains("Couldn't read page"));
-      content = await container
-          .read(pageContentProvider((name: 'Invalid', langCode: 'de')).future);
-      expect(content, equals(''));
+      try {
+        content = await container.read(
+            pageContentProvider((name: 'MissingTest', langCode: 'de')).future);
+      } catch (e) {
+        expect(e, isA<LanguageCorruptedException>());
+        expect((e as LanguageCorruptedException).exception,
+            isA<PathNotFoundException>());
+      }
+      try {
+        content = await container.read(
+            pageContentProvider((name: 'Invalid', langCode: 'de')).future);
+      } catch (e) {
+        expect(e, isA<PageNotFoundException>());
+      }
     });
   });
 

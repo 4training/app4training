@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'package:app4training/routes/error_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app4training/routes/routes.dart';
 import 'package:app4training/widgets/loading_animation.dart';
 
 import '../data/globals.dart';
