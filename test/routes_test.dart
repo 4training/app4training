@@ -104,6 +104,6 @@ void main() {
         .pushNamed('/unknown');
     await tester.pumpAndSettle();
     expect(find.byType(ErrorPage), findsOneWidget);
-    expect(find.text('Warning: unknown route /unknown'), findsOneWidget);
+    expect(find.textContaining('Unknown route /unknown'), findsOneWidget);
   });
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/routes/startup_page.dart';
@@ -42,6 +43,9 @@ void main() {
     completer = Completer();
     route = null;
     await tester.pumpWidget(MaterialApp(
+      locale: const Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: StartupPage(navigateTo: '/test', initFunction: mockInitFunction),
       onGenerateRoute: generateRoutes,
     ));
@@ -50,7 +54,7 @@ void main() {
     completer.completeError("Failed");
     await tester.pump();
     expect(find.text('Loading'), findsNothing);
-    expect(find.text('Failed'), findsOneWidget);
+    expect(find.textContaining('Failed'), findsOneWidget);
     expect(route, isNull);
   });
 }

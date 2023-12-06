@@ -174,5 +174,69 @@
     "essentials": "Grundlagen",
     "essentialsForTrainers": "Grundlagen - für Trainer",
     "innerHealing": "Innere Heilung",
-    "innerHealingForTrainers": "Innere Heilung - für Trainer"
+    "innerHealingForTrainers": "Innere Heilung - für Trainer",
+    "error": "Fehler",
+    "reason": "Grund: ",
+    "internalError": "Ups, das tut uns leid. Da muss ein Fehler passiert sein. Bitte sag uns Bescheid, damit wir das Problem beheben können. Interner Fehler: {errorMessage}",
+    "@internalError": {
+        "description": "User-facing error message",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+    "warning": "Warnung",
+    "cantDisplayPage": "Kann Seite '{page}' nicht auf {language} anzeigen.",
+    "@cantDisplayPage": {
+        "description": "User-facing error message when a page can't be shown.",
+        "placeholders": {
+            "page": {
+                "type": "String",
+                "example": "Forgiving Step by Step"
+            },
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "languageNotDownloaded": "Sprache ist nicht verfügbar. Bitte gehe in die Einstellungen und lade {language} herunter.",
+    "@languageNotDownloaded": {
+        "description": "Error message when trying to open a page but the language isn't downloaded",
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "German"
+            }
+        }
+    },
+    "pageNotFound": "Seite {page}/{languageCode} konnte nicht gefunden werden. Vielleicht bist du einem fehlerhaften Link gefolgt und die Seite ist noch nicht übersetzt.",
+    "@pageNotFound": {
+        "description": "Error message when a page can't be found.",
+        "placeholders": {
+            "page": {
+                "type": "String",
+                "example": "Forgiving Step by Step"
+            },
+            "languageCode": {
+                "type": "String",
+                "example": "de"
+            }
+        }
+    },
+    "languageCorrupted": "Die Sprachdaten von '{language}' scheinen beschädigt zu sein: {errorMessage}\nGehe zu den Einstellungen und versuche, die Sprache zu löschen und erneut herunterzuladen. Gib uns Bescheid, wenn das Problem weiterhin auftritt.",
+    "@languageCorrupted": {
+        "description": "Error message when there are errors in a language object",
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            },
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    }
+
 }

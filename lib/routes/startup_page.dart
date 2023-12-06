@@ -45,7 +45,7 @@ class StartupPage extends ConsumerWidget {
               debugPrint(
                   'Done, hasData: ${snapshot.hasData}, Error: ${snapshot.hasError}');
               if (snapshot.hasError) {
-                // TODO do something more helpful for the user
+                // TODO do something more helpful for the user ("try again...")
                 return ErrorPage(snapshot.error.toString());
               } else {
                 // This is actually never called because as soon

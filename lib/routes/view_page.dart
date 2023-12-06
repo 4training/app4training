@@ -1,4 +1,7 @@
+import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/widgets/error_message.dart';
 import 'package:app4training/widgets/html_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,7 +35,24 @@ class ViewPage extends ConsumerWidget {
                 (Globals.rtlLanguages.contains(langCode))
                     ? TextDirection.rtl
                     : TextDirection.ltr),
-            error: (e, st) => Text(
-                "Couldn't find the content you are looking for: ${e.toString()}\nLanguage: $langCode")));
+            error: (e, st) {
+              if (e is App4TrainingException) {
+                if ((e is PageNotFoundException) ||
+                    (e is LanguageNotDownloadedException)) {
+                  return ErrorMessage(
+                      context.l10n.warning,
+                      '${context.l10n.cantDisplayPage(page, context.l10n.getLanguageName(langCode))}\n'
+                      '${context.l10n.reason} ${e.toLocalizedString(context)}',
+                      icon: Icons.warning_amber,
+                      iconColor: Colors.black);
+                } else if (e is LanguageCorruptedException) {
+                  return ErrorMessage(
+                      context.l10n.error, e.toLocalizedString(context));
+                }
+              }
+              // What happened?!
+              return ErrorMessage(
+                  context.l10n.error, context.l10n.internalError(e.toString()));
+            }));
   }
 }

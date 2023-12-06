@@ -174,6 +174,68 @@
     "essentials": "Essentials",
     "essentialsForTrainers": "Essentials - for trainers",
     "innerHealing": "Inner Healing",
-    "innerHealingForTrainers": "Inner Healing - for trainers"
-
+    "innerHealingForTrainers": "Inner Healing - for trainers",
+    "error": "Error",
+    "reason": "Reason: ",
+    "internalError": "Oops, we're sorry. Something unexpected happened. Please tell us about the issue so that we can fix it.\nInternal error: {errorMessage}",
+    "@internalError": {
+        "description": "User-facing error message",
+        "placeholders": {
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    },
+   "warning": "Warning",
+   "cantDisplayPage": "Can't display page '{page}' in {language}.",
+   "@cantDisplayPage": {
+        "description": "User-facing error message when a page can't be shown.",
+        "placeholders": {
+            "page": {
+                "type": "String",
+                "example": "Forgiving Step by Step"
+            },
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+   "languageNotDownloaded": "Language isn't available anymore. Please go to the settings and download {language}.",
+   "@languageNotDownloaded": {
+        "description": "Error message when trying to open a page but the language isn't downloaded",
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "pageNotFound": "Page {page}/{languageCode} not found. Maybe you followed an errorneous link and the page isn't translated yet.",
+    "@pageNotFound": {
+        "description": "Error message when a page can't be found.",
+        "placeholders": {
+            "page": {
+                "type": "String",
+                "example": "Forgiving Step by Step"
+            },
+            "languageCode": {
+                "type": "String",
+                "example": "de"
+            }
+        }
+    },
+    "languageCorrupted": "Language data for '{language}' seems to be corrupted: {errorMessage}\nGo to the settings and try to delete and re-download this language. Please let us know if the issue still persists.",
+    "@languageCorrupted": {
+        "description": "Error message when there are errors in a language object",
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            },
+            "errorMessage": {
+                "type": "String"
+            }
+        }
+    }
 }

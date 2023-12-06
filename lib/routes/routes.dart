@@ -37,9 +37,8 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
     );
   }
 
-  debugPrint('Warning: unknown route ${settings.name}');
   return MaterialPageRoute<void>(
     settings: settings,
-    builder: (_) => ErrorPage('Warning: unknown route ${settings.name}'),
+    builder: (_) => ErrorPage('Unknown route ${settings.name}'),
   );
 }
