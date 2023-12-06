@@ -171,10 +171,32 @@
         "description": "Text shown below the list of languages when users taps the language selection button"
     },
     "content": "Inhalt",
+    "directLinks": ": Schnellzugriff für {language}",
+    "@directLinks": {
+        "description": "Quick explanation in main drawer when we show direct links to translated worksheets",
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
     "essentials": "Grundlagen",
     "essentialsForTrainers": "Grundlagen - für Trainer",
     "innerHealing": "Innere Heilung",
     "innerHealingForTrainers": "Innere Heilung - für Trainer",
+    "sorry": "Sorry",
+    "notTranslated": "Die gewünschte Seite ist leider noch nicht auf {language} übersetzt.\nWenn du uns bei der Übersetzung helfen kannst, dann melde dich bitte!",
+    "@notTranslation": {
+        "description": "Dialog content when clicking on a (greyed out) link to a not-existing translation",
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "okay": "Okay",
     "error": "Fehler",
     "reason": "Grund: ",
     "internalError": "Ups, das tut uns leid. Da muss ein Fehler passiert sein. Bitte sag uns Bescheid, damit wir das Problem beheben können. Interner Fehler: {errorMessage}",

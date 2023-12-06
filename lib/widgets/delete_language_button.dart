@@ -1,32 +1,10 @@
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/design/theme.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/languages.dart';
-
-const ColorFilter greyOut = ColorFilter.matrix(<double>[
-  0.9126,
-  0.7152,
-  0.0722,
-  0,
-  0,
-  0.9126,
-  0.7152,
-  0.0722,
-  0,
-  0,
-  0.9126,
-  0.7152,
-  0.0722,
-  0,
-  0,
-  0,
-  0,
-  0,
-  1,
-  0,
-]);
 
 /// Button to delete one language
 class DeleteLanguageButton extends ConsumerWidget {
@@ -43,7 +21,7 @@ class DeleteLanguageButton extends ConsumerWidget {
 
     LanguageController lang = ref.read(languageProvider(languageCode).notifier);
 
-    final button = IconButton(
+    return IconButton(
         onPressed: () async {
           // snackbar to be shown after the resources are deleted
           final snackBar = SnackBar(
@@ -63,13 +41,10 @@ class DeleteLanguageButton extends ConsumerWidget {
           ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
         },
         icon: const Icon(Icons.delete),
-        color: Theme.of(context).colorScheme.primary,
+        color: isDiscouraged
+            ? greyedOutColor
+            : Theme.of(context).colorScheme.primary,
         padding: EdgeInsets.zero);
-    if (isDiscouraged) {
-      return ColorFiltered(colorFilter: greyOut, child: button);
-    } else {
-      return button;
-    }
   }
 }
 

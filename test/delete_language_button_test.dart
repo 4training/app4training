@@ -89,7 +89,7 @@ void main() {
             home: const Scaffold(body: DeleteLanguageButton('de')))));
 
     expect(find.byIcon(Icons.delete), findsOneWidget);
-    expect(find.byType(ColorFiltered), findsOneWidget);
+    // TODO test that the color of the icon is greyed out
     expect(container.read(languageProvider('de')).downloaded, true);
 
     await tester.tap(find.byType(DeleteLanguageButton));

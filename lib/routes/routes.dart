@@ -12,7 +12,11 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
     String page = ref.read(sharedPrefsProvider).getString('recentPage') ?? '';
     String lang = ref.read(sharedPrefsProvider).getString('recentLang') ?? '';
     String navigateTo = '/view';
-    if ((page != '') && (lang != '')) navigateTo = '/view/$page/$lang';
+    if ((page != '') &&
+        (lang != '') &&
+        ref.read(availableLanguagesProvider).contains(lang)) {
+      navigateTo = '/view/$page/$lang';
+    }
     return MaterialPageRoute<void>(
       settings: settings, // Necessary for the NavigatorObserver while testing
       builder: (_) => StartupPage(navigateTo: navigateTo),

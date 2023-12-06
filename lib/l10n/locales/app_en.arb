@@ -171,10 +171,32 @@
         "description": "Text shown below the list of languages when users taps the language selection button"
     },
     "content": "Content",
+    "directLinks": ": Direct links to {language}",
+    "@directLinks": {
+        "description": "Quick explanation in main drawer when we show direct links to translated worksheets",
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
     "essentials": "Essentials",
     "essentialsForTrainers": "Essentials - for trainers",
     "innerHealing": "Inner Healing",
     "innerHealingForTrainers": "Inner Healing - for trainers",
+    "sorry": "Sorry",
+    "notTranslated": "The requested page is not yet translated into {language}.\nIf you can help with translation, please contact us!",
+    "@notTranslation": {
+        "description": "Dialog content when clicking on a (greyed out) link to a not-existing translation",
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "okay": "Okay",
     "error": "Error",
     "reason": "Reason: ",
     "internalError": "Oops, we're sorry. Something unexpected happened. Please tell us about the issue so that we can fix it.\nInternal error: {errorMessage}",
@@ -201,7 +223,7 @@
             }
         }
     },
-   "languageNotDownloaded": "Language isn't available anymore. Please go to the settings and download {language}.",
+   "languageNotDownloaded": "Language isn't available. Please go to the settings and download {language}.",
    "@languageNotDownloaded": {
         "description": "Error message when trying to open a page but the language isn't downloaded",
         "placeholders": {

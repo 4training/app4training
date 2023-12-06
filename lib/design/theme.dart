@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 /// Our primary red color (a little bit darker than the red of FlexScheme.red)
 Color lightPrimaryColor = Colors.red[900]!;
+Color greyedOutColor = Colors.black26;
 
 /// Using the red theme of flex_color_scheme - see
 /// https://rydmike.com/flexcolorscheme/themesplayground-latest/

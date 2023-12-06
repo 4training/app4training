@@ -8,6 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'languages_test.dart';
+
 // Simulate that the specified languages are downloaded with the one page we use
 class TestLanguageController extends LanguageController {
   @override
@@ -124,6 +126,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
+      languageProvider.overrideWithProvider(testLanguageProvider)
     ], child: const TestApp('en')));
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
@@ -142,6 +145,30 @@ void main() {
     expect(state.isDrawerOpen, false);
     expect(find.byIcon(Icons.menu), findsOneWidget);
     expect(find.text('Essentials'), findsNothing);
+  });
+
+  testWidgets('Test error message when appLanguage is not downloaded',
+      (WidgetTester tester) async {
+    final dummyLanguageProvider =
+        NotifierProvider.family<LanguageController, Language, String>(() {
+      return DummyLanguageController();
+    });
+    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+    final prefs = await SharedPreferences.getInstance();
+    await tester.pumpWidget(ProviderScope(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      languageProvider.overrideWithProvider(dummyLanguageProvider)
+    ], child: const TestApp('de')));
+
+    expect(find.text('Einstellungen'), findsNothing);
+    final ScaffoldState state = tester.firstState(find.byType(Scaffold));
+    state.openDrawer();
+    await tester.pumpAndSettle();
+    expect(find.text('Einstellungen'), findsOneWidget);
+
+    // Error message visible?
+    expect(find.textContaining('Sprache ist nicht verfügbar'), findsOneWidget);
+    expect(find.textContaining('lade Deutsch (de) herunter'), findsOneWidget);
   });
 
   // TODO: test that currently opened page is highlighted in menu

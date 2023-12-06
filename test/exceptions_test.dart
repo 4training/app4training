@@ -9,7 +9,7 @@ void main() {
     try {
       throw LanguageNotDownloadedException('de');
     } catch (e) {
-      expect(e.toString(), startsWith("Language isn't available anymore"));
+      expect(e.toString(), startsWith("Language isn't available"));
     }
 
     try {
