@@ -259,6 +259,7 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "about": "Über..."
 
 }

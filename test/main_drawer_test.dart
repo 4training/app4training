@@ -109,10 +109,11 @@ void main() {
     expect(find.text('Innere Heilung'), findsOneWidget);
     expect(find.text('Grundlagen'), findsOneWidget);
 
-    // Headline + Settings visible?
+    // Headline, Settings, About visible?
     expect(find.text('Inhalt'), findsOneWidget);
     expect(find.byIcon(Icons.settings), findsOneWidget);
     expect(find.text('Einstellungen'), findsOneWidget);
+    expect(find.text('Über...'), findsOneWidget);
 
     // TODO: add test for the translation links
     // For unknown reason this test fails when invoked via flutter test,

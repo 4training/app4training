@@ -1,3 +1,4 @@
+import 'package:app4training/routes/about_page.dart';
 import 'package:app4training/routes/error_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,6 +40,9 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
       settings: settings,
       builder: (_) => const SettingsPage(),
     );
+  } else if (settings.name == '/about') {
+    return MaterialPageRoute<void>(
+        settings: settings, builder: (_) => const AboutPage());
   }
 
   return MaterialPageRoute<void>(

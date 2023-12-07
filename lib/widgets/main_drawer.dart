@@ -72,6 +72,15 @@ class MainDrawer extends ConsumerWidget {
           context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
           Navigator.pushNamed(context, '/settings');
         },
+      ),
+      ListTile(
+        title: Text(context.l10n.about),
+        leading: const Icon(Icons.info),
+        onTap: () {
+          // Drawer should be closed when user leaves the settings page
+          context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
+          Navigator.pushNamed(context, '/about');
+        },
       )
     ])));
   }
