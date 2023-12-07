@@ -71,6 +71,14 @@ void main() {
     expect(find.byIcon(Icons.download),
         findsNWidgets(countAvailableLanguages + 1));
     expect(find.byIcon(Icons.refresh), findsNothing);
+
+    // Check correct sorting
+    final germanPosition = tester.getTopLeft(find.text('German (de)'));
+    final englishPosition = tester.getTopLeft(find.text('English (en)'));
+    final frenchPosition = tester.getTopLeft(find.text('French (fr)'));
+    expect(englishPosition.dy < germanPosition.dy, isTrue);
+    expect(englishPosition.dy < frenchPosition.dy, isTrue);
+    expect(frenchPosition.dy < germanPosition.dy, isTrue);
   });
   testWidgets('Basic test with only German downloaded, German as appLanguage',
       (WidgetTester tester) async {
@@ -106,6 +114,14 @@ void main() {
     expect(find.byIcon(Icons.delete), findsNWidgets(2));
     expect(find.byIcon(Icons.refresh), findsNWidgets(2));
     expect(find.byIcon(Icons.download), findsNWidgets(3));
+
+    // Check correct sorting
+    final germanPosition = tester.getTopLeft(find.text('Deutsch (de)'));
+    final englishPosition = tester.getTopLeft(find.text('Englisch (en)'));
+    final frenchPosition = tester.getTopLeft(find.text('Französisch (fr)'));
+    expect(englishPosition.dy > germanPosition.dy, isTrue);
+    expect(englishPosition.dy < frenchPosition.dy, isTrue);
+    expect(frenchPosition.dy > germanPosition.dy, isTrue);
   });
   // TODO add more tests to check whether icons change according to user interaction
 }

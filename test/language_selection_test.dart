@@ -3,6 +3,7 @@ import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:app4training/widgets/language_selection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Page;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -100,11 +101,26 @@ void main() {
     await tester.pump();
 
     expect(find.text('Seite anzeigen auf:'), findsOneWidget);
-    expect(find.text('Deutsch (de)'), findsOneWidget);
-    expect(find.text('Arabisch (ar)'), findsOneWidget);
-
     expect(find.byIcon(Icons.settings), findsOneWidget);
     expect(find.text('Sprachen verwalten'), findsOneWidget);
+
+    // Check that all five languages are there and sorted correctly
+    List<String> expectedOrder = [
+      'Arabisch (ar)',
+      'Deutsch (de)',
+      'Englisch (en)',
+      'Französisch (fr)',
+      'Spanisch (es)'
+    ];
+
+    List<double> offsets = [];
+    for (String lang in expectedOrder) {
+      expect(find.text(lang), findsOneWidget);
+      offsets.add(tester.getTopLeft(find.text(lang)).dy);
+    }
+    List<double> sortedOffsets = List.from(offsets);
+    sortedOffsets.sort();
+    expect(listEquals(offsets, sortedOffsets), isTrue);
   });
 
   // TODO add test for 2-column layout

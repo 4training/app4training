@@ -22,8 +22,15 @@ class LanguagesTable extends ConsumerWidget {
     List<TableRow> rows = [];
     bool allDownloaded = true; // are all languages downloaded?
 
+    // Sort languages alphabetically
+    List<String> sortedLanguages =
+        List.from(ref.read(availableLanguagesProvider));
+    sortedLanguages.sort((a, b) => context.l10n
+        .getLanguageName(a)
+        .compareTo(context.l10n.getLanguageName(b)));
+
     // Add a table row for each language
-    for (var languageCode in ref.read(availableLanguagesProvider)) {
+    for (var languageCode in sortedLanguages) {
       // watch this to rebuild if a Language object gets renewed
       Language lang = ref.watch(languageProvider(languageCode));
       allDownloaded = allDownloaded && lang.downloaded;

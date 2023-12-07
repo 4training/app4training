@@ -15,8 +15,15 @@ class LanguagesButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final List<MenuItemButton> menuItems = [];
 
+    // Sort languages alphabetically
+    List<String> sortedLanguages =
+        List.from(ref.read(availableLanguagesProvider));
+    sortedLanguages.sort((a, b) => context.l10n
+        .getLanguageName(a)
+        .compareTo(context.l10n.getLanguageName(b)));
+
     // Construct items for all available translations of the current page
-    for (var langCode in ref.read(availableLanguagesProvider)) {
+    for (var langCode in sortedLanguages) {
       final language = ref.watch(languageProvider(langCode));
       if (!language.downloaded) continue;
       String currentPage =
