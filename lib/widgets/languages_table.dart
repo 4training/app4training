@@ -14,11 +14,16 @@ import 'package:app4training/widgets/update_language_button.dart';
 /// - delete language files
 /// - download language files (if not yet downloaded)
 /// - update language if updates are available
+/// - show disk usage at the end
 class LanguagesTable extends ConsumerWidget {
   const LanguagesTable({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    int sizeInKB = ref.watch(diskUsageProvider);
+    String countLanguages = context.l10n
+        .countLanguages(ref.watch(countDownloadedLanguagesProvider));
+
     List<TableRow> rows = [];
     bool allDownloaded = true; // are all languages downloaded?
 
@@ -106,7 +111,12 @@ class LanguagesTable extends ConsumerWidget {
             3: IntrinsicColumnWidth(),
           },
           children: rows,
-        )))
+        ))),
+        const SizedBox(height: 5),
+        Text(
+          '${context.l10n.diskUsage}: $sizeInKB kB $countLanguages',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
       ],
     );
   }

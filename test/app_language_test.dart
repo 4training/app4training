@@ -39,5 +39,7 @@ void main() {
       expect(const AppLanguage(true, 'de').toString(), equals('system'));
       expect(const AppLanguage(false, 'de').toString(), equals('de'));
     });
+
+    // TODO: Test persistance: setLocale() and persistNow()
   });
 }

@@ -260,6 +260,40 @@
             }
         }
     },
-    "about": "Über..."
+    "about": "Über...",
+    "appDescription": "This is the app of the https://www.4training.net website. Our goal is to provide you with great resources in many languages.",
+    "matthew10_8": "Matthew 10:8, “Freely you have received; freely give.”",
+    "noCopyright": "All contents are without any copyright. Use them and share them!",
+    "trustworthy": "Trustworthy",
+    "trustworthyText": "This app does no tracking, shows no adverts and doesn't send any information anywhere. As you may have noticed it doesn't need any permissions.",
+    "worksOffline": "Works offline",
+    "worksOfflineText": "After you downloaded the languages you're interested in, the app doesn't need an internet connection. You'll only need internet if you want to check for updates or download another language.",
+    "contributing": "Contributing",
+    "contributingText": "Many people contributed their time, skills and resources to make this vision happen. Thank you! There is many areas and ways you can contribute: Translating, programming, design, correcting errors, ... Please write us at contact@4training.net - we're happy to hear your ideas and feedback!",
+    "openSource": "Open Source",
+    "openSourceText": "This app is open source. You have the freedom to use it, study it, share it and improve it. Sourcecode and more information: https://github.com/4training/app4training",
+    "version": "Version",
+    "welcome": "Herzlich Willkommen!",
+    "selectAppLanguage": "Bitte wähle die App-Sprache aus. Das Menü und alle Einstellungen werden in dieser Sprache sein.",
+    "continueText": "Weiter",
+    "back": "Zurück",
+    "appName": "4training.net-App",
+    "promoFeature1": "{count} ausgereifte Arbeitsblätter",
+    "@promoFeature1": {
+        "description": "One feature shown on the screen on first startup of the app with number of worksheets available",
+        "placeholders": {
+            "count": {
+                "type": "num",
+                "format": "compact"
+            }
+        }
+    },
+    "promoFeature2": "Funktioniert offline",
+    "promoFeature3": "Kein Copyright",
+    "downloadLanguages": "Sprachen herunterladen",
+    "downloadLanguagesExplanation": "Welche Sprachen möchtest du nutzen? Lade sie jetzt herunter und dann sind sie offline verfügbar. Eine Sprache verbraucht weniger als 1 MB.",
+    "updatesExplanation": "Ab und zu werden manche Materialien aktualisiert: Wir veröffentlichen eine neue Version eines Arbeitsblattes oder fügen eine neue Übersetzung hinzu.\nUnser Ziel ist, dass du dir darüber keine Gedanken machen brauchst, sondern immer die aktuellsten Versionen einsatzbereit dabei hast. Deshalb kann die App im Hintergrund nach Aktualisierungen suchen und sie automatisch herunterladen, wenn du das möchtest.",
+    "letsGo": "Los geht's!"
+
 
 }

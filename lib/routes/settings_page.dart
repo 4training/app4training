@@ -7,7 +7,6 @@ import 'package:app4training/widgets/check_now_button.dart';
 import 'package:app4training/widgets/dropdownbutton_theme.dart';
 import 'package:app4training/widgets/languages_table.dart';
 import 'package:intl/intl.dart';
-import '../data/languages.dart';
 import '../widgets/dropdownbutton_app_language.dart';
 import '../widgets/dropdownbutton_check_frequency.dart';
 
@@ -48,10 +47,6 @@ class LanguageSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    int sizeInKB = ref.watch(diskUsageProvider);
-    String countLanguages = context.l10n
-        .countLanguages(ref.watch(countDownloadedLanguagesProvider));
-
     return Column(children: [
       Align(
           alignment: Alignment.topLeft,
@@ -66,11 +61,6 @@ class LanguageSettings extends ConsumerWidget {
       ),
       const SizedBox(height: 10),
       const Expanded(child: LanguagesTable()),
-      const SizedBox(height: 5),
-      Text(
-        '${context.l10n.diskUsage}: $sizeInKB kB $countLanguages',
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
       const SizedBox(height: 10),
     ]);
   }

@@ -1,4 +1,7 @@
 import 'package:app4training/routes/error_page.dart';
+import 'package:app4training/routes/onboarding/download_languages_page.dart';
+import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
+import 'package:app4training/routes/onboarding/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,13 +13,19 @@ import 'package:app4training/routes/startup_page.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// For observing the routes that get pushed
+// For observing the routes that get pushed and replaced
 class TestObserver extends NavigatorObserver {
   List<String> routes = [];
+  List<String> replacedRoutes = [];
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     routes.add(route.settings.name ?? '');
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    replacedRoutes.add(newRoute?.settings.name ?? '');
   }
 }
 
@@ -37,8 +46,44 @@ class TestApp extends ConsumerWidget {
 }
 
 void main() {
-  testWidgets('Test default behavior', (WidgetTester tester) async {
+  testWidgets('Test onboarding routes', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+
+    final TestObserver observer = TestObserver();
+    await tester.pumpWidget(ProviderScope(
+        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+        child: TestApp(observer)));
+
+    // Test that onboarding process get's started on first app usage
+    expect(find.byType(TestApp), findsOneWidget);
+    expect(find.byType(WelcomePage), findsOneWidget);
+
+    // Test second onboarding step
+    Navigator.of(tester.element(find.byType(WelcomePage)))
+        .pushReplacementNamed('/onboarding/2');
+    await tester.pumpAndSettle();
+    expect(find.byType(DownloadLanguagesPage), findsOneWidget);
+
+    // Go back again
+    Navigator.of(tester.element(find.byType(DownloadLanguagesPage)))
+        .pushReplacementNamed('/onboarding/1');
+    await tester.pumpAndSettle();
+    expect(find.byType(WelcomePage), findsOneWidget);
+
+    // Test third onboarding step
+    Navigator.of(tester.element(find.byType(WelcomePage)))
+        .pushReplacementNamed('/onboarding/3');
+    await tester.pumpAndSettle();
+    expect(find.byType(SetUpdatePrefsPage), findsOneWidget);
+
+    // Test that routes are handled
+    expect(observer.replacedRoutes,
+        orderedEquals(['/onboarding/2', '/onboarding/1', '/onboarding/3']));
+  });
+
+  testWidgets('Test normal startup', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
     final prefs = await SharedPreferences.getInstance();
 
     final TestObserver observer = TestObserver();
@@ -81,7 +126,7 @@ void main() {
   testWidgets('Test initial route with loading data from SharedPreferences',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues(
-        {'recentPage': 'Healing', 'recentLang': 'de'});
+        {'appLanguage': 'de', 'recentPage': 'Healing', 'recentLang': 'de'});
     final prefs = await SharedPreferences.getInstance();
 
     await tester.pumpWidget(ProviderScope(
@@ -94,7 +139,7 @@ void main() {
   });
 
   testWidgets('Test unknown route', (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
     final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],

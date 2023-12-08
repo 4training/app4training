@@ -272,5 +272,26 @@
     "contributingText": "Many people contributed their time, skills and resources to make this vision happen. Thank you! There is many areas and ways you can contribute: Translating, programming, design, correcting errors, ... Please write us at contact@4training.net - we're happy to hear your ideas and feedback!",
     "openSource": "Open Source",
     "openSourceText": "This app is open source. You have the freedom to use it, study it, share it and improve it. Sourcecode and more information: https://github.com/4training/app4training",
-    "version": "Version"
+    "version": "Version",
+    "welcome": "Welcome!",
+    "selectAppLanguage": "Please select the app language. This is the language the menu and all settings will be in.",
+    "continueText": "Continue",
+    "back": "Back",
+    "appName": "4training.net App",
+    "promoFeature1": "{count} High-quality worksheets",
+    "@promoFeature1": {
+        "description": "One feature shown on the screen on first startup of the app with number of worksheets available",
+        "placeholders": {
+            "count": {
+                "type": "num",
+                "format": "compact"
+            }
+        }
+    },
+    "promoFeature2": "Works offline",
+    "promoFeature3": "No copyright",
+    "downloadLanguages": "Download languages",
+    "downloadLanguagesExplanation": "Which languages do you want to use? Download them now and then they're available offline. One language uses less than 1 MB.",
+    "updatesExplanation": "From time to time the resources get updated: We release a new version of a worksheet or add a new translation.\nWe want you to not worry about that but be always ready to use the latest versions. Therefore the app can check for updates in the background and download them automatically if you want.",
+    "letsGo": "Let's go!"
 }

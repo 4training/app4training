@@ -65,6 +65,11 @@ class AppLanguageNotifier extends Notifier<AppLanguage> {
     state = AppLanguage.fromString(selection, LocaleWrapper.languageCode);
     ref.read(sharedPrefsProvider).setString('appLanguage', state.toString());
   }
+
+  /// Save the current appLanguage in the SharedPreferences
+  void persistNow() {
+    ref.read(sharedPrefsProvider).setString('appLanguage', state.toString());
+  }
 }
 
 final appLanguageProvider =

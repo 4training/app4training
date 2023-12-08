@@ -1,5 +1,5 @@
+import 'package:app4training/data/globals.dart';
 import 'package:app4training/l10n/l10n.dart';
-import 'package:app4training/routes/view_page.dart';
 import 'package:app4training/widgets/error_message.dart';
 import 'package:app4training/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +13,7 @@ class ErrorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     debugPrint('Internal error: $message');
     return Scaffold(
-        appBar: AppBar(title: const Text(ViewPage.title)),
+        appBar: AppBar(title: const Text(Globals.appTitle)),
         drawer: const MainDrawer(null, null),
         body: ErrorMessage(
             context.l10n.error, context.l10n.internalError(message)));

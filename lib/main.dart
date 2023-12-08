@@ -23,7 +23,7 @@ class App4Training extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLanguage appLanguage = ref.watch(appLanguageProvider);
     return MaterialApp(
-      title: '4training',
+      title: Globals.appTitle,
       darkTheme: darkTheme,
       theme: lightTheme,
       themeMode: ThemeMode.system,

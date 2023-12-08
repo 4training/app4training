@@ -1,5 +1,8 @@
 import 'package:app4training/routes/about_page.dart';
 import 'package:app4training/routes/error_page.dart';
+import 'package:app4training/routes/onboarding/download_languages_page.dart';
+import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
+import 'package:app4training/routes/onboarding/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/globals.dart';
@@ -10,6 +13,13 @@ import 'package:app4training/routes/view_page.dart';
 Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
   debugPrint('Handling route "${settings.name}"');
   if ((settings.name == null) || (settings.name == '/')) {
+    if (ref.read(sharedPrefsProvider).getString('appLanguage') == null) {
+      // First app usage: Let's start onboarding
+      return MaterialPageRoute<void>(
+        settings: settings, // Necessary for the NavigatorObserver while testing
+        builder: (_) => const WelcomePage(),
+      );
+    }
     String page = ref.read(sharedPrefsProvider).getString('recentPage') ?? '';
     String lang = ref.read(sharedPrefsProvider).getString('recentLang') ?? '';
     String navigateTo = '/view';
@@ -43,6 +53,20 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
   } else if (settings.name == '/about') {
     return MaterialPageRoute<void>(
         settings: settings, builder: (_) => const AboutPage());
+  } else if (settings.name!.startsWith('/onboarding')) {
+    final List<String> parts = settings.name!.split('/');
+    String step = '1';
+    if ((parts.length > 2) && (parts[2] != '')) step = parts[2];
+    if (step == '1') {
+      return MaterialPageRoute<void>(
+          settings: settings, builder: (_) => const WelcomePage());
+    } else if (step == '2') {
+      return MaterialPageRoute<void>(
+          settings: settings, builder: (_) => const DownloadLanguagesPage());
+    } else if (step == '3') {
+      return MaterialPageRoute<void>(
+          settings: settings, builder: (_) => const SetUpdatePrefsPage());
+    }
   }
 
   return MaterialPageRoute<void>(

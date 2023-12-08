@@ -13,7 +13,6 @@ import 'package:app4training/widgets/language_selection.dart';
 /// The standard view of this app:
 /// Show a page (worksheet)
 class ViewPage extends ConsumerWidget {
-  static const String title = '4training';
   final String page; // Name of the currently selected page
   final String langCode;
   const ViewPage(this.page, this.langCode, {super.key});
@@ -24,7 +23,7 @@ class ViewPage extends ConsumerWidget {
         ref.watch(pageContentProvider((name: page, langCode: langCode)));
     return Scaffold(
         appBar: AppBar(
-          title: const Text(title),
+          title: const Text(Globals.appTitle),
           actions: const [LanguagesButton()],
         ),
         drawer: MainDrawer(page, langCode),

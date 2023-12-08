@@ -129,6 +129,8 @@ final automaticUpdatesProvider =
 
 /// global constants
 class Globals {
+  static const appTitle = '4training';
+
   /// Which of these languages are right-to-left? (RTL)
   static const rtlLanguages = ['ar', 'fa'];
 
