@@ -10,7 +10,7 @@ void main() {
     String expectedOutcome = '''<html><head></head><body>
 <h1>Overcoming Fear and Anger</h1>
 <h2><i><b>Closing open doors in our lives</b></i></h2></body></html>''';
-    expect(sanitize(testHtml).outerHtml, expectedOutcome);
+    expect(sanitize(testHtml, false).outerHtml, expectedOutcome);
 
     testHtml = '''<html><head></head><body>
 <h2>Content</h2>
@@ -26,6 +26,6 @@ void main() {
 <div style="">
 
 </div></body></html>''';
-    expect(sanitize(testHtml).outerHtml, expectedOutcome);
+    expect(sanitize(testHtml, false).outerHtml, expectedOutcome);
   });
 }
