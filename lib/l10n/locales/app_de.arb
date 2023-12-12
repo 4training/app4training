@@ -292,6 +292,12 @@
     "promoFeature3": "Kein Copyright",
     "downloadLanguages": "Sprachen herunterladen",
     "downloadLanguagesExplanation": "Welche Sprachen möchtest du nutzen? Lade sie jetzt herunter und dann sind sie offline verfügbar. Eine Sprache verbraucht weniger als 1 MB.",
+    "warnMissingAppLanguage" : "Bitte lade Deutsch (de) herunter, bevor du fortfährst. Sonst bleibt das Inhaltsverzeichnis leer und du kannst nicht viel mit der App machen.",
+    "@warnMissingAppLanguage": {
+        "description": "Hint for translators: Replace English (en) with your language. Description: Warning message when user tries to continue from the downloading languages onboarding screen without having downloaded his app language"
+    },
+    "gotit": "Verstanden",
+    "ignore": "Ignorieren",
     "updatesExplanation": "Ab und zu werden manche Materialien aktualisiert: Wir veröffentlichen eine neue Version eines Arbeitsblattes oder fügen eine neue Übersetzung hinzu.\nUnser Ziel ist, dass du dir darüber keine Gedanken machen brauchst, sondern immer die aktuellsten Versionen einsatzbereit dabei hast. Deshalb kann die App im Hintergrund nach Aktualisierungen suchen und sie automatisch herunterladen, wenn du das möchtest.",
     "letsGo": "Los geht's!"
 

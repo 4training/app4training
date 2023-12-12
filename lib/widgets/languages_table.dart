@@ -16,7 +16,9 @@ import 'package:app4training/widgets/update_language_button.dart';
 /// - update language if updates are available
 /// - show disk usage at the end
 class LanguagesTable extends ConsumerWidget {
-  const LanguagesTable({super.key});
+  /// Optional: highlight the download button of this language
+  final String? highlightLang;
+  const LanguagesTable({this.highlightLang, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,7 +60,8 @@ class LanguagesTable extends ConsumerWidget {
             width: 32,
             child: lang.downloaded
                 ? DeleteLanguageButton(languageCode)
-                : DownloadLanguageButton(languageCode)),
+                : DownloadLanguageButton(languageCode,
+                    highlight: languageCode == highlightLang)),
       ]));
     }
 

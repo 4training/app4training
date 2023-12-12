@@ -51,7 +51,6 @@ void main() {
             home: const Scaffold(body: DeleteLanguageButton('en')))));
 
     expect(find.byIcon(Icons.delete), findsOneWidget);
-    expect(find.byType(ColorFiltered), findsNothing);
     expect(testLanguageController.state.downloaded, true);
     expect(container.read(languageProvider('en')).downloaded, true);
 

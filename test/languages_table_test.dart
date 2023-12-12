@@ -124,4 +124,5 @@ void main() {
     expect(frenchPosition.dy > germanPosition.dy, isTrue);
   });
   // TODO add more tests to check whether icons change according to user interaction
+  // TODO test optional parameter highlightLang
 }

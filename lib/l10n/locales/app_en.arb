@@ -292,6 +292,12 @@
     "promoFeature3": "No copyright",
     "downloadLanguages": "Download languages",
     "downloadLanguagesExplanation": "Which languages do you want to use? Download them now and then they're available offline. One language uses less than 1 MB.",
-    "updatesExplanation": "From time to time the resources get updated: We release a new version of a worksheet or add a new translation.\nWe want you to not worry about that but be always ready to use the latest versions. Therefore the app can check for updates in the background and download them automatically if you want.",
+    "warnMissingAppLanguage" : "Please download English (en) before you proceed. Otherwise the table of content remains empty and you can't do much with the app.",
+    "@warnMissingAppLanguage": {
+        "description": "Hint for translators: Replace English (en) with your language. Description: Warning message when user tries to continue from the downloading languages onboarding screen without having downloaded his app language"
+    },
+    "gotit": "Got it",
+    "ignore": "Ignore",
+   "updatesExplanation": "From time to time the resources get updated: We release a new version of a worksheet or add a new translation.\nWe want you to not worry about that but be always ready to use the latest versions. Therefore the app can check for updates in the background and download them automatically if you want.",
     "letsGo": "Let's go!"
 }

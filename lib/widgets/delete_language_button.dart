@@ -91,6 +91,8 @@ class DeleteAllLanguagesButton extends ConsumerWidget {
   }
 }
 
+/// Shows a dialog when a user tries to delete the app language:
+/// Are you really sure?
 class ConfirmDeletionDialog extends StatelessWidget {
   const ConfirmDeletionDialog({super.key});
 

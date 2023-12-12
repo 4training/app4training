@@ -8,7 +8,11 @@ import '../data/languages.dart';
 /// the download is in progress (that's why the class is stateful)
 class DownloadLanguageButton extends ConsumerStatefulWidget {
   final String languageCode;
-  const DownloadLanguageButton(this.languageCode, {super.key});
+
+  /// Should the button be highlighted?
+  final bool highlight;
+  const DownloadLanguageButton(this.languageCode,
+      {this.highlight = false, super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -24,7 +28,7 @@ class _DownloadLanguageButtonState
     LanguageController lang =
         ref.watch(languageProvider(widget.languageCode).notifier);
 
-    return _isLoading
+    Widget ourWidget = _isLoading
         ? const Center(
             child: SizedBox(
                 height: 24, width: 24, child: CircularProgressIndicator()))
@@ -39,6 +43,9 @@ class _DownloadLanguageButtonState
               bool success = await lang.download();
 
               ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
+                  duration: success
+                      ? const Duration(seconds: 1)
+                      : const Duration(seconds: 2),
                   content: Text(success
                       ? l10n.downloadedLanguage(
                           l10n.getLanguageName(widget.languageCode))
@@ -49,6 +56,14 @@ class _DownloadLanguageButtonState
             },
             icon: const Icon(Icons.download),
             padding: EdgeInsets.zero);
+
+    return widget.highlight
+        ? Container(
+            decoration: BoxDecoration(
+                color: Theme.of(context).highlightColor,
+                borderRadius: BorderRadius.circular(8.0)),
+            child: ourWidget)
+        : ourWidget;
   }
 }
 

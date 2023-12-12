@@ -1,4 +1,5 @@
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
 import 'package:app4training/routes/routes.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations_en.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'delete_language_button_test.dart';
 import 'routes_test.dart';
 
 class TestDownloadLanguagesPage extends ConsumerWidget {
@@ -44,11 +46,16 @@ void main() {
   testWidgets('DownloadLanguagesPage basic test', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
+    final testLanguageProvider =
+        NotifierProvider.family<LanguageController, Language, String>(() {
+      return TestLanguageController(); // Simulate: all langs are downloaded
+    });
 
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestDownloadLanguagesPage('en', testObserver)));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      languageProvider.overrideWithProvider(testLanguageProvider)
+    ], child: TestDownloadLanguagesPage('en', testObserver)));
 
     expect(find.text(AppLocalizationsEn().downloadLanguages), findsOneWidget);
     expect(find.text(AppLocalizationsEn().downloadLanguagesExplanation),
@@ -87,4 +94,5 @@ void main() {
   });
 
   // TODO Test that initially no language is downloaded
+  // TODO Test MissingAppLanguageDialog
 }
