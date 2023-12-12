@@ -1,8 +1,9 @@
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/l10n/l10n.dart';
-import 'package:app4training/routes/onboarding/download_languages_page.dart';
+import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
 import 'package:app4training/routes/routes.dart';
-import 'package:app4training/widgets/languages_table.dart';
+import 'package:app4training/widgets/dropdownbutton_automatic_updates.dart';
+import 'package:app4training/widgets/dropdownbutton_check_frequency.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,10 +14,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'routes_test.dart';
 
-class TestDownloadLanguagesPage extends ConsumerWidget {
+class TestSetUpdatePrefsPage extends ConsumerWidget {
   final String languageCode;
   final TestObserver navigatorObserver;
-  const TestDownloadLanguagesPage(this.languageCode, this.navigatorObserver,
+  const TestSetUpdatePrefsPage(this.languageCode, this.navigatorObserver,
       {super.key});
 
   @override
@@ -27,7 +28,7 @@ class TestDownloadLanguagesPage extends ConsumerWidget {
         supportedLocales: AppLocalizations.supportedLocales,
         onGenerateRoute: (settings) => generateRoutes(settings, ref),
         navigatorObservers: [navigatorObserver],
-        home: const DownloadLanguagesPage());
+        home: const SetUpdatePrefsPage());
   }
 }
 
@@ -41,30 +42,29 @@ Finder findElevatedButtonByText(String text) {
 }
 
 void main() {
-  testWidgets('DownloadLanguagesPage basic test', (WidgetTester tester) async {
+  testWidgets('SetUpdatePrefsPage basic test', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestDownloadLanguagesPage('en', testObserver)));
+        child: TestSetUpdatePrefsPage('en', testObserver)));
 
-    expect(find.text(AppLocalizationsEn().downloadLanguages), findsOneWidget);
-    expect(find.text(AppLocalizationsEn().downloadLanguagesExplanation),
-        findsOneWidget);
-    expect(find.byType(LanguagesTable), findsOneWidget);
+    expect(find.text(AppLocalizationsEn().updatesExplanation), findsOneWidget);
+    expect(find.text(AppLocalizationsEn().doAutomaticUpdates), findsOneWidget);
+    expect(find.byType(DropdownButtonAutomaticUpdates), findsOneWidget);
+    expect(find.byType(DropdownButtonCheckFrequency), findsOneWidget);
     expect(find.byType(ElevatedButton), findsNWidgets(2));
 
-    // Press the continue button
+    // Press the "Let's go!" button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(findElevatedButtonByText(AppLocalizationsEn().continueText));
+    await tester.tap(findElevatedButtonByText(AppLocalizationsEn().letsGo));
     await tester.pump();
-    expect(listEquals(testObserver.replacedRoutes, ['/onboarding/3']), isTrue);
+    expect(listEquals(testObserver.replacedRoutes, ['/view']), isTrue);
   });
 
-  testWidgets('Test DownloadLanguagesPage back button in German',
+  testWidgets('Test SetUpdatePrefsPage back button in German',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
@@ -72,19 +72,18 @@ void main() {
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestDownloadLanguagesPage('de', testObserver)));
+        child: TestSetUpdatePrefsPage('de', testObserver)));
 
-    // Check that the page is translated
-    expect(find.text(AppLocalizationsDe().downloadLanguages), findsOneWidget);
-    expect(find.text(AppLocalizationsDe().downloadLanguagesExplanation),
-        findsOneWidget);
+    // Check that the page is in German
+    expect(find.text(AppLocalizationsDe().updatesExplanation), findsOneWidget);
+    expect(find.text(AppLocalizationsDe().doAutomaticUpdates), findsOneWidget);
 
     // Click the back button
     expect(testObserver.replacedRoutes, isEmpty);
     await tester.tap(findElevatedButtonByText(AppLocalizationsDe().back));
     await tester.pump();
-    expect(listEquals(testObserver.replacedRoutes, ['/onboarding/1']), isTrue);
+    expect(listEquals(testObserver.replacedRoutes, ['/onboarding/2']), isTrue);
   });
 
-  // TODO Test that initially no language is downloaded
+  // TODO: Test that settings are saved to SharedPreferences after "Let's go!"
 }
