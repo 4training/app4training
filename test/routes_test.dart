@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app4training/routes/error_page.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
 import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
@@ -60,20 +62,21 @@ void main() {
     expect(find.byType(WelcomePage), findsOneWidget);
 
     // Test second onboarding step
-    await Navigator.of(tester.element(find.byType(WelcomePage)))
-        .pushReplacementNamed('/onboarding/2');
+    unawaited(Navigator.of(tester.element(find.byType(WelcomePage)))
+        .pushReplacementNamed('/onboarding/2'));
     await tester.pumpAndSettle();
     expect(find.byType(DownloadLanguagesPage), findsOneWidget);
+//    await Future.delayed(Duration(seconds: 50));
 
     // Go back again
-    await Navigator.of(tester.element(find.byType(DownloadLanguagesPage)))
-        .pushReplacementNamed('/onboarding/1');
+    unawaited(Navigator.of(tester.element(find.byType(DownloadLanguagesPage)))
+        .pushReplacementNamed('/onboarding/1'));
     await tester.pumpAndSettle();
     expect(find.byType(WelcomePage), findsOneWidget);
 
     // Test third onboarding step
-    await Navigator.of(tester.element(find.byType(WelcomePage)))
-        .pushReplacementNamed('/onboarding/3');
+    unawaited(Navigator.of(tester.element(find.byType(WelcomePage)))
+        .pushReplacementNamed('/onboarding/3'));
     await tester.pumpAndSettle();
     expect(find.byType(SetUpdatePrefsPage), findsOneWidget);
 
@@ -102,8 +105,8 @@ void main() {
     expect(prefs.getString('recentLang'), null);
 
     // Test default view page
-    await Navigator.of(tester.element(find.byType(StartupPage)))
-        .pushNamed('/view');
+    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
+        .pushNamed('/view'));
     await tester.pumpAndSettle();
     expect(find.byType(ViewPage), findsOneWidget);
     ViewPage viewPage =
@@ -116,8 +119,8 @@ void main() {
     expect(prefs.getString('recentLang'), equals('en'));
 
     // Test settings page
-    await Navigator.of(tester.element(find.byType(ViewPage)))
-        .pushNamed('/settings');
+    unawaited(Navigator.of(tester.element(find.byType(ViewPage)))
+        .pushNamed('/settings'));
     await tester.pumpAndSettle();
     expect(find.byType(SettingsPage), findsOneWidget);
 
@@ -147,8 +150,8 @@ void main() {
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
         child: TestApp(TestObserver())));
 
-    await Navigator.of(tester.element(find.byType(StartupPage)))
-        .pushNamed('/unknown');
+    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
+        .pushNamed('/unknown'));
     await tester.pumpAndSettle();
     expect(find.byType(ErrorPage), findsOneWidget);
     expect(find.textContaining('Unknown route /unknown'), findsOneWidget);
