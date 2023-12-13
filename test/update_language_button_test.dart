@@ -28,7 +28,7 @@ class TestLanguageController extends DummyLanguageController {
 
   @override
   Future<bool> download({bool force = false}) async {
-    if (force == true) deleteResources();
+    if (force) await deleteResources();
     state = Language(languageCode, const {}, const [], const {}, '', 0,
         DateTime.utc(2023, 10, 1));
     return true;

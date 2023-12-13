@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
@@ -57,7 +59,8 @@ class DownloadLanguagesPage extends ConsumerWidget {
                         if (!result) return;
                       }
                       if (!context.mounted) return;
-                      Navigator.pushReplacementNamed(context, '/onboarding/3');
+                      unawaited(Navigator.pushReplacementNamed(
+                          context, '/onboarding/3'));
                     },
                     child: Text(context.l10n.continueText),
                   ),

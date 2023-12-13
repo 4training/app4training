@@ -97,7 +97,7 @@ void main() {
     expect(find.byType(ConfirmDeletionDialog), findsOneWidget);
     expect(find.text('Abbrechen'), findsOneWidget);
     expect(find.text('Löschen'), findsOneWidget);
-    await (tester.tap(find.text('Abbrechen')));
+    await tester.tap(find.text('Abbrechen'));
     await tester.pump();
     expect(find.byType(ConfirmDeletionDialog), findsNothing);
     expect(container.read(languageProvider('de')).downloaded, true);
@@ -106,7 +106,7 @@ void main() {
     await tester.tap(find.byType(DeleteLanguageButton));
     await tester.pump();
     expect(find.text('Löschen'), findsOneWidget);
-    await (tester.tap(find.text('Löschen')));
+    await tester.tap(find.text('Löschen'));
     await tester.pump();
     expect(find.byType(ConfirmDeletionDialog), findsNothing);
     expect(container.read(languageProvider('de')).downloaded, false);

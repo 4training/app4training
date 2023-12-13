@@ -60,19 +60,19 @@ void main() {
     expect(find.byType(WelcomePage), findsOneWidget);
 
     // Test second onboarding step
-    Navigator.of(tester.element(find.byType(WelcomePage)))
+    await Navigator.of(tester.element(find.byType(WelcomePage)))
         .pushReplacementNamed('/onboarding/2');
     await tester.pumpAndSettle();
     expect(find.byType(DownloadLanguagesPage), findsOneWidget);
 
     // Go back again
-    Navigator.of(tester.element(find.byType(DownloadLanguagesPage)))
+    await Navigator.of(tester.element(find.byType(DownloadLanguagesPage)))
         .pushReplacementNamed('/onboarding/1');
     await tester.pumpAndSettle();
     expect(find.byType(WelcomePage), findsOneWidget);
 
     // Test third onboarding step
-    Navigator.of(tester.element(find.byType(WelcomePage)))
+    await Navigator.of(tester.element(find.byType(WelcomePage)))
         .pushReplacementNamed('/onboarding/3');
     await tester.pumpAndSettle();
     expect(find.byType(SetUpdatePrefsPage), findsOneWidget);
@@ -102,7 +102,8 @@ void main() {
     expect(prefs.getString('recentLang'), null);
 
     // Test default view page
-    Navigator.of(tester.element(find.byType(StartupPage))).pushNamed('/view');
+    await Navigator.of(tester.element(find.byType(StartupPage)))
+        .pushNamed('/view');
     await tester.pumpAndSettle();
     expect(find.byType(ViewPage), findsOneWidget);
     ViewPage viewPage =
@@ -115,7 +116,8 @@ void main() {
     expect(prefs.getString('recentLang'), equals('en'));
 
     // Test settings page
-    Navigator.of(tester.element(find.byType(ViewPage))).pushNamed('/settings');
+    await Navigator.of(tester.element(find.byType(ViewPage)))
+        .pushNamed('/settings');
     await tester.pumpAndSettle();
     expect(find.byType(SettingsPage), findsOneWidget);
 
@@ -145,7 +147,7 @@ void main() {
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
         child: TestApp(TestObserver())));
 
-    Navigator.of(tester.element(find.byType(StartupPage)))
+    await Navigator.of(tester.element(find.byType(StartupPage)))
         .pushNamed('/unknown');
     await tester.pumpAndSettle();
     expect(find.byType(ErrorPage), findsOneWidget);

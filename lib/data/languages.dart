@@ -46,7 +46,7 @@ final pageContentProvider =
     FutureProvider.family<String, Resource>((ref, page) async {
   final fileSystem = ref.watch(fileSystemProvider);
   final lang = ref.watch(languageProvider(page.langCode));
-  if (lang.downloaded == false) {
+  if (!lang.downloaded) {
     throw LanguageNotDownloadedException(page.langCode);
   }
   Page? pageDetails = lang.pages[page.name];
@@ -64,8 +64,8 @@ final pageContentProvider =
         .readAsString();
     // Load images directly into the HTML:
     // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
-    content =
-        content.replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'), (match) {
+    return content.replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'),
+        (match) {
       if (!lang.images.containsKey(match.group(1))) {
         debugPrint(
             'Warning: image ${match.group(1)} missing (in ${pageDetails.fileName})');
@@ -75,7 +75,6 @@ final pageContentProvider =
           (name: match.group(1)!, langCode: page.langCode)));
       return 'src="data:image/png;base64,$imageData"';
     });
-    return content;
   } on FileSystemException catch (e) {
     throw LanguageCorruptedException(
         page.langCode, 'Error while reading from local storage.', e);

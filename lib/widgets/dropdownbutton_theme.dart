@@ -24,14 +24,14 @@ class _DropDownButtonThemeState extends State<DropDownButtonTheme> {
   Future<void> _getAppTheme() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _appTheme = (prefs.getString('appTheme') ?? 'light');
+      _appTheme = prefs.getString('appTheme') ?? 'light';
     });
   }
 
   Future<void> _setAppTheme(String? dropdownValue) async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      prefs.setString("appTheme", (dropdownValue ?? 'system'));
+      prefs.setString('appTheme', dropdownValue ?? 'system');
     });
   }
 

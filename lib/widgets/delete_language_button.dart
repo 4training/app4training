@@ -64,7 +64,7 @@ class DeleteAllLanguagesButton extends ConsumerWidget {
           String lastLanguage = '';
           for (var languageCode in ref.read(availableLanguagesProvider)) {
             // Delete all languages except the current app language
-            if ((languageCode == ref.read(appLanguageProvider).languageCode)) {
+            if (languageCode == ref.read(appLanguageProvider).languageCode) {
               continue;
             }
             if (ref.watch(languageProvider(languageCode)).downloaded) {

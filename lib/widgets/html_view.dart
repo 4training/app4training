@@ -157,11 +157,9 @@ htmldom.Document sanitize(String inputHtml, bool isDarkMode) {
     // Get the sibling div node (which has style="margin-left:25px")
     for (var element in parentNode.children) {
       if (element.attributes['style'] == 'margin-left:25px') {
-        debugPrint('Found the second <div>');
         // Now get the child <p> node
         for (var childElement in element.children) {
           if (childElement.localName!.toLowerCase() == 'p') {
-            debugPrint('Found <p>');
             // Now construct our new Html
             var tableElement = htmldom.Element.tag('table');
             var trElement = htmldom.Element.tag('tr');
