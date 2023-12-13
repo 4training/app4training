@@ -1,6 +1,5 @@
 import 'dart:collection';
 import 'dart:convert';
-import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/exceptions.dart';
 import 'package:download_assets/download_assets.dart';
 import 'package:file/local.dart';
@@ -105,12 +104,24 @@ final countDownloadedLanguagesProvider = StateProvider<int>((ref) {
 class LanguageController extends FamilyNotifier<Language, String> {
   @protected
   String languageCode = '';
+
+  /// You must call [await _initController()] before accessing [_controller]
   final DownloadAssetsController _controller;
+  bool _isInitialized = false;
 
   /// We use dependency injection (optional parameters [assetsController])
   /// so that we can test the class well
   LanguageController({DownloadAssetsController? assetsController})
       : _controller = assetsController ?? DownloadAssetsController();
+
+  /// Make sure that our [_controller] is initialized
+  Future<void> _initController() async {
+    if (!_isInitialized) {
+      assert(languageCode != '');
+      await _controller.init(assetDir: 'assets-$languageCode');
+      _isInitialized = true;
+    }
+  }
 
   @override
   Language build(String arg) {
@@ -119,8 +130,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
         '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
   }
 
-  /// Download this language and make it available. Save that we want this
-  /// language downloaded also in the SharedPreferences.
+  /// Download this language and make it available.
   /// If [force] is true, delete the existing structure and reload everything.
   /// Returns whether everything went well
   Future<bool> download({bool force = false}) async {
@@ -129,35 +139,23 @@ class LanguageController extends FamilyNotifier<Language, String> {
       await deleteResources();
     }
     assert(!state.downloaded);
-    ref.read(sharedPrefsProvider).setBool('download_$languageCode', true);
+    await _download();
     return await _load();
   }
 
-  /// Check SharedPreferences: should we download this language? if yes, load it
-  /// Returns true on success, false when there was an error
+  /// Is this language downloaded to the device? If yes, load it into memory.
+  /// Returns true when the language is now available, false if not
   Future<bool> init() async {
     assert(languageCode != '');
-    bool? shouldDownload =
-        ref.read(sharedPrefsProvider).getBool('download_$languageCode');
-
-    // Default: download resources in English + app language
-    // (but user may delete even them)
-    if ((languageCode == ref.read(appLanguageProvider).languageCode) ||
-        (languageCode == 'en') ||
-        (shouldDownload == true)) {
-      ref.read(sharedPrefsProvider).setBool('download_$languageCode', true);
-      return await _load();
-    }
-    return true;
+    return await _load();
   }
 
   /// Load our Language structure from the file system resources.
-  /// Download the language if it's not already downloaded.
-  /// This function doesn't touch SharedPreferences.
-  /// Returns whether everything went well
+  /// Returns whether everything went well and the language is available now.
+  /// This method shouldn't throw
   Future<bool> _load() async {
+    await _initController();
     final fileSystem = ref.watch(fileSystemProvider);
-    await _controller.init(assetDir: "assets-$languageCode");
 
     try {
       // Now we store the full path to the language
@@ -167,9 +165,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
       Directory dir = fileSystem.directory(path);
 
       bool downloaded = await _controller.assetsDirAlreadyExists();
-      debugPrint("assets ($languageCode) loaded: $downloaded");
-      if (!downloaded) await _download();
-      downloaded = true;
+      debugPrint("Trying to load '$languageCode', downloaded: $downloaded");
+      if (!downloaded) return false;
 
       // Store the size of the downloaded directory
       int sizeInKB = await _calculateMemoryUsage(dir);
@@ -216,7 +213,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
       String msg = "Error initializing data structure: $e";
       debugPrint(msg);
       // Delete the whole folder
-      _controller.clearAssets();
+      await _controller.clearAssets();
       state = Language(
           '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
       return false;
@@ -227,15 +224,16 @@ class LanguageController extends FamilyNotifier<Language, String> {
   /// download this language in the SharedPreferences.
   // TODO: are there race conditions possible in our LanguageController?
   Future<void> deleteResources() async {
+    await _initController();
     await _controller.clearAssets();
     state = Language(
         '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
-    ref.read(sharedPrefsProvider).setBool('download_$languageCode', false);
   }
 
   /// Download all files for one language via DownloadAssetsController
   Future _download() async {
-    debugPrint("Starting downloadLanguage: $languageCode ...");
+    await _initController();
+    debugPrint("Starting to download language '$languageCode' ...");
     // URL of the zip file to be downloaded
     String remoteUrl = Globals.getRemoteUrl(languageCode);
 

@@ -54,8 +54,7 @@ void main() {
       return DummyLanguageController();
     });
 
-    SharedPreferences.setMockInitialValues(
-        {'download_de': false, 'download_en': false});
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
@@ -92,8 +91,7 @@ void main() {
       return TestLanguageStatusNotifier();
     });
 
-    SharedPreferences.setMockInitialValues(
-        {'download_de': true, 'download_en': false});
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),

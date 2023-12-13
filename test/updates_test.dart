@@ -109,7 +109,7 @@ void main() {
   });
 
   test('Test checking and updating', () async {
-    SharedPreferences.setMockInitialValues({'download_de': false});
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
@@ -137,26 +137,23 @@ void main() {
         deStatus.lastCheckedTimestamp, isNot(equals(DateTime.utc(2023, 1, 1))));
     expect(deStatus.updatesAvailable, true);
 
-    // Mock downloading the resources (no problem that it throws)
-    try {
-      await container
-          .read(languageProvider('de').notifier)
-          .download(force: true);
-      fail('download() should throw because no files are there');
-    } catch (e) {
-      expect(e, isA<Exception>());
-    }
+    // Mock downloading the resources (no problem that they don't get available)
+    expect(
+        await container
+            .read(languageProvider('de').notifier)
+            .download(force: true),
+        false);
     deStatus = container.read(languageStatusProvider('de'));
     expect(deStatus.updatesAvailable, false);
   });
 
   test('Test correct behavior when checking for updates fails', () async {
-    SharedPreferences.setMockInitialValues({'download_de': false});
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
-            throw (ClientException);
+            throw ClientException;
           })),
       languageProvider.overrideWith(() =>
           LanguageController(assetsController: FakeDownloadAssetsController())),
@@ -174,7 +171,7 @@ void main() {
   });
 
   test('Test updatesAvailableProvider', () async {
-    SharedPreferences.setMockInitialValues({'download_de': false});
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
@@ -205,14 +202,11 @@ void main() {
     expect(container.read(updatesAvailableProvider), true);
 
     // Updating the German resources
-    try {
-      await container
-          .read(languageProvider('de').notifier)
-          .download(force: true);
-      fail('download() should throw because no files are there');
-    } catch (e) {
-      expect(e, isA<Exception>());
-    }
+    expect(
+        await container
+            .read(languageProvider('de').notifier)
+            .download(force: true),
+        false);
 
     // Now there should again be no updates available
     deStatus = container.read(languageStatusProvider('de'));

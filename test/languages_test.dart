@@ -76,20 +76,28 @@ class DummyLanguageController extends LanguageController {
 void main() {
   late DownloadAssetsController mock;
 
-  test('Test init() with download=false in SharedPreferences', () async {
-    SharedPreferences.setMockInitialValues({'download_fr': false});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
-    final frTest = container.read(languageProvider('fr').notifier);
-    await frTest.init();
-    expect(frTest.state.downloaded, false);
-  });
-
-  test('Test init() with download=true in SharedPreferences', () async {
+  test('Test init() when no files are there', () async {
     var fileSystem = MemoryFileSystem();
     var fakeController = FakeDownloadAssetsController();
-    SharedPreferences.setMockInitialValues({'download_fr': true});
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final container = ProviderContainer(overrides: [
+      languageProvider.overrideWith(
+          () => LanguageController(assetsController: fakeController)),
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      sharedPrefsProvider.overrideWithValue(prefs)
+    ]);
+    final frTest = container.read(languageProvider('fr').notifier);
+    expect(await frTest.init(), false);
+    expect(frTest.state.downloaded, false);
+    // init() shouldn't start a download
+    expect(fakeController.startDownloadCalled, false);
+  });
+
+  test('Test that download() starts the download', () async {
+    var fileSystem = MemoryFileSystem();
+    var fakeController = FakeDownloadAssetsController();
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(overrides: [
       languageProvider.overrideWith(
@@ -99,15 +107,11 @@ void main() {
     ]);
     final frTest = container.read(languageProvider('fr').notifier);
 
-    // Verify that download got started (even if it throws an exception later)
-    try {
-      await frTest.init();
-      fail('init() should throw because no files are there');
-    } catch (e) {
-      expect(e, isA<Exception>());
-      expect(fakeController.initCalled, true);
-      expect(fakeController.startDownloadCalled, true);
-    }
+    // as we're mocking, the language won't be available
+    expect(await frTest.download(), false);
+    // Verify that download got started
+    expect(fakeController.initCalled, true);
+    expect(fakeController.startDownloadCalled, true);
   });
 
   group('Test correct behavior after downloading', () {
@@ -137,10 +141,8 @@ void main() {
         ]);
         final deTest = container.read(languageProvider('de').notifier);
 
-        expect(prefs.getBool('download_de'), null);
-        expect(await deTest.download(), false);
+        expect(await deTest.init(), false);
         expect(deTest.state.downloaded, false);
-        expect(prefs.getBool('download_de'), true);
       });
 
       test('Test error handling when structure is inconsistent', () async {
@@ -150,7 +152,7 @@ void main() {
             .create(recursive: true);
         var contentsJson =
             fileSystem.file('assets-de/html-de-main/structure/contents.json');
-        contentsJson.writeAsString('invalid');
+        await contentsJson.writeAsString('invalid');
 
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -161,7 +163,7 @@ void main() {
           sharedPrefsProvider.overrideWithValue(prefs)
         ]);
         final deTest = container.read(languageProvider('de').notifier);
-        expect(await deTest.download(), false);
+        expect(await deTest.init(), false);
         expect(deTest.state.downloaded, false);
       });
 
@@ -176,7 +178,7 @@ void main() {
             const LocalFileSystem(), path.canonicalize('test/'));
         String jsonPath = 'assets-de/html-de-main/structure/contents.json';
         var contentsJson = fileSystem.file(jsonPath);
-        contentsJson
+        await contentsJson
             .writeAsString(await readFileSystem.file(jsonPath).readAsString());
 
         SharedPreferences.setMockInitialValues({});
@@ -190,7 +192,7 @@ void main() {
 
         // init() should work (even if expected HTML files are missing)
         final deTest = container.read(languageProvider('de').notifier);
-        await deTest.download();
+        expect(await deTest.init(), true);
         expect(deTest.state.downloaded, true);
       });
     });
@@ -208,7 +210,7 @@ void main() {
       ]);
 
       final deTest = container.read(languageProvider('de').notifier);
-      await deTest.download();
+      expect(await deTest.init(), true);
 
       // Loads Gottes_Geschichte_(fünf_Finger).html
       String content = await container.read(pageContentProvider(
