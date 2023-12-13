@@ -67,6 +67,11 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
       return MaterialPageRoute<void>(
           settings: settings, builder: (_) => const SetUpdatePrefsPage());
     }
+  } else if (settings.name == '/downloadlanguages') {
+    return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => const DownloadLanguagesPage(
+            noBackButton: true, continueTarget: '/view'));
   }
 
   return MaterialPageRoute<void>(

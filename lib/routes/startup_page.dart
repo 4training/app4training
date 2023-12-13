@@ -10,10 +10,11 @@ import '../data/languages.dart';
 /// Handles the initial route "/":
 /// Currently shows a loading indication while we're initializing
 /// the data in the background.
+// ignore: must_be_immutable
 class StartupPage extends ConsumerWidget {
-  final String navigateTo;
+  String navigateTo;
   final Function? initFunction; // For testing (is there a better solution?)
-  const StartupPage({required this.navigateTo, super.key, this.initFunction});
+  StartupPage({required this.navigateTo, super.key, this.initFunction});
 
   /// Make sure we have all the resources downloaded in the languages we want
   /// and load the structure
@@ -21,6 +22,9 @@ class StartupPage extends ConsumerWidget {
     for (String languageCode in ref.read(availableLanguagesProvider)) {
       await ref.read(languageProvider(languageCode).notifier).init();
       // TODO: look at return value and show snackBar when there was an error
+    }
+    if (ref.read(countDownloadedLanguagesProvider) == 0) {
+      navigateTo = '/downloadlanguages';
     }
   }
 

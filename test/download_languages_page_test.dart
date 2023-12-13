@@ -18,8 +18,12 @@ import 'routes_test.dart';
 class TestDownloadLanguagesPage extends ConsumerWidget {
   final String languageCode;
   final TestObserver navigatorObserver;
+  final bool noBackButton;
+  final String continueTarget;
   const TestDownloadLanguagesPage(this.languageCode, this.navigatorObserver,
-      {super.key});
+      {this.noBackButton = false,
+      this.continueTarget = '/onboarding/3',
+      super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +33,8 @@ class TestDownloadLanguagesPage extends ConsumerWidget {
         supportedLocales: AppLocalizations.supportedLocales,
         onGenerateRoute: (settings) => generateRoutes(settings, ref),
         navigatorObservers: [navigatorObserver],
-        home: const DownloadLanguagesPage());
+        home: DownloadLanguagesPage(
+            noBackButton: noBackButton, continueTarget: continueTarget));
   }
 }
 
@@ -91,6 +96,40 @@ void main() {
     await tester.tap(findElevatedButtonByText(AppLocalizationsDe().back));
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/onboarding/1']), isTrue);
+  });
+
+  testWidgets('Test with no back button and other continue target',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final testLanguageProvider =
+        NotifierProvider.family<LanguageController, Language, String>(() {
+      return TestLanguageController(); // Simulate: all langs are downloaded
+    });
+
+    final testObserver = TestObserver();
+    await tester.pumpWidget(ProviderScope(
+        overrides: [
+          sharedPrefsProvider.overrideWithValue(prefs),
+          languageProvider.overrideWithProvider(testLanguageProvider)
+        ],
+        child: TestDownloadLanguagesPage(
+          'de',
+          testObserver,
+          noBackButton: true,
+          continueTarget: '/test',
+        )));
+
+    // No back button
+    expect(findElevatedButtonByText(AppLocalizationsDe().back), findsNothing);
+    expect(findElevatedButtonByText(AppLocalizationsDe().continueText),
+        findsOneWidget);
+    // Click the continue button
+    expect(testObserver.replacedRoutes, isEmpty);
+    await tester
+        .tap(findElevatedButtonByText(AppLocalizationsDe().continueText));
+    await tester.pump();
+    expect(listEquals(testObserver.replacedRoutes, ['/test']), isTrue);
   });
 
   // TODO Test that initially no language is downloaded

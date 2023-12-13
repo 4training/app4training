@@ -10,11 +10,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Second onboarding screen:
 /// Download languages - show the LanguagesTable full screen
 class DownloadLanguagesPage extends ConsumerWidget {
-  const DownloadLanguagesPage({super.key});
+  /// Don't show the back button
+  final bool noBackButton;
+
+  /// Which route should be shown after user clicks on 'Continue'
+  final String continueTarget;
+
+  const DownloadLanguagesPage(
+      {this.noBackButton = false,
+      this.continueTarget = '/onboarding/3',
+      super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLanguage appLanguage = ref.watch(appLanguageProvider);
+
+    List<Widget> backButton = noBackButton
+        ? []
+        : [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: const StadiumBorder(),
+              ),
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/onboarding/1');
+              },
+              child: Text(context.l10n.back),
+            ),
+            Expanded(child: Container())
+          ];
+
     return Scaffold(
         appBar: AppBar(title: Text(context.l10n.downloadLanguages)),
         body: Padding(
@@ -32,16 +57,7 @@ class DownloadLanguagesPage extends ConsumerWidget {
                 const SizedBox(height: 20),
                 Row(children: [
                   Expanded(flex: 2, child: Container()),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: const StadiumBorder(),
-                    ),
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/onboarding/1');
-                    },
-                    child: Text(context.l10n.back),
-                  ),
-                  Expanded(child: Container()),
+                  ...backButton,
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: const StadiumBorder(),
@@ -60,7 +76,7 @@ class DownloadLanguagesPage extends ConsumerWidget {
                       }
                       if (!context.mounted) return;
                       unawaited(Navigator.pushReplacementNamed(
-                          context, '/onboarding/3'));
+                          context, continueTarget));
                     },
                     child: Text(context.l10n.continueText),
                   ),

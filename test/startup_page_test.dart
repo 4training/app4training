@@ -1,9 +1,21 @@
 import 'dart:async';
 
+import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/routes/startup_page.dart';
+
+import 'languages_test.dart';
+
+/// Simulate that no language is available
+class TestLanguageController extends DummyLanguageController {
+  @override
+  Future<bool> init() async {
+    return false;
+  }
+}
 
 void main() {
   // Mocking the globalInit() function:
@@ -37,6 +49,20 @@ void main() {
       await tester.pump();
       expect(route, equals('/test')); // Now we went on to this route
     });
+  });
+
+  testWidgets('Test different routing when no languages are downloaded',
+      (WidgetTester tester) async {
+    final testLanguageProvider =
+        NotifierProvider.family<LanguageController, Language, String>(() {
+      return TestLanguageController();
+    });
+
+    final startupPage = StartupPage(navigateTo: '/test');
+    await tester.pumpWidget(ProviderScope(overrides: [
+      languageProvider.overrideWithProvider(testLanguageProvider)
+    ], child: MaterialApp(home: startupPage)));
+    expect(startupPage.navigateTo, equals('/downloadlanguages'));
   });
 
   testWidgets('Test failing initFunction', (WidgetTester tester) async {

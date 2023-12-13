@@ -66,7 +66,6 @@ void main() {
         .pushReplacementNamed('/onboarding/2'));
     await tester.pumpAndSettle();
     expect(find.byType(DownloadLanguagesPage), findsOneWidget);
-//    await Future.delayed(Duration(seconds: 50));
 
     // Go back again
     unawaited(Navigator.of(tester.element(find.byType(DownloadLanguagesPage)))
@@ -126,6 +125,20 @@ void main() {
 
     // Test that routes are handled
     expect(observer.routes, orderedEquals(['/', '/view', '/settings']));
+  });
+
+  testWidgets('Test startup with no available languages',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
+    final prefs = await SharedPreferences.getInstance();
+    await tester.pumpWidget(ProviderScope(
+        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+        child: TestApp(TestObserver())));
+
+    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
+        .pushNamed('/downloadlanguages'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DownloadLanguagesPage), findsOneWidget);
   });
 
   testWidgets('Test initial route with loading data from SharedPreferences',
