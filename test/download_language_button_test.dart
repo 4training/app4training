@@ -136,6 +136,33 @@ void main() {
     expect(find.text('Englisch (en) ist nun verfügbar'), findsOneWidget);
   });
 
-  // TODO: more snackbar tests (download failed; visibility duration)
+  testWidgets('Test failing download', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+    var throwingController = ThrowingDownloadAssetsController();
+    final prefs = await SharedPreferences.getInstance();
+    final container = ProviderContainer(overrides: [
+      languageProvider.overrideWith(
+          () => LanguageController(assetsController: throwingController)),
+      sharedPrefsProvider.overrideWithValue(prefs),
+    ]);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+            locale: const Locale('de'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            scaffoldMessengerKey: container.read(scaffoldMessengerKeyProvider),
+            home: const Scaffold(body: DownloadLanguageButton('en')))));
+
+    await tester.tap(find.byType(DownloadLanguageButton));
+    await tester.pump();
+    expect(throwingController.startDownloadCalled, true);
+    expect(throwingController.clearAssetsCalled, true);
+    expect(container.read(languageProvider('en')).downloaded, false);
+    // Snackbar visible?
+    expect(find.textContaining('Download fehlgeschlagen'), findsOneWidget);
+  });
+  // TODO: test snackbar visibility duration
   // TODO: Test that there is a progress indicator while downloading
 }

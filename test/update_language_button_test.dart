@@ -81,6 +81,38 @@ void main() {
         findsOneWidget);
   });
 
+  testWidgets('Test when download fails', (WidgetTester tester) async {
+    var throwingController = ThrowingDownloadAssetsController();
+    final container = ProviderContainer(overrides: [
+      languageProvider.overrideWith(
+          () => LanguageController(assetsController: throwingController)),
+      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
+    ]);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+            locale: const Locale('de'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            scaffoldMessengerKey: container.read(scaffoldMessengerKeyProvider),
+            home: const Scaffold(body: UpdateLanguageButton('en')))));
+
+    await container.read(languageStatusProvider('en').notifier).check();
+    expect(container.read(languageStatusProvider('en')).updatesAvailable, true);
+
+    await tester.tap(find.byType(UpdateLanguageButton));
+    await tester.pump();
+    expect(throwingController.startDownloadCalled, true);
+    expect(throwingController.clearAssetsCalled, true);
+    // Snackbar visible?
+    expect(
+        find.textContaining('Aktualisierung fehlgeschlagen.'), findsOneWidget);
+/*  TODO
+    expect(
+        container.read(languageStatusProvider('en')).updatesAvailable, true);*/
+  });
+
   testWidgets('Test UpdateAllLanguagesButton: Updating 3 languages',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
