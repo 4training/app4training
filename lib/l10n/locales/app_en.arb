@@ -300,7 +300,7 @@
     "worksOffline": "Works offline",
     "worksOfflineText": "After you downloaded the languages you're interested in, the app doesn't need an internet connection. You'll only need internet if you want to check for updates or download another language.",
     "contributing": "Contributing",
-    "contributingText": "Many people contributed their time, skills and resources to make this vision happen. Thank you! There is many areas and ways you can contribute: Translating, programming, design, correcting errors, ... Please write us at contact@4training.net - we're happy to hear your ideas and feedback!",
+    "contributingText": "Many people contributed their time, skills and resources to make this vision happen. Thank you! There is many areas and ways you can contribute: Translating, programming, design, correcting errors, ...\nPlease write us at contact@4training.net – we're happy to hear your ideas and feedback!",
     "openSource": "Open Source",
     "openSourceText": "This app is open source. You have the freedom to use it, study it, share it and improve it. Sourcecode and more information: https://github.com/4training/app4training",
     "version": "Version",
