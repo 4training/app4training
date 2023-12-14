@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
+import 'package:dio/dio.dart';
 import 'package:download_assets/download_assets.dart';
 import 'package:file/chroot.dart';
 import 'package:file/local.dart';
@@ -25,6 +26,7 @@ class FakeDownloadAssetsController extends Fake
     implements DownloadAssetsController {
   late String _assetDir;
   bool initCalled = false;
+  bool clearAssetsCalled = false;
   bool startDownloadCalled = false;
 
   // TODO use this class to test the startDownload() functionality
@@ -46,7 +48,7 @@ class FakeDownloadAssetsController extends Fake
 
   @override
   Future clearAssets() async {
-    return;
+    clearAssetsCalled = true;
   }
 
   @override
@@ -60,6 +62,20 @@ class FakeDownloadAssetsController extends Fake
     // TODO: implement startDownload
     startDownloadCalled = true;
     return;
+  }
+}
+
+class ThrowingDownloadAssetsController extends FakeDownloadAssetsController {
+  @override
+  Future startDownload(
+      {required List<String> assetsUrls,
+      List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
+      Function(double p1)? onProgress,
+      Function()? onCancel,
+      Map<String, dynamic>? requestQueryParams,
+      Map<String, String> requestExtraHeaders = const {}}) async {
+    startDownloadCalled = true;
+    throw DioException(requestOptions: RequestOptions());
   }
 }
 
@@ -112,6 +128,26 @@ void main() {
     // Verify that download got started
     expect(fakeController.initCalled, true);
     expect(fakeController.startDownloadCalled, true);
+    expect(fakeController.clearAssetsCalled, false);
+  });
+
+  test('Test failing download', () async {
+    var fileSystem = MemoryFileSystem();
+    var throwingController = ThrowingDownloadAssetsController();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final container = ProviderContainer(overrides: [
+      languageProvider.overrideWith(
+          () => LanguageController(assetsController: throwingController)),
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      sharedPrefsProvider.overrideWithValue(prefs)
+    ]);
+    final frTest = container.read(languageProvider('fr').notifier);
+
+    expect(await frTest.download(), false);
+    // download shouldn't throw (if it would the test would fail)
+    expect(throwingController.startDownloadCalled, true);
+    expect(throwingController.clearAssetsCalled, true);
   });
 
   group('Test correct behavior after downloading', () {

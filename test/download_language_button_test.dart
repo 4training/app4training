@@ -136,5 +136,6 @@ void main() {
     expect(find.text('Englisch (en) ist nun verfügbar'), findsOneWidget);
   });
 
+  // TODO: more snackbar tests (download failed; visibility duration)
   // TODO: Test that there is a progress indicator while downloading
 }

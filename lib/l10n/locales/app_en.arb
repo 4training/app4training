@@ -111,21 +111,17 @@
             }
         }
     },
-    "downloadedNLanguages": "{count} languages downloaded{error, plural, =0{} other{, {error} failed}}",
+    "downloadedNLanguages": "{count} languages downloaded",
     "@downloadedNLanguages": {
-        "description": "Snackbar message after clicking on the button to download all languages and >1 language were downloaded. Or if at least one download failed",
+        "description": "Snackbar message after clicking on the button to download all languages and >1 language were downloaded.",
         "placeholders": {
             "count": {
-                "type": "num",
-                "format": "compact"
-            },
-            "error": {
                 "type": "num",
                 "format": "compact"
             }
         }
     },
-    "downloadError": "Download failed. Please try again later.",
+    "downloadError": "Download failed. Please check your internet connection and try again later",
     "updatedLanguage": "{languageName} is now up-to-date",
     "@updatedLanguage": {
         "description": "Snackbar info message",

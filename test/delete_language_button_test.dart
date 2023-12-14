@@ -60,6 +60,9 @@ void main() {
     expect(container.read(languageProvider('en')).downloaded, false);
     // Snackbar visible?
     expect(find.text('Englisch (en) wurde gelöscht'), findsOneWidget);
+    /* TODO: Check that snackbar is disappearing - somehow doesn't work
+    await tester.pump(snackBarErrorDuration);
+    expect(find.text('Englisch (en) wurde gelöscht'), findsNothing);*/
   });
 
   // Trying to delete the currently selected app language is discouraged

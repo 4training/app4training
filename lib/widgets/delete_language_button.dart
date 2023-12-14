@@ -27,7 +27,7 @@ class DeleteLanguageButton extends ConsumerWidget {
           final snackBar = SnackBar(
             content: Text(context.l10n
                 .deletedLanguage(context.l10n.getLanguageName(languageCode))),
-            duration: const Duration(seconds: 1),
+            duration: snackBarQuickSuccessDuration,
           );
           if (isDiscouraged) {
             bool result = await showDialog(

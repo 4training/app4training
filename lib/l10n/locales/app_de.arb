@@ -111,21 +111,17 @@
             }
         }
     },
-    "downloadedNLanguages": "{count} Sprachen heruntergeladen{error, plural, =0{} other{, {error} fehlgeschlagen}}",
+    "downloadedNLanguages": "{count} Sprachen heruntergeladen",
     "@downloadedNLanguages": {
         "description": "Snackbar message after clicking on the button to download all languages and >1 language were downloaded",
         "placeholders": {
             "count": {
                 "type": "num",
                 "format": "compact"
-            },
-            "error": {
-                "type": "num",
-                "format": "compact"
             }
         }
     },
-    "downloadError": "Download fehlgeschlagen. Bitte versuche es später noch einmal.",
+    "downloadError": "Download fehlgeschlagen. Bitte überprüfe deine Internet-Verbindung und versuche es später noch einmal",
     "updatedLanguage": "{languageName} ist nun auf dem aktuellsten Stand",
     "@updatedLanguage": {
         "description": "Snackbar info message",

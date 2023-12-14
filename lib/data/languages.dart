@@ -138,7 +138,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
       await deleteResources();
     }
     assert(!state.downloaded);
-    await _download();
+    if (!await _download()) return false;
     return await _load();
   }
 
@@ -230,28 +230,37 @@ class LanguageController extends FamilyNotifier<Language, String> {
   }
 
   /// Download all files for one language via DownloadAssetsController
-  Future _download() async {
+  /// Returns whether we were successful and shouldn't throw
+  Future<bool> _download() async {
     await _initController();
     debugPrint("Starting to download language '$languageCode' ...");
     // URL of the zip file to be downloaded
     String remoteUrl = Globals.getRemoteUrl(languageCode);
 
-    await _controller.startDownload(
-      assetsUrls: [remoteUrl],
-      onProgress: (progressValue) {
-        if (progressValue < 20) {
-          // The value goes for some reason only up to 18.7 or so ...
-          String progress = "Downloading $languageCode: ";
+    try {
+      await _controller.startDownload(
+        assetsUrls: [remoteUrl],
+        onProgress: (progressValue) {
+          if (progressValue < 20) {
+            // The value goes for some reason only up to 18.7 or so ...
+            String progress = "Downloading $languageCode: ";
 
-          for (int i = 0; i < 20; i++) {
-            progress += (i <= progressValue) ? "|" : ".";
+            for (int i = 0; i < 20; i++) {
+              progress += (i <= progressValue) ? "|" : ".";
+            }
+            debugPrint("$progress ${progressValue.round()}");
+          } else {
+            debugPrint("Download completed");
           }
-          debugPrint("$progress ${progressValue.round()}");
-        } else {
-          debugPrint("Download completed");
-        }
-      },
-    );
+        },
+      );
+    } catch (e) {
+      debugPrint("Error while downloading language '$languageCode': $e");
+      // delete the empty folder left behind by startDownload()
+      await _controller.clearAssets();
+      return false;
+    }
+    return true;
   }
 
   /// Return the total size of all files in our directory in kB

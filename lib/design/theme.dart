@@ -5,6 +5,11 @@ import 'package:flutter/material.dart';
 Color lightPrimaryColor = Colors.red[900]!;
 Color greyedOutColor = Colors.black26;
 
+/// How long should the snackbar show up?
+/// Used when managing languages.
+const snackBarQuickSuccessDuration = Duration(seconds: 1);
+const snackBarErrorDuration = Duration(seconds: 10);
+
 /// Using the red theme of flex_color_scheme - see
 /// https://rydmike.com/flexcolorscheme/themesplayground-latest/
 /// and select "red tornado"

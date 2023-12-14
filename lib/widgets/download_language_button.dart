@@ -1,4 +1,5 @@
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/design/theme.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,8 +45,8 @@ class _DownloadLanguageButtonState
 
               ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
                   duration: success
-                      ? const Duration(seconds: 1)
-                      : const Duration(seconds: 2),
+                      ? snackBarQuickSuccessDuration
+                      : snackBarErrorDuration,
                   content: Text(success
                       ? l10n.downloadedLanguage(
                           l10n.getLanguageName(widget.languageCode))
@@ -114,13 +115,16 @@ class _DownloadAllLanguagesButtonState
                 String text = (countDownloads == 1)
                     ? l10n
                         .downloadedLanguage(l10n.getLanguageName(lastLanguage))
-                    : l10n.downloadedNLanguages(countDownloads, countErrors);
-                final snackBar = SnackBar(content: Text(text));
+                    : l10n.downloadedNLanguages(countDownloads);
+                final snackBar = SnackBar(
+                    content: Text(text),
+                    duration: snackBarQuickSuccessDuration);
                 ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
-              } else if (countErrors > 0) {
-                ref
-                    .watch(scaffoldMessengerProvider)
-                    .showSnackBar(SnackBar(content: Text(l10n.downloadError)));
+              }
+              if (countErrors > 0) {
+                ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
+                    content: Text(l10n.downloadError),
+                    duration: snackBarErrorDuration));
               }
               setState(() {
                 _isLoading = false;
