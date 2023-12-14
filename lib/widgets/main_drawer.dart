@@ -1,18 +1,23 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/categories.dart';
+import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/design/theme.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+const double smileySize = 50;
+
 /// Our main menu with the list of pages, organized into categories.
 /// The currently shown page is highlighted and the category it belongs to
 /// is expanded.
-/// Also add links to translations in case we're currently looking at a
-/// translated worksheet (different language than the app language).
+/// In case we're currently looking at a translated worksheet
+/// (different language than the app language), show icons indicating whether
+/// other worksheets are available in that language or not.
 ///
 /// Implemented with ExpansionTile - ExpansionPanelList would have been also
 /// an option but ExpansionPanel has less customization options
@@ -33,8 +38,9 @@ class MainDrawer extends ConsumerWidget {
       if ((_langCode != null) && (_langCode != appLangCode)) {
         otherLanguage = ref.watch(languageProvider(_langCode));
       }
-      categories = Category.values.map<ExpansionTile>((Category category) {
-        return _buildCategory(context, appLanguage, otherLanguage, category);
+      categories = Category.values.map<CategoryTile>((Category category) {
+        return CategoryTile(_page, appLanguage, category,
+            otherLanguage: otherLanguage);
       }).toList();
     } else {
       // show error message because menu is empty
@@ -61,7 +67,6 @@ class MainDrawer extends ConsumerWidget {
             child: Text(context.l10n.content,
                 style: Theme.of(context).textTheme.titleLarge)),
       ),
-      ...maybeDirectLinksExplanation(context, otherLanguage),
       ...categories,
       const Divider(),
       ListTile(
@@ -84,54 +89,58 @@ class MainDrawer extends ConsumerWidget {
       )
     ])));
   }
+}
 
-  /// If [lang] is not null, show a small explanation on these direct links
-  List<Widget> maybeDirectLinksExplanation(
-      BuildContext context, Language? lang) {
-    if (lang == null) return [];
-    return [
-      Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            const Icon(Icons.translate),
-            Text(context.l10n
-                .directLinks(context.l10n.getLanguageName(lang.languageCode))),
-            const SizedBox(width: 10)
-          ]),
-      const SizedBox(height: 5)
-    ];
-  }
+/// ExpansionTile for one category
+/// If [_otherLanguage] is not null, display icons to indicate
+/// whether a worksheet is translated into this language or not
+class CategoryTile extends ConsumerWidget {
+  final String? _page;
+  final Language _appLanguage;
+  final Language? _otherLanguage;
+  final Category _category;
+  const CategoryTile(this._page, this._appLanguage, this._category,
+      {Language? otherLanguage, super.key})
+      : _otherLanguage = otherLanguage;
 
-  /// Construct ExpansionTile for one category
-  /// If [otherLanguage] is not null, display direct links
-  /// to translated worksheets in this language
-  ExpansionTile _buildCategory(BuildContext context, Language appLanguage,
-      Language? otherLanguage, Category category) {
-    LinkedHashMap<String, String> allTitles = appLanguage.getPageTitles();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    LinkedHashMap<String, String> allTitles = _appLanguage.getPageTitles();
 
     // Construct the list of worksheets that belong to our category
     List<Widget> categoryContent = [];
     allTitles.forEach((englishName, translatedName) {
-      if (worksheetCategories[englishName] == category) {
-        // default: no link (this is a dummy)
-        Widget linkToTranslation = const SizedBox();
-        if (otherLanguage != null) {
-          // Show link to translated worksheet
-          linkToTranslation = IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/view/$englishName/$_langCode');
-              },
-              icon: const Icon(Icons.translate));
-          if (!otherLanguage.pages.containsKey(englishName)) {
+      if (worksheetCategories[englishName] == _category) {
+        bool isTranslated = (_otherLanguage != null) &&
+            (_otherLanguage.pages.containsKey(englishName));
+        // default: no icon (this is a dummy)
+        Widget translationIcon = const SizedBox();
+        if (_otherLanguage != null) {
+          if (isTranslated) {
+            // Show normal translate icon
+            translationIcon = IconButton(
+                onPressed: () async {
+                  bool result = await showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AvailableInDialog(
+                            translatedName, _otherLanguage.languageCode);
+                      });
+                  if (result) {
+                    if (!context.mounted) return;
+                    unawaited(Navigator.popAndPushNamed(context,
+                        '/view/$englishName/${_otherLanguage.languageCode}'));
+                  }
+                },
+                icon: const Icon(Icons.translate));
+          } else {
             // Show a greyed-out icon
-            linkToTranslation = IconButton(
+            translationIcon = IconButton(
                 onPressed: () {
                   showDialog(
                       context: context,
                       builder: (context) {
-                        return NotTranslatedDialog(otherLanguage.languageCode);
+                        return NotTranslatedDialog(_otherLanguage.languageCode);
                       });
                 },
                 color: greyedOutColor,
@@ -152,28 +161,78 @@ class MainDrawer extends ConsumerWidget {
                               ? Theme.of(context).focusColor
                               : null)),
                   onPressed: () {
+                    final destLangCode = isTranslated
+                        ? _otherLanguage.languageCode
+                        : _appLanguage.languageCode;
+                    if ((_otherLanguage != null) && !isTranslated) {
+                      ref.watch(scaffoldMessengerProvider).showSnackBar(
+                          SnackBar(
+                              content: Text(context.l10n.languageChangedBack(
+                                  translatedName,
+                                  context.l10n.getLanguageName(
+                                      _otherLanguage.languageCode),
+                                  context.l10n.getLanguageName(
+                                      _appLanguage.languageCode)))));
+                    }
                     Navigator.pop(context);
-                    Navigator.pushNamed(context,
-                        '/view/$englishName/${appLanguage.languageCode}');
+                    Navigator.pushNamed(
+                        context, '/view/$englishName/$destLangCode');
                   },
                   child: Text(translatedName,
                       style: Theme.of(context).textTheme.titleMedium))),
-          linkToTranslation
+          translationIcon
         ]));
       }
     });
     return ExpansionTile(
-        title: Text(Category.getLocalized(context, category)),
-        collapsedBackgroundColor: (worksheetCategories[_page] == category)
+        title: Text(Category.getLocalized(context, _category)),
+        collapsedBackgroundColor: (worksheetCategories[_page] == _category)
             ? Theme.of(context).highlightColor
             : null,
         controlAffinity: ListTileControlAffinity.leading,
         shape: const Border(), // remove border when tile is expanded
-        initiallyExpanded: worksheetCategories[_page] == category,
+        initiallyExpanded: worksheetCategories[_page] == _category,
         children: categoryContent);
   }
 }
 
+/// Dialog when user clicks on a translate icon:
+/// Worksheet is translated -> close / show page
+class AvailableInDialog extends StatelessWidget {
+  final String page;
+  final String languageCode;
+  const AvailableInDialog(this.page, this.languageCode, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+        title: Text(context.l10n.translationAvailable),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(
+            Icons.sentiment_satisfied,
+            size: smileySize,
+          ),
+          const SizedBox(height: 10),
+          Text(context.l10n.translationAvailableText(
+              page, context.l10n.getLanguageName(languageCode)))
+        ]),
+        actions: <Widget>[
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: Text(context.l10n.close)),
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: Text(context.l10n.showPage))
+        ]);
+  }
+}
+
+/// Dialog when user clicks on greyed-out translate icon:
+/// Sorry, this worksheet is not yet translated -> okay
 class NotTranslatedDialog extends StatelessWidget {
   final String languageCode;
   const NotTranslatedDialog(this.languageCode, {super.key});
@@ -182,8 +241,15 @@ class NotTranslatedDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
         title: Text(context.l10n.sorry),
-        content: Text(context.l10n
-            .notTranslated(context.l10n.getLanguageName(languageCode))),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(
+            Icons.sentiment_dissatisfied,
+            size: smileySize,
+          ),
+          const SizedBox(height: 10),
+          Text(context.l10n
+              .notTranslated(context.l10n.getLanguageName(languageCode))),
+        ]),
         actions: <Widget>[
           TextButton(
               onPressed: () {

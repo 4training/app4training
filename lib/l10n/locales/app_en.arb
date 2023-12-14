@@ -167,9 +167,9 @@
         "description": "Text shown below the list of languages when users taps the language selection button"
     },
     "content": "Content",
-    "directLinks": ": Direct links to {language}",
-    "@directLinks": {
-        "description": "Quick explanation in main drawer when we show direct links to translated worksheets",
+    "translationAvailableHint": ": Available in {language}",
+    "@translationAvailableHint": {
+        "description": "Quick explanation in main drawer when we show a translated worksheet",
         "placeholders": {
             "language": {
                 "type": "String",
@@ -181,10 +181,10 @@
     "essentialsForTrainers": "Essentials - for trainers",
     "innerHealing": "Inner Healing",
     "innerHealingForTrainers": "Inner Healing - for trainers",
-    "sorry": "Sorry",
+    "sorry": "We're sorry",
     "notTranslated": "The requested page is not yet translated into {language}.\nIf you can help with translation, please contact us!",
     "@notTranslation": {
-        "description": "Dialog content when clicking on a (greyed out) link to a not-existing translation",
+        "description": "Dialog content when clicking on the greyed-out translate icon, indicating a not-existing translation",
         "placeholders": {
             "language": {
                 "type": "String",
@@ -193,6 +193,41 @@
         }
     },
     "okay": "Okay",
+    "translationAvailable": "Translation available",
+    "translationAvailableText": "Page \"{page}\" is available in {language}.",
+    "@translationAvailableText": {
+        "description": "Dialog when clicking on a translate icon, indicating that the page is translated into the currently selected language",
+        "placeholders": {
+            "page": {
+                "type": "String",
+                "example": "Forgiving Step by Step"
+            },
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "languageChangedBack": "Page \"{page}\" is not available in {language}. Language changed back to {appLanguage}",
+    "@languageChangedBack": {
+        "description": "Snackbar message when user tries to open a page but it's not available in the currently selected other language",
+        "placeholders": {
+            "page": {
+                "type": "String",
+                "example": "Forgiving Step by Step"
+            },
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            },
+            "appLanguage": {
+                "type": "String",
+                "example": "English (en)"
+            }
+        }
+    },
+    "close": "Close",
+    "showPage": "Show page",
     "error": "Error",
     "reason": "Reason: ",
     "internalError": "Oops, we're sorry. Something unexpected happened. Please tell us about the issue so that we can fix it.\nInternal error: {errorMessage}",
@@ -205,7 +240,7 @@
         }
     },
    "warning": "Warning",
-   "cantDisplayPage": "Can't display page '{page}' in {language}.",
+   "cantDisplayPage": "Can't display page \"{page}\" in {language}.",
    "@cantDisplayPage": {
         "description": "User-facing error message when a page can't be shown.",
         "placeholders": {

@@ -167,9 +167,9 @@
         "description": "Text shown below the list of languages when users taps the language selection button"
     },
     "content": "Inhalt",
-    "directLinks": ": Schnellzugriff für {language}",
-    "@directLinks": {
-        "description": "Quick explanation in main drawer when we show direct links to translated worksheets",
+    "translationAvailableHint": ": Verfügbar auf {language}",
+    "@translationAvailableHint": {
+        "description": "Quick explanation in main drawer when we show a translated worksheet",
         "placeholders": {
             "language": {
                 "type": "String",
@@ -181,7 +181,7 @@
     "essentialsForTrainers": "Grundlagen - für Trainer",
     "innerHealing": "Innere Heilung",
     "innerHealingForTrainers": "Innere Heilung - für Trainer",
-    "sorry": "Sorry",
+    "sorry": "Tut uns leid",
     "notTranslated": "Die gewünschte Seite ist leider noch nicht auf {language} übersetzt.\nWenn du uns bei der Übersetzung helfen kannst, dann melde dich bitte!",
     "@notTranslation": {
         "description": "Dialog content when clicking on a (greyed out) link to a not-existing translation",
@@ -193,6 +193,41 @@
         }
     },
     "okay": "Okay",
+    "translationAvailable": "Übersetzung verfügbar",
+    "translationAvailableText": "Die Seite {page} ist auf {language} übersetzt.",
+    "@translationAvailableText": {
+        "description": "Dialog when clicking on a translate icon, indicating that the page is translated into the currently selected language",
+        "placeholders": {
+            "page": {
+                "type": "String",
+                "example": "Forgiving Step by Step"
+            },
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            }
+        }
+    },
+    "languageChangedBack": "Seite \"{page}\" ist nicht verfügbar auf {language}. Sprache zurückgesetzt auf {appLanguage}",
+    "@languageChangedBack": {
+        "description": "Snackbar message when user tries to open a page but it's not available in the currently selected other language",
+        "placeholders": {
+            "page": {
+                "type": "String",
+                "example": "Forgiving Step by Step"
+            },
+            "language": {
+                "type": "String",
+                "example": "German (de)"
+            },
+            "appLanguage": {
+                "type": "String",
+                "example": "English (en)"
+            }
+        }
+    },
+    "close": "Schließen",
+    "showPage": "Seite öffnen",
     "error": "Fehler",
     "reason": "Grund: ",
     "internalError": "Ups, das tut uns leid. Da muss ein Fehler passiert sein. Bitte sag uns Bescheid, damit wir das Problem beheben können. Interner Fehler: {errorMessage}",
@@ -205,7 +240,7 @@
         }
     },
     "warning": "Warnung",
-    "cantDisplayPage": "Kann Seite '{page}' nicht auf {language} anzeigen.",
+    "cantDisplayPage": "Kann Seite \"{page}\" nicht auf {language} anzeigen.",
     "@cantDisplayPage": {
         "description": "User-facing error message when a page can't be shown.",
         "placeholders": {

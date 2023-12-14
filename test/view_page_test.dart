@@ -59,7 +59,7 @@ void main() {
     expect(find.text('Warnung'), findsOneWidget);
     expect(
         find.textContaining(
-            "Kann Seite 'Healing' nicht auf Deutsch (de) anzeigen"),
+            'Kann Seite "Healing" nicht auf Deutsch (de) anzeigen'),
         findsOneWidget);
     expect(find.textContaining('Sprache ist nicht verfügbar'), findsOneWidget);
   });
@@ -79,7 +79,7 @@ void main() {
     expect(find.text('Warnung'), findsOneWidget);
     expect(
         find.textContaining(
-            "Kann Seite 'Healing' nicht auf Deutsch (de) anzeigen"),
+            'Kann Seite "Healing" nicht auf Deutsch (de) anzeigen'),
         findsOneWidget);
     expect(find.textContaining('Seite Healing/de konnte nicht gefunden werden'),
         findsOneWidget);

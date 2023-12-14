@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'languages_test.dart';
 
-// Simulate that the specified languages are downloaded with the one page we use
+// Simulate that five pages are downloaded in a language
 class TestLanguageController extends LanguageController {
   @override
   Language build(String arg) {
@@ -114,11 +114,6 @@ void main() {
     expect(find.byIcon(Icons.settings), findsOneWidget);
     expect(find.text('Einstellungen'), findsOneWidget);
     expect(find.text('Über...'), findsOneWidget);
-
-    // TODO: add test for the translation links
-    // For unknown reason this test fails when invoked via flutter test,
-    // but it succeeds with flutter run test/main_drawer_test.dart
-    // expect(find.text('[en]'), findsNWidgets(3));
   });
 
   testWidgets('Make sure drawer is closed after returning from settings',
@@ -173,4 +168,8 @@ void main() {
   });
 
   // TODO: test that currently opened page is highlighted in menu
+  // TODO test all the details of #178:
+  // - navigation when a translated page is viewed
+  // - the two dialogs when clicking on an icon / greyed-out icon
+  // - snackbar message when language gets reset
 }
