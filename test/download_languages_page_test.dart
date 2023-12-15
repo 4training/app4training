@@ -22,7 +22,7 @@ class TestDownloadLanguagesPage extends ConsumerWidget {
   final String continueTarget;
   const TestDownloadLanguagesPage(this.languageCode, this.navigatorObserver,
       {this.noBackButton = false,
-      this.continueTarget = '/onboarding/3',
+      this.continueTarget = '/view', // TODO version 0.8 '/onboarding/3',
       super.key});
 
   @override
@@ -70,10 +70,15 @@ void main() {
 
     // Press the continue button
     expect(testObserver.replacedRoutes, isEmpty);
+    await tester.tap(findElevatedButtonByText(AppLocalizationsEn().letsGo));
+    await tester.pump();
+    print(testObserver.replacedRoutes);
+    expect(listEquals(testObserver.replacedRoutes, ['/view']), isTrue);
+/*  TODO version 0.8
     await tester
         .tap(findElevatedButtonByText(AppLocalizationsEn().continueText));
     await tester.pump();
-    expect(listEquals(testObserver.replacedRoutes, ['/onboarding/3']), isTrue);
+    expect(listEquals(testObserver.replacedRoutes, ['/onboarding/3']), isTrue);*/
   });
 
   testWidgets('Test DownloadLanguagesPage back button in German',
@@ -122,12 +127,13 @@ void main() {
 
     // No back button
     expect(findElevatedButtonByText(AppLocalizationsDe().back), findsNothing);
-    expect(findElevatedButtonByText(AppLocalizationsDe().continueText),
-        findsOneWidget);
+// TODO version 0.8    expect(findElevatedButtonByText(AppLocalizationsDe().continueText),
+    expect(
+        findElevatedButtonByText(AppLocalizationsDe().letsGo), findsOneWidget);
     // Click the continue button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(findElevatedButtonByText(AppLocalizationsDe().continueText));
+    await tester.tap(findElevatedButtonByText(AppLocalizationsDe().letsGo));
+// TODO Version 0.8        .tap(findElevatedButtonByText(AppLocalizationsDe().continueText));
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/test']), isTrue);
   });

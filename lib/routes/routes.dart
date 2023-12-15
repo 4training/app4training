@@ -1,7 +1,7 @@
 import 'package:app4training/routes/about_page.dart';
 import 'package:app4training/routes/error_page.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
-import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
+//import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
 import 'package:app4training/routes/onboarding/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,9 +63,10 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
     } else if (step == '2') {
       return MaterialPageRoute<void>(
           settings: settings, builder: (_) => const DownloadLanguagesPage());
+/*  TODO for version 0.8
     } else if (step == '3') {
       return MaterialPageRoute<void>(
-          settings: settings, builder: (_) => const SetUpdatePrefsPage());
+          settings: settings, builder: (_) => const SetUpdatePrefsPage());*/
     }
   } else if (settings.name == '/downloadlanguages') {
     return MaterialPageRoute<void>(

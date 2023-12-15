@@ -18,7 +18,8 @@ class DownloadLanguagesPage extends ConsumerWidget {
 
   const DownloadLanguagesPage(
       {this.noBackButton = false,
-      this.continueTarget = '/onboarding/3',
+      this.continueTarget = '/view',
+// TODO version 0.8     this.continueTarget = '/onboarding/3',
       super.key});
 
   @override
@@ -78,7 +79,8 @@ class DownloadLanguagesPage extends ConsumerWidget {
                       unawaited(Navigator.pushReplacementNamed(
                           context, continueTarget));
                     },
-                    child: Text(context.l10n.continueText),
+                    child: Text(context.l10n.letsGo),
+// TODO version 0.8                   child: Text(context.l10n.continueText),
                   ),
                   Expanded(flex: 2, child: Container()),
                 ])

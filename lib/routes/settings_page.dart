@@ -1,4 +1,4 @@
-import 'package:app4training/widgets/dropdownbutton_automatic_updates.dart';
+//import 'package:app4training/widgets/dropdownbutton_automatic_updates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/updates.dart';
@@ -8,7 +8,7 @@ import 'package:app4training/widgets/dropdownbutton_theme.dart';
 import 'package:app4training/widgets/languages_table.dart';
 import 'package:intl/intl.dart';
 import '../widgets/dropdownbutton_app_language.dart';
-import '../widgets/dropdownbutton_check_frequency.dart';
+//import '../widgets/dropdownbutton_check_frequency.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -83,8 +83,8 @@ class UpdateSettings extends ConsumerWidget {
           alignment: Alignment.topLeft,
           child: Text(context.l10n.updates,
               style: Theme.of(context).textTheme.titleLarge)),
-      // Check for updates
-      Row(
+      // Check for updates TODO for version 0.8
+/*      Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -95,7 +95,7 @@ class UpdateSettings extends ConsumerWidget {
           const DropdownButtonCheckFrequency(),
         ],
       ),
-      const SizedBox(height: 10),
+      const SizedBox(height: 10),*/
       // Last check with date
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Text("${context.l10n.lastCheck} ",
@@ -108,9 +108,9 @@ class UpdateSettings extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [CheckNowButton(buttonText: context.l10n.checkNow)],
       ),
-      const SizedBox(height: 10),
+/*      const SizedBox(height: 10),
+      // Do automatic updates TODO for version 0.8
 
-      // Do automatic updates
       Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -121,7 +121,7 @@ class UpdateSettings extends ConsumerWidget {
           const SizedBox(width: 20),
           const DropdownButtonAutomaticUpdates(),
         ],
-      ),
+      ),*/
     ]);
   }
 }
