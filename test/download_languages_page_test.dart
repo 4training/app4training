@@ -72,7 +72,6 @@ void main() {
     expect(testObserver.replacedRoutes, isEmpty);
     await tester.tap(findElevatedButtonByText(AppLocalizationsEn().letsGo));
     await tester.pump();
-    print(testObserver.replacedRoutes);
     expect(listEquals(testObserver.replacedRoutes, ['/view']), isTrue);
 /*  TODO version 0.8
     await tester
