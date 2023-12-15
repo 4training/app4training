@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:app4training/data/globals.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/app_language.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   test('Test LocaleWrapper', () {
@@ -40,6 +43,39 @@ void main() {
       expect(const AppLanguage(false, 'de').toString(), equals('de'));
     });
 
-    // TODO: Test persistance: setLocale() and persistNow()
+    test('Test appLanguage persistance: getting and setting', () async {
+      SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+          overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
+
+      expect(prefs.getString('appLanguage'), equals('de'));
+      expect(container.read(appLanguageProvider).languageCode, equals('de'));
+      container.read(appLanguageProvider.notifier).setLocale('en');
+      expect(container.read(appLanguageProvider).languageCode, equals('en'));
+      expect(prefs.getString('appLanguage'), equals('en'));
+
+      container.read(appLanguageProvider.notifier).setLocale('system');
+      expect(container.read(appLanguageProvider).languageCode, equals('en'));
+      expect(container.read(appLanguageProvider).isSystemDefault, true);
+      expect(prefs.getString('appLanguage'), equals('system'));
+    });
+
+    test('Test appLanguage persistNow()', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+          overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
+
+      expect(prefs.getString('appLanguage'), isNull);
+      expect(container.read(appLanguageProvider).isSystemDefault, true);
+      container.read(appLanguageProvider.notifier).persistNow();
+      expect(prefs.getString('appLanguage'), equals('system'));
+
+      container.read(appLanguageProvider.notifier).setLocale('de');
+      container.read(appLanguageProvider.notifier).persistNow();
+      expect(container.read(appLanguageProvider).languageCode, 'de');
+      expect(prefs.getString('appLanguage'), equals('de'));
+    });
   });
 }
