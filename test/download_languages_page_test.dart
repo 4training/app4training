@@ -22,7 +22,7 @@ class TestDownloadLanguagesPage extends ConsumerWidget {
   final String continueTarget;
   const TestDownloadLanguagesPage(this.languageCode, this.navigatorObserver,
       {this.noBackButton = false,
-      this.continueTarget = '/view', // TODO version 0.8 '/onboarding/3',
+      this.continueTarget = '/home', // TODO version 0.8 '/onboarding/3',
       super.key});
 
   @override
@@ -72,7 +72,7 @@ void main() {
     expect(testObserver.replacedRoutes, isEmpty);
     await tester.tap(findElevatedButtonByText(AppLocalizationsEn().letsGo));
     await tester.pump();
-    expect(listEquals(testObserver.replacedRoutes, ['/view']), isTrue);
+    expect(listEquals(testObserver.replacedRoutes, ['/home']), isTrue);
 /*  TODO version 0.8
     await tester
         .tap(findElevatedButtonByText(AppLocalizationsEn().continueText));

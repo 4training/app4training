@@ -1,5 +1,6 @@
 import 'package:app4training/routes/about_page.dart';
 import 'package:app4training/routes/error_page.dart';
+import 'package:app4training/routes/home_page.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
 //import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
 import 'package:app4training/routes/onboarding/welcome_page.dart';
@@ -31,6 +32,11 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
     return MaterialPageRoute<void>(
       settings: settings, // Necessary for the NavigatorObserver while testing
       builder: (_) => StartupPage(navigateTo: navigateTo),
+    );
+  } else if (settings.name == '/home') {
+    return MaterialPageRoute<void>(
+      settings: settings,
+      builder: (_) => const HomePage(),
     );
   } else if (settings.name!.startsWith('/view')) {
     // route should be /view/pageName/langCode - deep linking is possible

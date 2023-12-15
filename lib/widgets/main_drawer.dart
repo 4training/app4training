@@ -22,10 +22,37 @@ const double smileySize = 50;
 /// Implemented with ExpansionTile - ExpansionPanelList would have been also
 /// an option but ExpansionPanel has less customization options
 /// (looks like you can't change the position of the expansion icon)
-class MainDrawer extends ConsumerWidget {
+class MainDrawer extends StatelessWidget {
   final String? _page; // The currently opened page
   final String? _langCode; // and its language
   const MainDrawer(this._page, this._langCode, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    Widget header = ListTile(
+      title: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
+        child: Align(
+            alignment: Alignment.center,
+            child: Text(context.l10n.content,
+                style: Theme.of(context).textTheme.titleLarge)),
+      ),
+      onTap: () {
+        // Drawer should be closed when user leaves the settings page
+        context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
+        Navigator.pushNamed(context, '/home');
+      },
+    );
+
+    return Drawer(child: TableOfContent(_page, _langCode, header: header));
+  }
+}
+
+class TableOfContent extends ConsumerWidget {
+  final String? _page; // The currently opened page
+  final String? _langCode; // and its language
+  final Widget? header;
+  const TableOfContent(this._page, this._langCode, {this.header, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,17 +83,10 @@ class MainDrawer extends ConsumerWidget {
       ];
     }
 
-    return Drawer(
-        child: SingleChildScrollView(
-            child: Column(children: [
+    return SingleChildScrollView(
+        child: Column(children: [
       // Header
-      Padding(
-        padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
-        child: Align(
-            alignment: Alignment.center,
-            child: Text(context.l10n.content,
-                style: Theme.of(context).textTheme.titleLarge)),
-      ),
+      header ?? const SizedBox(),
       ...categories,
       const Divider(),
       ListTile(
@@ -87,7 +107,7 @@ class MainDrawer extends ConsumerWidget {
           Navigator.pushNamed(context, '/about');
         },
       )
-    ])));
+    ]));
   }
 }
 

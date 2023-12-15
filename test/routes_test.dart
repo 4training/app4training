@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app4training/routes/error_page.dart';
+import 'package:app4training/routes/home_page.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
 //import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
 import 'package:app4training/routes/onboarding/welcome_page.dart';
@@ -127,8 +128,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(SettingsPage), findsOneWidget);
 
+    // Test home page
+    unawaited(Navigator.of(tester.element(find.byType(SettingsPage)))
+        .pushNamed('/home'));
+    await tester.pumpAndSettle();
+    expect(find.byType(HomePage), findsOneWidget);
+
     // Test that routes are handled
-    expect(observer.routes, orderedEquals(['/', '/view', '/settings']));
+    expect(
+        observer.routes, orderedEquals(['/', '/view', '/settings', '/home']));
   });
 
   testWidgets('Test startup with no available languages',
