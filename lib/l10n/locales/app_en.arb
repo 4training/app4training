@@ -294,15 +294,15 @@
     "about": "About",
     "appDescription": "This is the app of the https://www.4training.net website. Our goal is to provide you with great resources in many languages.",
     "matthew10_8": "Matthew 10:8, “Freely you have received; freely give.”",
-    "noCopyright": "All contents are without any copyright. Use them and share them!",
-    "trustworthy": "Trustworthy",
-    "trustworthyText": "This app does no tracking, shows no adverts and doesn't send any information anywhere. As you may have noticed it doesn't need any permissions.",
+    "noCopyright": "All contents are copyright-free! You may use, copy or adapt them without restrictions (CC0).",
+    "secure": "Secure",
+    "secureText": "This app does no tracking, shows no adverts and doesn't send any information anywhere. As you may have noticed it doesn't need any permissions. You can't get more security 😀\nResources are downloaded SSL-encrypted from github.com.",
     "worksOffline": "Works offline",
     "worksOfflineText": "After you downloaded the languages you're interested in, the app doesn't need an internet connection. You'll only need internet if you want to check for updates or download another language.",
     "contributing": "Contributing",
-    "contributingText": "Many people contributed their time, skills and resources to make this vision happen. Thank you! There is many areas and ways you can contribute: Translating, programming, design, correcting errors, ...\nPlease write us at contact@4training.net – we're happy to hear your ideas and feedback!",
+    "contributingText": "Many people contributed their time, skills and finances to make this vision happen. Thank you! There is many areas and ways you can contribute: Translating, programming, donating, design, correcting errors, ...\nPlease write us at contact@4training.net – we're happy to hear your ideas and feedback!",
     "openSource": "Open Source",
-    "openSourceText": "This app is open source. You have the freedom to use it, study it, share it and improve it. Sourcecode and more information: https://github.com/4training/app4training",
+    "openSourceText": "This app is open source. You have the freedom to use it, study it, share it and improve it. Sourcecode, roadmap and more information:\nhttps://github.com/4training/app4training",
     "version": "Version",
     "welcome": "Welcome!",
     "selectAppLanguage": "Please select the app language. This is the language the menu and all settings will be in.",
@@ -331,5 +331,5 @@
     "ignore": "Ignore",
    "updatesExplanation": "From time to time the resources get updated: We release a new version of a worksheet or add a new translation.\nWe want you to not worry about that but be always ready to use the latest versions. Therefore the app can check for updates in the background and download them automatically if you want.",
     "letsGo": "Let's go!",
-    "homeExplanation": "The worksheets are grouped into four categories:"
+    "homeExplanation": "God is building His kingdom all around the world. He wants us to join in His work and make disciples!\nThis app wants to serve you and make your job easier: We equip you with good training worksheets. The best thing is: You can access the same worksheet in different languages so that you always know what it means, even if you don't understand the language.\n\nAll this content is now available offline, always ready on your phone:"
 }

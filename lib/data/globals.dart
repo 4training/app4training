@@ -1,9 +1,11 @@
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final sharedPrefsProvider = MustOverrideProvider<SharedPreferences>();
+final packageInfoProvider = MustOverrideProvider<PackageInfo>();
 
 /// ignore: non_constant_identifier_names
 Provider<T> MustOverrideProvider<T>() {

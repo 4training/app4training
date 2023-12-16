@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/routes/routes.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/app_language.dart';
 import 'data/globals.dart';
@@ -10,10 +11,12 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
+  final packageInfo = await PackageInfo.fromPlatform();
 
-  runApp(ProviderScope(
-      overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-      child: const App4Training()));
+  runApp(ProviderScope(overrides: [
+    sharedPrefsProvider.overrideWithValue(prefs),
+    packageInfoProvider.overrideWithValue(packageInfo)
+  ], child: const App4Training()));
 }
 
 class App4Training extends ConsumerWidget {

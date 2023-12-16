@@ -43,3 +43,11 @@ Before committing, please run the following commands and make sure they don't sh
 
 ## Contributing
 By contributing you release your contributed code under the licensing terms explained above. Thank you!
+
+## Roadmap
+* **0.7**: Go to Google Play Store
+* **0.8**: Implement automatic updates
+* **0.9**: Provide PDF files as well for all worksheets
+* **1.0**: We're solid now and excited about the future
+
+We plan to release an iOS version sometime in 2024.
