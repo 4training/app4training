@@ -1,6 +1,7 @@
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/about_page.dart';
+import 'package:app4training/routes/onboarding/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,6 +26,7 @@ void main() {
             supportedLocales: AppLocalizations.supportedLocales,
             home: AboutPage())));
 
+    expect(find.byType(PromoBlock), findsOneWidget);
     // are all headlines there?
     expect(find.text(AppLocalizationsEn().noCopyright), findsOneWidget);
     expect(find.text(AppLocalizationsEn().secure), findsOneWidget);

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/routes/onboarding/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,6 +20,8 @@ class AboutPage extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                const PromoBlock(),
+                const SizedBox(height: 20),
                 Linkify(
                     text: context.l10n.appDescription,
                     // ignore: deprecated_member_use
