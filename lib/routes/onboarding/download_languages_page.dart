@@ -18,7 +18,7 @@ class DownloadLanguagesPage extends ConsumerWidget {
 
   const DownloadLanguagesPage(
       {this.noBackButton = false,
-      this.continueTarget = '/view',
+      this.continueTarget = '/home',
 // TODO version 0.8     this.continueTarget = '/onboarding/3',
       super.key});
 
