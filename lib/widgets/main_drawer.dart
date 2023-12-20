@@ -163,7 +163,7 @@ class CategoryTile extends ConsumerWidget {
                         return NotTranslatedDialog(_otherLanguage.languageCode);
                       });
                 },
-                color: greyedOutColor,
+                color: Theme.of(context).colorScheme.inversePrimary,
                 icon: const Icon(Icons.translate));
           }
         }

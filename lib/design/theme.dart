@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 /// Our primary red color (a little bit darker than the red of FlexScheme.red)
 Color lightPrimaryColor = Colors.red[900]!;
-Color greyedOutColor = Colors.black26;
 
 /// How long should the snackbar show up?
 /// Used when managing languages.

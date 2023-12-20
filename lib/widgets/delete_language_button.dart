@@ -42,7 +42,7 @@ class DeleteLanguageButton extends ConsumerWidget {
         },
         icon: const Icon(Icons.delete),
         color: isDiscouraged
-            ? greyedOutColor
+            ? Theme.of(context).colorScheme.inversePrimary
             : Theme.of(context).colorScheme.primary,
         padding: EdgeInsets.zero);
   }
