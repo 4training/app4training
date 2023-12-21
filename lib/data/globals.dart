@@ -137,6 +137,7 @@ class Globals {
   static const rtlLanguages = ['ar', 'fa'];
 
   /// Which page is loaded after startup?
+  /// TODO: Remove this and when necessary redirect to /home
   static const String defaultPage = "God's_Story_(five_fingers)";
 
   /// Remote Repository
