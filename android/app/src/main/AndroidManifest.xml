@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="app4training"
+        android:label="4training.net"
         android:name="${applicationName}"
         android:icon="@mipmap/for_training"
         android:requestLegacyExternalStorage = "true">
