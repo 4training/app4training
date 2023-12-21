@@ -310,7 +310,7 @@
     "continueText": "Weiter",
     "back": "Zurück",
     "appName": "4training.net-App",
-    "promoFeature1": "{count} ausgereifte Arbeitsblätter",
+    "promoFeature1": "{count} Arbeitsblätter",
     "@promoFeature1": {
         "description": "One feature shown on the screen on first startup of the app with number of worksheets available",
         "placeholders": {

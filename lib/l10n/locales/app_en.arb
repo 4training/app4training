@@ -310,7 +310,7 @@
     "continueText": "Continue",
     "back": "Back",
     "appName": "4training.net App",
-    "promoFeature1": "{count} High-quality worksheets",
+    "promoFeature1": "{count} Worksheets",
     "@promoFeature1": {
         "description": "One feature shown on the screen on first startup of the app with number of worksheets available",
         "placeholders": {
