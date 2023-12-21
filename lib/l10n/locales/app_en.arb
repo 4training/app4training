@@ -157,6 +157,7 @@
             }
         }
     },
+    "checkingUpdatesLimit": "Error: You checked for updates too often. Please wait an hour.",
     "checkingUpdatesError": "Error while checking updates. Please try again later",
     "languageSelectionHeader": "Show current page in:",
     "@languageSelectionHeader": {

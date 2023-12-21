@@ -11,6 +11,10 @@ final httpClientProvider = Provider<http.Client>((ref) {
   return http.Client();
 });
 
+// https://docs.github.com/en/rest/using-the-rest-api/getting-started-with-the-rest-api?apiVersion=2022-11-28#rate-limiting
+// unauthenticated API requests are limited to 60 per hour
+const int apiRateLimitExceeded = -403;
+
 /// How often should the app check for updates?
 enum CheckFrequency {
   never,
@@ -98,7 +102,12 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
 
   /// Query git html repository whether there are updates available:
   /// How many commits are in our data repository since the download time
-  /// Return values: 0 = no updates available; > 0: updates available; -1: error
+  /// Return values:
+  ///   0: no updates available
+  /// > 0: updates available
+  /// < 0: error:
+  /// apiRateLimitExceeded: exceeded api rate limit (60/hour)
+  ///  -1: any other error
   Future<int> check() async {
     assert(_languageCode != '');
     // since = since.subtract(const Duration(days: 100)); // for testing
@@ -109,12 +118,15 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
 
       if (response.statusCode == 200) {
         int commits = json.decode(response.body).length;
-        debugPrint("Found $commits new commits ($_languageCode)");
+        debugPrint('Found $commits new commits ($_languageCode)');
         state = LanguageStatus(
             commits > 0, state.downloadTimestamp, DateTime.now().toUtc());
         return commits;
+      } else if (response.statusCode == 403) {
+        debugPrint('Exceeded github API query limit. Please wait an hour');
+        return apiRateLimitExceeded;
       } else {
-        debugPrint("Failed to fetch latest commits: ${response.statusCode}");
+        debugPrint('Failed to fetch latest commits: ${response.statusCode}');
         return -1;
       }
     } catch (e) {
@@ -128,7 +140,7 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
 /// Are there updates available for German?
 /// ref.watch(languageStatusProvider('de')).updatesAvailable
 /// Check for updates for English
-/// ref.watch(languageProvider('en').notifier).check()
+/// ref.watch(languageStatusProvider('en').notifier).check()
 final languageStatusProvider =
     NotifierProvider.family<LanguageStatusNotifier, LanguageStatus, String>(() {
   return LanguageStatusNotifier();

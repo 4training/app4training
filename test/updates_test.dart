@@ -170,6 +170,32 @@ void main() {
     expect(deStatus.updatesAvailable, false);
   });
 
+  test('Test error handling when API query limit is exceeded', () async {
+    final container = ProviderContainer(overrides: [
+      httpClientProvider.overrideWith((ref) => MockClient((request) async {
+            return Response(
+                json.encode({
+                  "message":
+                      "API rate limit exceeded for 1.1.1.1. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)",
+                  "documentation_url":
+                      "https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"
+                }),
+                403);
+          })),
+      languageProvider.overrideWith(() =>
+          LanguageController(assetsController: FakeDownloadAssetsController())),
+    ]);
+    final deStatusNotifier =
+        container.read(languageStatusProvider('de').notifier);
+    expect(await deStatusNotifier.check(), apiRateLimitExceeded);
+
+    final deStatus = container.read(languageStatusProvider('de'));
+    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(deStatus.lastCheckedTimestamp,
+        equals(equals(DateTime.utc(2023, 1, 1))));
+    expect(deStatus.updatesAvailable, false);
+  });
+
   test('Test updatesAvailableProvider', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();

@@ -30,17 +30,24 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
 
           DateTime timestamp = DateTime.now().toUtc();
           bool hasError = false;
+          bool exceededLimit = false;
           int countAvailableUpdates = 0;
           // Get l10n now as we can't access context after async gap later
           AppLocalizations l10n = context.l10n;
 
           for (String languageCode in ref.read(availableLanguagesProvider)) {
             // We don't check languages that are not downloaded
-            if (!ref.watch(languageProvider(languageCode)).downloaded) continue;
+            if (!ref.read(languageProvider(languageCode)).downloaded) continue;
             int result = await ref
                 .read(languageStatusProvider(languageCode).notifier)
                 .check();
-            if (result < 0) hasError = true;
+            if (result < 0) {
+              hasError = true;
+              if (result == apiRateLimitExceeded) {
+                exceededLimit = true;
+                break;
+              }
+            }
             if (result > 0) countAvailableUpdates++;
           }
 
@@ -49,8 +56,13 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
             ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
                 content: Text(l10n.nUpdatesAvailable(countAvailableUpdates))));
           } else {
-            ref.watch(scaffoldMessengerProvider).showSnackBar(
-                SnackBar(content: Text(l10n.checkingUpdatesError)));
+            if (exceededLimit) {
+              ref.watch(scaffoldMessengerProvider).showSnackBar(
+                  SnackBar(content: Text(l10n.checkingUpdatesLimit)));
+            } else {
+              ref.watch(scaffoldMessengerProvider).showSnackBar(
+                  SnackBar(content: Text(l10n.checkingUpdatesError)));
+            }
           }
           setState(() {
             _isLoading = false;
