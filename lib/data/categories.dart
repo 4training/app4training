@@ -51,5 +51,6 @@ const Map<String, Category> worksheetCategories = {
   "The_Role_of_a_Helper_in_Prayer": Category.innerHealingForTrainers,
   "Leading_a_Prayer_Time": Category.innerHealingForTrainers,
   "How_to_Continue_After_a_Prayer_Time": Category.innerHealing,
-  "Four_Kinds_of_Disciples": Category.essentialsForTrainers
+// TODO excluded the following worksheet as it doesn't display correctly
+//  "Four_Kinds_of_Disciples": Category.essentialsForTrainers
 };
