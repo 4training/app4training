@@ -28,11 +28,25 @@ class TestWelcomePage extends ConsumerWidget {
         supportedLocales: AppLocalizations.supportedLocales,
         onGenerateRoute: (settings) => generateRoutes(settings, ref),
         navigatorObservers: [navigatorObserver],
-        // TODO: using home: const WelcomePage() leads to overflowing
-        // RenderFlex by a few pixels because height is only 600px
-        // It would be better to make the layout more flexible so that
-        // it would fit on a height of 600px also including the appBar
-        home: const Scaffold(body: WelcomeScreen()));
+        home: const WelcomePage());
+  }
+}
+
+/// Test welcome page on a very small screen (height: 400px)
+class TestSmallWelcomePage extends ConsumerWidget {
+  const TestSmallWelcomePage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppLanguage appLanguage = ref.watch(appLanguageProvider);
+
+    return MaterialApp(
+        locale: appLanguage.locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+            appBar: AppBar(title: const Text(Globals.appTitle)),
+            body: const SizedBox(height: 400, child: WelcomeScreen())));
   }
 }
 
@@ -107,5 +121,19 @@ void main() {
     await tester.pump();
     expect(find.text('Herzlich Willkommen!'), findsOneWidget);
     expect(prefs.getString('appLanguage'), 'de');
+  });
+
+  testWidgets(
+      'Test that view is scrollable and button reachable on very small device',
+      (WidgetTester tester) async {
+    final prefs = await SharedPreferences.getInstance();
+    await tester.pumpWidget(ProviderScope(
+        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+        child: const TestSmallWelcomePage()));
+
+    // the button should become visible after scrolling
+    expect(find.byType(ElevatedButton).hitTestable(), findsNothing);
+    await tester.ensureVisible(find.byType(ElevatedButton));
+    expect(find.byType(ElevatedButton).hitTestable(), findsOneWidget);
   });
 }

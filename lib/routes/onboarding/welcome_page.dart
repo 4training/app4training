@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// First onboarding screen:
-/// Welcome and select the app language. The upper half has some promo
+/// Welcome and select the app language. The lower half has some promo
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
 
@@ -19,43 +19,62 @@ class WelcomePage extends StatelessWidget {
   }
 }
 
+/// On most devices this view should fit on one screen.
+/// In case a device is small the widget is scrollable.
+/// To achieve that we follow the recipe documented in SingleChildScrollView:
+/// https://api.flutter.dev/flutter/widgets/SingleChildScrollView-class.html
+///
+/// Or to put it differently:
+/// the welcome screen becomes either as big as viewport,
+/// or as big as its content, whichever is biggest.
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Spacer(),
-            Text(context.l10n.welcome,
-                textAlign: TextAlign.center,
-                style:
-                    const TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
-            const Spacer(),
-            Text(context.l10n.selectAppLanguage),
-            const SizedBox(height: 20),
-            const DropdownButtonAppLanguage(),
-            const Spacer(),
-            const Divider(),
-            const PromoBlock(),
-            const Spacer(flex: 2),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: const StadiumBorder(),
-              ),
-              onPressed: () {
-                // Make sure appLanguage is now saved
-                // so that WelcomePage won't be shown again next time
-                ref.read(appLanguageProvider.notifier).persistNow();
-                Navigator.pushReplacementNamed(context, '/onboarding/2');
-              },
-              child: Text(context.l10n.continueText),
-            ),
-          ],
-        ));
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+      return SingleChildScrollView(
+          child: ConstrainedBox(
+              constraints:
+                  BoxConstraints(minHeight: viewportConstraints.maxHeight),
+              child: IntrinsicHeight(
+                  child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Spacer(),
+                          Text(context.l10n.welcome,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 40, fontWeight: FontWeight.bold)),
+                          const Spacer(),
+                          Text(context.l10n.selectAppLanguage),
+                          const SizedBox(height: 20),
+                          const DropdownButtonAppLanguage(),
+                          const Spacer(),
+                          const Divider(),
+                          const PromoBlock(),
+                          const Spacer(flex: 2),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: const StadiumBorder(),
+                            ),
+                            onPressed: () {
+                              // Make sure appLanguage is now saved
+                              // so that WelcomePage won't be shown again next time
+                              ref
+                                  .read(appLanguageProvider.notifier)
+                                  .persistNow();
+                              Navigator.pushReplacementNamed(
+                                  context, '/onboarding/2');
+                            },
+                            child: Text(context.l10n.continueText),
+                          ),
+                        ],
+                      )))));
+    });
   }
 }
 
