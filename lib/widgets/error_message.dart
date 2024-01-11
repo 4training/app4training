@@ -14,7 +14,7 @@ class ErrorMessage extends StatelessWidget {
         color: Colors.grey,
         alignment: Alignment.center,
         child: Column(children: [
-          Expanded(child: Container()),
+          const Spacer(),
           Container(
               decoration: BoxDecoration(
                   color: Colors.white, borderRadius: BorderRadius.circular(10)),
@@ -31,7 +31,7 @@ class ErrorMessage extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text(message)
               ])),
-          Expanded(child: Container())
+          const Spacer()
         ]));
   }
 }

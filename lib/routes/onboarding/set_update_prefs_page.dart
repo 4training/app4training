@@ -17,21 +17,21 @@ class SetUpdatePrefsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Expanded(child: Container()),
+                const Spacer(),
                 Text(context.l10n.updatesExplanation),
-                Expanded(flex: 2, child: Container()),
+                const Spacer(flex: 2),
                 Text(context.l10n.checkFrequency,
                     style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(height: 10),
                 const DropdownButtonCheckFrequency(),
-                Expanded(flex: 2, child: Container()),
+                const Spacer(flex: 2),
                 Text(context.l10n.doAutomaticUpdates,
                     style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(height: 10),
                 const DropdownButtonAutomaticUpdates(),
-                Expanded(flex: 8, child: Container()),
+                const Spacer(flex: 8),
                 Row(children: [
-                  Expanded(flex: 2, child: Container()),
+                  const Spacer(flex: 2),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: const StadiumBorder(),
@@ -41,7 +41,7 @@ class SetUpdatePrefsPage extends StatelessWidget {
                     },
                     child: Text(context.l10n.back),
                   ),
-                  Expanded(child: Container()),
+                  const Spacer(),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: const StadiumBorder(),
@@ -51,7 +51,7 @@ class SetUpdatePrefsPage extends StatelessWidget {
                     },
                     child: Text(context.l10n.letsGo),
                   ),
-                  Expanded(flex: 2, child: Container()),
+                  const Spacer(flex: 2),
                 ])
               ],
             )));

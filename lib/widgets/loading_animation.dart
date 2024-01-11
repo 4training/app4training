@@ -5,17 +5,11 @@ Widget loadingAnimation(String msg) {
     body: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Expanded(
-          flex: 10,
-          child: Container(),
-        ),
+        const Spacer(flex: 10),
         const Expanded(child: CircularProgressIndicator()),
-        Expanded(child: Container()),
+        const Spacer(),
         Expanded(child: Text(msg)),
-        Expanded(
-          flex: 10,
-          child: Container(),
-        ),
+        const Spacer(flex: 10)
       ],
     ),
   );

@@ -32,15 +32,6 @@ class TestSetUpdatePrefsPage extends ConsumerWidget {
   }
 }
 
-Finder findElevatedButtonByText(String text) {
-  return find.byWidgetPredicate(
-    (Widget widget) =>
-        widget is ElevatedButton &&
-        widget.child is Text &&
-        (widget.child as Text).data == text,
-  );
-}
-
 void main() {
   testWidgets('SetUpdatePrefsPage basic test', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
@@ -59,7 +50,8 @@ void main() {
 
     // Press the "Let's go!" button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester.tap(findElevatedButtonByText(AppLocalizationsEn().letsGo));
+    await tester
+        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsEn().letsGo));
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/view']), isTrue);
   });
@@ -80,7 +72,8 @@ void main() {
 
     // Click the back button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester.tap(findElevatedButtonByText(AppLocalizationsDe().back));
+    await tester
+        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsDe().back));
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/onboarding/2']), isTrue);
   });

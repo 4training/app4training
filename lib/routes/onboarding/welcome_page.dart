@@ -29,26 +29,19 @@ class WelcomeScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(
-              child: Container(),
-            ),
+            const Spacer(),
             Text(context.l10n.welcome,
                 textAlign: TextAlign.center,
                 style:
                     const TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
-            Expanded(child: Container()),
+            const Spacer(),
             Text(context.l10n.selectAppLanguage),
             const SizedBox(height: 20),
             const DropdownButtonAppLanguage(),
-            Expanded(
-              child: Container(),
-            ),
+            const Spacer(),
             const Divider(),
             const PromoBlock(),
-            Expanded(
-              flex: 2,
-              child: Container(),
-            ),
+            const Spacer(flex: 2),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 shape: const StadiumBorder(),

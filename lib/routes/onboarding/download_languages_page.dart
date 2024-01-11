@@ -38,7 +38,7 @@ class DownloadLanguagesPage extends ConsumerWidget {
               },
               child: Text(context.l10n.back),
             ),
-            Expanded(child: Container())
+            const Spacer()
           ];
 
     return Scaffold(
@@ -57,7 +57,7 @@ class DownloadLanguagesPage extends ConsumerWidget {
                 )),
                 const SizedBox(height: 20),
                 Row(children: [
-                  Expanded(flex: 2, child: Container()),
+                  const Spacer(flex: 2),
                   ...backButton,
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -82,7 +82,7 @@ class DownloadLanguagesPage extends ConsumerWidget {
                     child: Text(context.l10n.letsGo),
 // TODO version 0.8                   child: Text(context.l10n.continueText),
                   ),
-                  Expanded(flex: 2, child: Container()),
+                  const Spacer(flex: 2),
                 ])
               ],
             )));
