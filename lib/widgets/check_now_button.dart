@@ -69,12 +69,8 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
           });
         },
         child: _isLoading // Show Text or loading animation depending on state
-            ? SizedBox(
-                height: 25,
-                width: 25,
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ))
+            ? const SizedBox(
+                height: 25, width: 25, child: CircularProgressIndicator())
             : Text(widget.buttonText));
   }
 }

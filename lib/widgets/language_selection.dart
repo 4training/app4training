@@ -51,10 +51,7 @@ class LanguagesButton extends ConsumerWidget {
                 controller.open();
               }
             },
-            icon: Icon(
-              Icons.translate,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
+            icon: const Icon(Icons.translate),
             tooltip: 'Language selection',
           );
         },
