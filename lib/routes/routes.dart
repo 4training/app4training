@@ -1,4 +1,3 @@
-import 'package:app4training/data/app_language.dart';
 import 'package:app4training/routes/about_page.dart';
 import 'package:app4training/routes/error_page.dart';
 import 'package:app4training/routes/home_page.dart';
@@ -24,7 +23,7 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
     }
     String page = ref.read(sharedPrefsProvider).getString('recentPage') ?? '';
     String lang = ref.read(sharedPrefsProvider).getString('recentLang') ?? '';
-    String navigateTo = '/view';
+    String navigateTo = '/home';
     if ((page != '') &&
         (lang != '') &&
         ref.read(availableLanguagesProvider).contains(lang)) {
@@ -42,10 +41,15 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
   } else if (settings.name!.startsWith('/view')) {
     // route should be /view/pageName/langCode - deep linking is possible
     final List<String> parts = settings.name!.split('/');
-    String page = Globals.defaultPage;
-    String langCode = ref.read(appLanguageProvider).languageCode;
-    if ((parts.length > 2) && (parts[2] != '')) page = parts[2];
-    if ((parts.length > 3) && (parts[3] != '')) langCode = parts[3];
+    if ((parts.length <= 3) || (parts[2] == '') || (parts[3] == '')) {
+      debugPrint('Unexpected route ${settings.name} - redirecting to /home');
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => const HomePage(),
+      );
+    }
+    String page = parts[2];
+    String langCode = parts[3];
     // Save the selected page to the SharedPreferences to continue here
     // in case the user closes the app
     ref.read(sharedPrefsProvider).setString('recentPage', page);

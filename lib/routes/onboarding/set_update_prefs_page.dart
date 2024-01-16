@@ -47,7 +47,7 @@ class SetUpdatePrefsPage extends StatelessWidget {
                       shape: const StadiumBorder(),
                     ),
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/view');
+                      Navigator.pushReplacementNamed(context, '/home');
                     },
                     child: Text(context.l10n.letsGo),
                   ),

@@ -103,40 +103,67 @@ void main() {
     expect(find.byType(StartupPage), findsOneWidget);
     StartupPage startupPage =
         find.byType(StartupPage).evaluate().single.widget as StartupPage;
-    expect(startupPage.navigateTo, equals('/view'));
+    expect(startupPage.navigateTo, equals('/home'));
 
     expect(prefs.getString('recentPage'), null);
     expect(prefs.getString('recentLang'), null);
 
-    // Test default view page
-    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
-        .pushNamed('/view'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ViewPage), findsOneWidget);
-    ViewPage viewPage =
-        find.byType(ViewPage).evaluate().single.widget as ViewPage;
-    expect(viewPage.page, equals(Globals.defaultPage));
-    expect(viewPage.langCode, equals('en'));
-
-    // Test that recentPage and recentLang are now set in SharedPreferences
-    expect(prefs.getString('recentPage'), equals(Globals.defaultPage));
-    expect(prefs.getString('recentLang'), equals('en'));
-
-    // Test settings page
-    unawaited(Navigator.of(tester.element(find.byType(ViewPage)))
-        .pushNamed('/settings'));
-    await tester.pumpAndSettle();
-    expect(find.byType(SettingsPage), findsOneWidget);
-
     // Test home page
-    unawaited(Navigator.of(tester.element(find.byType(SettingsPage)))
+    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
         .pushNamed('/home'));
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
 
+    // Test settings page
+    unawaited(Navigator.of(tester.element(find.byType(HomePage)))
+        .pushNamed('/settings'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SettingsPage), findsOneWidget);
+
+    // Test viewing the forgiveness page in English
+    const String viewRoute = '/view/Forgiving_Step_by_Step/en';
+    unawaited(Navigator.of(tester.element(find.byType(SettingsPage)))
+        .pushNamed(viewRoute));
+    await tester.pumpAndSettle();
+    expect(find.byType(ViewPage), findsOneWidget);
+    ViewPage viewPage =
+        find.byType(ViewPage).evaluate().single.widget as ViewPage;
+    expect(viewPage.page, equals('Forgiving_Step_by_Step'));
+    expect(viewPage.langCode, equals('en'));
+
+    // Test that recentPage and recentLang are now set in SharedPreferences
+    expect(prefs.getString('recentPage'), equals('Forgiving_Step_by_Step'));
+    expect(prefs.getString('recentLang'), equals('en'));
+
     // Test that routes are handled
     expect(
-        observer.routes, orderedEquals(['/', '/view', '/settings', '/home']));
+        observer.routes, orderedEquals(['/', '/home', '/settings', viewRoute]));
+  });
+
+  testWidgets('Test some edge cases', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
+    final prefs = await SharedPreferences.getInstance();
+
+    final TestObserver observer = TestObserver();
+    await tester.pumpWidget(ProviderScope(
+        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+        child: TestApp(observer)));
+
+    // All of the following errorneous routes should result in showing /home
+    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
+        .pushNamed('/view'));
+    await tester.pumpAndSettle();
+    expect(find.byType(HomePage), findsOneWidget);
+
+    unawaited(Navigator.of(tester.element(find.byType(HomePage)))
+        .pushNamed('/view//'));
+    await tester.pumpAndSettle();
+    expect(find.byType(HomePage), findsOneWidget);
+
+    unawaited(Navigator.of(tester.element(find.byType(HomePage)))
+        .pushNamed('/view/Forgiving_Step_by_Step/'));
+    await tester.pumpAndSettle();
+    expect(find.byType(HomePage), findsOneWidget);
   });
 
   testWidgets('Test startup with no available languages',

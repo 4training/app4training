@@ -53,7 +53,7 @@ void main() {
     await tester
         .tap(find.widgetWithText(ElevatedButton, AppLocalizationsEn().letsGo));
     await tester.pump();
-    expect(listEquals(testObserver.replacedRoutes, ['/view']), isTrue);
+    expect(listEquals(testObserver.replacedRoutes, ['/home']), isTrue);
   });
 
   testWidgets('Test SetUpdatePrefsPage back button in German',

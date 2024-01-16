@@ -136,10 +136,6 @@ class Globals {
   /// Which of these languages are right-to-left? (RTL)
   static const rtlLanguages = ['ar', 'fa'];
 
-  /// Which page is loaded after startup?
-  /// TODO: Remove this and when necessary redirect to /home
-  static const String defaultPage = "God's_Story_(five_fingers)";
-
   /// Remote Repository
   static const String githubUser = '4training';
   static const String branch = 'main';
