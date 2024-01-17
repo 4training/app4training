@@ -1,3 +1,4 @@
+import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/routes.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app_language_test.dart';
 import 'languages_test.dart';
 import 'routes_test.dart';
 
@@ -40,13 +42,12 @@ class TestLanguageController extends LanguageController {
 /// Build everything we need to test MainDrawer:
 /// i18n to test translated menu; onGenerateRoute for opening settings
 class TestApp extends ConsumerWidget {
-  final String appLanguage;
   final String pageName;
   final String pageLanguage;
   final TestObserver? _navigatorObserver;
   // for snackbar testing
   final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
-  const TestApp(this.appLanguage,
+  const TestApp(
       {this.pageName = 'Forgiving_Step_by_Step',
       this.pageLanguage = 'en',
       TestObserver? navigatorObserver,
@@ -57,7 +58,7 @@ class TestApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: Locale(appLanguage),
+        locale: ref.watch(appLanguageProvider).locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         onGenerateRoute: (settings) => generateRoutes(settings, ref),
@@ -71,19 +72,15 @@ class TestApp extends ConsumerWidget {
 }
 
 void main() {
-  final testLanguageProvider =
-      NotifierProvider.family<LanguageController, Language, String>(() {
-    return TestLanguageController();
-  });
-
   testWidgets('Basic drawer test', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
-    ], child: TestApp('en', navigatorObserver: testObserver)));
+      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      languageProvider.overrideWith(() => TestLanguageController()),
+      sharedPrefsProvider.overrideWithValue(prefs)
+    ], child: TestApp(navigatorObserver: testObserver)));
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
     expect(find.text('Inner Healing'), findsNothing);
@@ -118,16 +115,14 @@ void main() {
   });
 
   testWidgets('Test main navigation in German', (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({'appLanguage': 'de'}); // important!
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [
-          sharedPrefsProvider.overrideWithValue(prefs),
-          languageProvider.overrideWithProvider(testLanguageProvider)
-        ],
-        child: TestApp('de',
-            pageLanguage: 'de', navigatorObserver: testObserver)));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      languageProvider.overrideWith(() => TestLanguageController()),
+      sharedPrefsProvider.overrideWithValue(prefs)
+    ], child: TestApp(pageLanguage: 'de', navigatorObserver: testObserver)));
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
     expect(find.text('Innere Heilung'), findsNothing);
@@ -156,16 +151,14 @@ void main() {
 
   testWidgets('Test that we continue in selected different language',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({'appLanguage': 'de'}); // important!
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [
-          sharedPrefsProvider.overrideWithValue(prefs),
-          languageProvider.overrideWithProvider(testLanguageProvider)
-        ],
-        child: TestApp('de',
-            pageLanguage: 'en', navigatorObserver: testObserver)));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      languageProvider.overrideWith(() => TestLanguageController()),
+      sharedPrefsProvider.overrideWithValue(prefs)
+    ], child: TestApp(pageLanguage: 'en', navigatorObserver: testObserver)));
 
     final ScaffoldState state = tester.firstState(find.byType(Scaffold));
     state.openDrawer();
@@ -180,19 +173,20 @@ void main() {
 
   testWidgets('Test fallback when worksheet is not available in other language',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({'appLanguage': 'de'}); // important!
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
-    final container = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
+    final ref = ProviderContainer(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      languageProvider.overrideWith(() => TestLanguageController()),
+      sharedPrefsProvider.overrideWithValue(prefs)
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
-        container: container,
-        child: TestApp('de',
+        container: ref,
+        child: TestApp(
             pageName: 'Prayer',
             pageLanguage: 'fr',
-            scaffoldMessengerKey: container.read(scaffoldMessengerKeyProvider),
+            scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
             navigatorObserver: testObserver)));
 
     final ScaffoldState state = tester.firstState(find.byType(Scaffold));
@@ -211,12 +205,10 @@ void main() {
 
   testWidgets('Make sure drawer is closed after returning from settings',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
-    ], child: const TestApp('en')));
+      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      languageProvider.overrideWith(() => TestLanguageController())
+    ], child: const TestApp()));
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
 
@@ -238,16 +230,10 @@ void main() {
 
   testWidgets('Test error message when appLanguage is not downloaded',
       (WidgetTester tester) async {
-    final dummyLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return DummyLanguageController();
-    });
-    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
-    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(dummyLanguageProvider)
-    ], child: const TestApp('de')));
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      languageProvider.overrideWith(() => DummyLanguageController()),
+    ], child: const TestApp()));
 
     expect(find.text('Einstellungen'), findsNothing);
     final ScaffoldState state = tester.firstState(find.byType(Scaffold));

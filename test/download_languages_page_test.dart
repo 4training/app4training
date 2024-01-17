@@ -1,4 +1,4 @@
-import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
@@ -12,20 +12,19 @@ import 'package:flutter_gen/gen_l10n/app_localizations_en.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app_language_test.dart';
 import 'download_language_button_test.dart';
 import 'routes_test.dart';
 
 /// Test DownloadLanguagesPage with default values
 class TestDownloadLanguagesPage extends ConsumerWidget {
-  final String languageCode;
   final TestObserver navigatorObserver;
-  const TestDownloadLanguagesPage(this.languageCode, this.navigatorObserver,
-      {super.key});
+  const TestDownloadLanguagesPage(this.navigatorObserver, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: Locale(languageCode),
+        locale: ref.watch(appLanguageProvider).locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         onGenerateRoute: (settings) => generateRoutes(settings, ref),
@@ -36,17 +35,16 @@ class TestDownloadLanguagesPage extends ConsumerWidget {
 
 /// Test DownloadLanguagesPage with defining noBackButton and continue Target
 class TestDownloadLanguagesPageExt extends ConsumerWidget {
-  final String languageCode;
   final TestObserver navigatorObserver;
   final bool noBackButton;
   final String continueTarget;
-  const TestDownloadLanguagesPageExt(this.languageCode, this.navigatorObserver,
+  const TestDownloadLanguagesPageExt(this.navigatorObserver,
       {required this.noBackButton, required this.continueTarget, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: Locale(languageCode),
+        locale: ref.watch(appLanguageProvider).locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         onGenerateRoute: (settings) => generateRoutes(settings, ref),
@@ -59,20 +57,13 @@ class TestDownloadLanguagesPageExt extends ConsumerWidget {
 void main() {
   testWidgets('DownloadLanguagesPage basic test', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final testLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return TestLanguageController(); // Simulate: all langs are downloaded
-    });
-
     final testObserver = TestObserver();
-    final container = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
+    final ref = ProviderContainer(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      languageProvider.overrideWith(() => TestLanguageController())
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
-        container: container,
-        child: TestDownloadLanguagesPage('en', testObserver)));
+        container: ref, child: TestDownloadLanguagesPage(testObserver)));
 
     expect(find.text(AppLocalizationsEn().downloadLanguages), findsOneWidget);
     expect(find.text(AppLocalizationsEn().downloadLanguagesExplanation),
@@ -94,7 +85,7 @@ void main() {
     expect(find.byType(MissingAppLanguageDialog), findsNothing);
 
     // Simulate downloading English
-    await container.read(languageProvider('en').notifier).download();
+    await ref.read(languageProvider('en').notifier).download();
 
     // Now we press the continue button again - this time it should continue
     expect(testObserver.replacedRoutes, isEmpty);
@@ -111,18 +102,11 @@ void main() {
 
   testWidgets('Test ignoring of MissingAppLanguageDialog',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final testLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return TestLanguageController(); // Simulate: all langs are downloaded
-    });
-
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
-    ], child: TestDownloadLanguagesPage('en', testObserver)));
+      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      languageProvider.overrideWith(() => TestLanguageController())
+    ], child: TestDownloadLanguagesPage(testObserver)));
 
     // Press the continue button
     expect(testObserver.replacedRoutes, isEmpty);
@@ -146,13 +130,10 @@ void main() {
 
   testWidgets('Test DownloadLanguagesPage back button in German',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestDownloadLanguagesPage('de', testObserver)));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de'))
+    ], child: TestDownloadLanguagesPage(testObserver)));
 
     // Check that the page is translated
     expect(find.text(AppLocalizationsDe().downloadLanguages), findsOneWidget);
@@ -169,22 +150,14 @@ void main() {
 
   testWidgets('Test with no back button and other continue target',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final testLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return TestLanguageController(); // Simulate: all langs are downloaded
-    });
-
     final testObserver = TestObserver();
-    final container = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
+    final ref = ProviderContainer(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      languageProvider.overrideWith(() => TestLanguageController())
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
-        container: container,
+        container: ref,
         child: TestDownloadLanguagesPageExt(
-          'de',
           testObserver,
           noBackButton: true,
           continueTarget: '/test',
@@ -204,7 +177,7 @@ void main() {
     await tester.pump();
 
     // Downloading English; still we see MissingAppLanguageDialog and close it
-    await container.read(languageProvider('en').notifier).download();
+    await ref.read(languageProvider('en').notifier).download();
     expect(find.byType(MissingAppLanguageDialog), findsOneWidget);
     await tester
         .tap(find.widgetWithText(TextButton, AppLocalizationsDe().gotit));
@@ -212,7 +185,7 @@ void main() {
     expect(find.byType(MissingAppLanguageDialog), findsNothing);
 
     // Now we press the continue button again - this time it should continue
-    await container.read(languageProvider('de').notifier).download();
+    await ref.read(languageProvider('de').notifier).download();
     expect(testObserver.replacedRoutes, isEmpty);
     await tester
         .tap(find.widgetWithText(ElevatedButton, AppLocalizationsDe().letsGo));

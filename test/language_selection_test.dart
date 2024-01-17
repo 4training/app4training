@@ -7,9 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Page;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:app4training/data/globals.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app_language_test.dart';
 import 'languages_test.dart';
 
 // Simulate that the specified languages are downloaded with the one page we use
@@ -38,10 +37,8 @@ class TestLanguagesButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AppLanguage appLanguage = ref.watch(appLanguageProvider);
-
     return MaterialApp(
-        locale: appLanguage.locale,
+        locale: ref.watch(appLanguageProvider).locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         // we need ViewPage here because LanguagesButton uses
@@ -53,16 +50,9 @@ class TestLanguagesButton extends ConsumerWidget {
 void main() {
   testWidgets('Test with only German downloaded, English as appLanguage',
       (WidgetTester tester) async {
-    final testLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return TestLanguageController(['de']);
-    });
-
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
+      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      languageProvider.overrideWith(() => TestLanguageController(['de']))
     ], child: const TestLanguagesButton()));
 
     expect(find.byIcon(Icons.translate), findsOneWidget);
@@ -81,16 +71,10 @@ void main() {
 
   testWidgets('Test with 5 languages downloaded, German as appLanguage',
       (WidgetTester tester) async {
-    final testLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return TestLanguageController(['de', 'en', 'fr', 'es', 'ar']);
-    });
-
-    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
-    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      languageProvider.overrideWith(
+          () => TestLanguageController(['de', 'en', 'fr', 'es', 'ar']))
     ], child: const TestLanguagesButton()));
 
     expect(find.byIcon(Icons.translate), findsOneWidget);

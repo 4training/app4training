@@ -28,12 +28,10 @@ class TestViewPage extends ConsumerWidget {
 
 void main() {
   testWidgets('Test normal behaviour', (WidgetTester tester) async {
-    final normalContentProvider =
-        FutureProvider.family<String, Resource>((ref, page) async {
+    await tester.pumpWidget(
+        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
       return 'TestContent';
-    });
-
-    await tester.pumpWidget(TestViewPage(normalContentProvider));
+    })));
 
     // First there should be the loading animation
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -46,12 +44,10 @@ void main() {
 
   testWidgets('Test LanguageNotDownloadedException handling',
       (WidgetTester tester) async {
-    final normalContentProvider =
-        FutureProvider.family<String, Resource>((ref, page) async {
+    await tester.pumpWidget(
+        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
       throw LanguageNotDownloadedException('de');
-    });
-
-    await tester.pumpWidget(TestViewPage(normalContentProvider));
+    })));
     await tester.pump();
 
     // Now we should see a warning (in German)
@@ -66,12 +62,10 @@ void main() {
 
   testWidgets('Test PageNotFoundException handling',
       (WidgetTester tester) async {
-    final normalContentProvider =
-        FutureProvider.family<String, Resource>((ref, page) async {
+    await tester.pumpWidget(
+        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
       throw PageNotFoundException('Healing', 'de');
-    });
-
-    await tester.pumpWidget(TestViewPage(normalContentProvider));
+    })));
     await tester.pump();
 
     // Now we should see a warning (in German)
@@ -87,12 +81,10 @@ void main() {
 
   testWidgets('Test LanguageCorruptedException handling',
       (WidgetTester tester) async {
-    final normalContentProvider =
-        FutureProvider.family<String, Resource>((ref, page) async {
+    await tester.pumpWidget(
+        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
       throw LanguageCorruptedException('de', 'BadLuck');
-    });
-
-    await tester.pumpWidget(TestViewPage(normalContentProvider));
+    })));
     await tester.pump();
 
     // Now we should see an error message in German
@@ -106,12 +98,10 @@ void main() {
 
   testWidgets('Test unexpected exception handling',
       (WidgetTester tester) async {
-    final normalContentProvider =
-        FutureProvider.family<String, Resource>((ref, page) async {
+    await tester.pumpWidget(
+        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
       throw TestFailure;
-    });
-
-    await tester.pumpWidget(TestViewPage(normalContentProvider));
+    })));
     await tester.pump();
 
     // Now we should see an error (internalError in German)

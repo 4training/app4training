@@ -1,3 +1,4 @@
+import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/data/updates.dart';
@@ -6,8 +7,8 @@ import 'package:app4training/widgets/update_language_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app_language_test.dart';
 import 'languages_test.dart';
 
 /// Simulate that Language gets downloaded initially
@@ -44,38 +45,61 @@ class TestLanguageStatusNotifier extends LanguageStatusNotifier {
   }
 }
 
+class TestUpdateLanguageButton extends ConsumerWidget {
+  final String languageCode;
+
+  const TestUpdateLanguageButton(this.languageCode, {super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp(
+        locale: ref.watch(appLanguageProvider).locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
+        home: Scaffold(body: UpdateLanguageButton(languageCode)));
+  }
+}
+
+class TestUpdateAllLanguagesButton extends ConsumerWidget {
+  const TestUpdateAllLanguagesButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp(
+        locale: ref.read(appLanguageProvider).locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
+        home: const Scaffold(body: UpdateAllLanguagesButton()));
+  }
+}
+
 void main() {
   testWidgets('Test UpdateLanguageButton', (WidgetTester tester) async {
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
+      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier()),
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de'))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-            locale: const Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            scaffoldMessengerKey: container.read(scaffoldMessengerKeyProvider),
-            home: const Scaffold(body: UpdateLanguageButton('en')))));
+        container: ref, child: const TestUpdateLanguageButton('en')));
 
     expect(find.byIcon(Icons.refresh), findsOneWidget);
-    expect(container.read(languageProvider('en')).downloaded, true);
-    expect(container.read(languageProvider('en')).downloadTimestamp,
+    expect(ref.read(languageProvider('en')).downloaded, true);
+    expect(ref.read(languageProvider('en')).downloadTimestamp,
         equals(DateTime.utc(2023, 1, 1)));
-    expect(
-        container.read(languageStatusProvider('en')).updatesAvailable, false);
+    expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
 
-    await container.read(languageStatusProvider('en').notifier).check();
-    expect(container.read(languageStatusProvider('en')).updatesAvailable, true);
+    await ref.read(languageStatusProvider('en').notifier).check();
+    expect(ref.read(languageStatusProvider('en')).updatesAvailable, true);
 
     await tester.tap(find.byType(UpdateLanguageButton));
     await tester.pump();
-    expect(container.read(languageProvider('en')).downloadTimestamp,
+    expect(ref.read(languageProvider('en')).downloadTimestamp,
         equals(DateTime.utc(2023, 10, 1)));
-    expect(
-        container.read(languageStatusProvider('en')).updatesAvailable, false);
+    expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
     // Snackbar visible?
     expect(find.text('Englisch (en) ist nun auf dem aktuellsten Stand'),
         findsOneWidget);
@@ -83,23 +107,18 @@ void main() {
 
   testWidgets('Test when download fails', (WidgetTester tester) async {
     var throwingController = ThrowingDownloadAssetsController();
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(
           () => LanguageController(assetsController: throwingController)),
       languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-            locale: const Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            scaffoldMessengerKey: container.read(scaffoldMessengerKeyProvider),
-            home: const Scaffold(body: UpdateLanguageButton('en')))));
+        container: ref, child: const TestUpdateLanguageButton('en')));
 
-    await container.read(languageStatusProvider('en').notifier).check();
-    expect(container.read(languageStatusProvider('en')).updatesAvailable, true);
+    await ref.read(languageStatusProvider('en').notifier).check();
+    expect(ref.read(languageStatusProvider('en')).updatesAvailable, true);
 
     await tester.tap(find.byType(UpdateLanguageButton));
     await tester.pump();
@@ -110,47 +129,36 @@ void main() {
         find.textContaining('Aktualisierung fehlgeschlagen.'), findsOneWidget);
 /*  TODO
     expect(
-        container.read(languageStatusProvider('en')).updatesAvailable, true);*/
+        ref.read(languageStatusProvider('en')).updatesAvailable, true);*/
   });
 
   testWidgets('Test UpdateAllLanguagesButton: Updating 3 languages',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier()),
-      sharedPrefsProvider.overrideWithValue(prefs)
+      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
     ]);
 
     // Simulate that there are updates for these three languages available
     for (String languageCode in ['de', 'en', 'fr']) {
-      await container
-          .read(languageStatusProvider(languageCode).notifier)
-          .check();
+      await ref.read(languageStatusProvider(languageCode).notifier).check();
     }
-    expect(container.read(updatesAvailableProvider), true);
+    expect(ref.read(updatesAvailableProvider), true);
     await tester.pumpWidget(UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-            locale: const Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            scaffoldMessengerKey: container.read(scaffoldMessengerKeyProvider),
-            home: const Scaffold(body: UpdateAllLanguagesButton()))));
+        container: ref, child: const TestUpdateAllLanguagesButton()));
 
     expect(find.byIcon(Icons.refresh), findsOneWidget);
     await tester.tap(find.byType(UpdateAllLanguagesButton));
     await tester.pump();
 
-    expect(container.read(updatesAvailableProvider), false);
+    expect(ref.read(updatesAvailableProvider), false);
     expect(find.byIcon(Icons.refresh), findsNothing);
-    expect(container.read(languageProvider('ar')).downloadTimestamp,
+    expect(ref.read(languageProvider('ar')).downloadTimestamp,
         equals(DateTime.utc(2023, 1, 1)));
-    expect(container.read(languageProvider('de')).downloadTimestamp,
+    expect(ref.read(languageProvider('de')).downloadTimestamp,
         equals(DateTime.utc(2023, 10, 1)));
-    expect(
-        container.read(languageStatusProvider('fr')).updatesAvailable, false);
+    expect(ref.read(languageStatusProvider('fr')).updatesAvailable, false);
 
     // Snackbar visible?
     expect(find.text('3 Sprachen aktualisiert'), findsOneWidget);
@@ -158,29 +166,21 @@ void main() {
 
   testWidgets('Test UpdateAllLanguagesButton: Updating one language',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier()),
-      sharedPrefsProvider.overrideWithValue(prefs)
+      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
     ]);
-    await container.read(languageStatusProvider('de').notifier).check();
+    await ref.read(languageStatusProvider('de').notifier).check();
 
     await tester.pumpWidget(UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-            locale: const Locale('de'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            scaffoldMessengerKey: container.read(scaffoldMessengerKeyProvider),
-            home: const Scaffold(body: UpdateAllLanguagesButton()))));
+        container: ref, child: const TestUpdateAllLanguagesButton()));
 
     expect(find.byIcon(Icons.refresh), findsOneWidget);
     await tester.tap(find.byType(UpdateAllLanguagesButton));
     await tester.pump();
 
-    expect(container.read(languageProvider('de')).downloadTimestamp,
+    expect(ref.read(languageProvider('de')).downloadTimestamp,
         equals(DateTime.utc(2023, 10, 1)));
     // Snackbar visible?
     expect(find.text('Deutsch (de) ist nun auf dem aktuellsten Stand'),

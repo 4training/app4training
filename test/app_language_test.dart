@@ -6,6 +6,30 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/app_language.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// For setting the app language in tests
+///
+/// When testing with different locales, always override
+/// appLanguageProvider with this class and then pumpWidget() with
+/// MaterialApp(locale: ref.watch(appLanguageProvider).locale)
+/// to avoid any inconsistencies between app locale and appLanguageProvider
+class TestAppLanguage extends AppLanguageController {
+  final String _languageCode;
+  TestAppLanguage(this._languageCode);
+
+  @override
+  AppLanguage build() {
+    return AppLanguage(true, _languageCode);
+  }
+
+  @override
+  void setLocale(String selection) {
+    state = AppLanguage.fromString(selection, _languageCode);
+  }
+
+  @override
+  void persistNow() {}
+}
+
 void main() {
   test('Test LocaleWrapper', () {
     expect(Platform.localeName, startsWith(LocaleWrapper.languageCode));
@@ -46,36 +70,49 @@ void main() {
     test('Test appLanguage persistance: getting and setting', () async {
       SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
       final prefs = await SharedPreferences.getInstance();
-      final container = ProviderContainer(
+      final ref = ProviderContainer(
           overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
 
       expect(prefs.getString('appLanguage'), equals('de'));
-      expect(container.read(appLanguageProvider).languageCode, equals('de'));
-      container.read(appLanguageProvider.notifier).setLocale('en');
-      expect(container.read(appLanguageProvider).languageCode, equals('en'));
+      expect(ref.read(appLanguageProvider).languageCode, equals('de'));
+      ref.read(appLanguageProvider.notifier).setLocale('en');
+      expect(ref.read(appLanguageProvider).languageCode, equals('en'));
       expect(prefs.getString('appLanguage'), equals('en'));
 
-      container.read(appLanguageProvider.notifier).setLocale('system');
-      expect(container.read(appLanguageProvider).languageCode, equals('en'));
-      expect(container.read(appLanguageProvider).isSystemDefault, true);
+      ref.read(appLanguageProvider.notifier).setLocale('system');
+      expect(ref.read(appLanguageProvider).languageCode, equals('en'));
+      expect(ref.read(appLanguageProvider).isSystemDefault, true);
       expect(prefs.getString('appLanguage'), equals('system'));
     });
 
     test('Test appLanguage persistNow()', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
-      final container = ProviderContainer(
+      final ref = ProviderContainer(
           overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
 
       expect(prefs.getString('appLanguage'), isNull);
-      expect(container.read(appLanguageProvider).isSystemDefault, true);
-      container.read(appLanguageProvider.notifier).persistNow();
+      expect(ref.read(appLanguageProvider).isSystemDefault, true);
+      ref.read(appLanguageProvider.notifier).persistNow();
       expect(prefs.getString('appLanguage'), equals('system'));
 
-      container.read(appLanguageProvider.notifier).setLocale('de');
-      container.read(appLanguageProvider.notifier).persistNow();
-      expect(container.read(appLanguageProvider).languageCode, 'de');
+      ref.read(appLanguageProvider.notifier).setLocale('de');
+      ref.read(appLanguageProvider.notifier).persistNow();
+      expect(ref.read(appLanguageProvider).languageCode, 'de');
       expect(prefs.getString('appLanguage'), equals('de'));
     });
+  });
+
+  test('Test TestAppLanguage class', () {
+    final ref = ProviderContainer(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de'))
+    ]);
+    expect(ref.read(appLanguageProvider).languageCode, 'de');
+    ref.read(appLanguageProvider.notifier).setLocale('en');
+    expect(ref.read(appLanguageProvider).languageCode, 'en');
+    ref.read(appLanguageProvider.notifier).setLocale('system');
+    expect(ref.read(appLanguageProvider).languageCode, 'de');
+    ref.read(appLanguageProvider.notifier).persistNow();
+    expect(ref.read(appLanguageProvider).languageCode, 'de');
   });
 }

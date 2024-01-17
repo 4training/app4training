@@ -12,6 +12,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations_en.dart';
 
+import 'app_language_test.dart';
 import 'languages_test.dart';
 
 class TestSettingsPage extends ConsumerWidget {
@@ -19,10 +20,8 @@ class TestSettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AppLanguage appLanguage = ref.watch(appLanguageProvider);
-
     return MaterialApp(
-        locale: appLanguage.locale,
+        locale: ref.watch(appLanguageProvider).locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const SettingsPage());
@@ -68,16 +67,9 @@ void main() {
 
   testWidgets('Test displaying memory usage on settings page',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final testLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return DummyLanguageController();
-    });
-
     await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWithProvider(testLanguageProvider)
+      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      languageProvider.overrideWith(() => DummyLanguageController())
     ], child: const TestSettingsPage()));
     int expectedSize = 42 * countAvailableLanguages;
     expect(find.textContaining('$expectedSize kB'), findsOneWidget);

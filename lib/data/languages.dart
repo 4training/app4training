@@ -209,7 +209,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
           languageCode, pages, pageIndex, images, path, sizeInKB, timestamp);
       return true;
     } catch (e) {
-      String msg = "Error initializing data structure: $e";
+      String msg = 'Error initializing data structure: $e';
       debugPrint(msg);
       // Delete the whole folder
       await _controller.clearAssets();
@@ -219,9 +219,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
     }
   }
 
-  /// Delete this language from the device. Also stores that we don't want to
-  /// download this language in the SharedPreferences.
-  // TODO: are there race conditions possible in our LanguageController?
+  /// Delete this language from the device.
   Future<void> deleteResources() async {
     await _initController();
     await _controller.clearAssets();

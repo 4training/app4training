@@ -51,7 +51,7 @@ class AppLanguage {
 
 /// This class also takes care of persistance and reads/writes
 /// the currently selected app language into the SharedPreferences
-class AppLanguageNotifier extends Notifier<AppLanguage> {
+class AppLanguageController extends Notifier<AppLanguage> {
   @override
   AppLanguage build() {
     // Load the value stored in the SharedPreferences
@@ -73,8 +73,8 @@ class AppLanguageNotifier extends Notifier<AppLanguage> {
 }
 
 final appLanguageProvider =
-    NotifierProvider<AppLanguageNotifier, AppLanguage>(() {
-  return AppLanguageNotifier();
+    NotifierProvider<AppLanguageController, AppLanguage>(() {
+  return AppLanguageController();
 });
 
 /// wrapper class around `Platform.localeName`:

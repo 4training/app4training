@@ -52,15 +52,10 @@ void main() {
 
   testWidgets('Test different routing when no languages are downloaded',
       (WidgetTester tester) async {
-    final testLanguageProvider =
-        NotifierProvider.family<LanguageController, Language, String>(() {
-      return TestLanguageController();
-    });
-
     route = null;
     await tester.pumpWidget(ProviderScope(
         overrides: [
-          languageProvider.overrideWithProvider(testLanguageProvider)
+          languageProvider.overrideWith(() => TestLanguageController())
         ],
         child: MaterialApp(
             home: const StartupPage(navigateTo: '/test'),

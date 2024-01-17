@@ -9,7 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/updates.dart';
 import 'package:http/http.dart';
 import 'package:http/testing.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'languages_test.dart';
 
@@ -35,20 +34,8 @@ void main() {
         CheckFrequency.getLocalized(context, CheckFrequency.never), "niemals");
   });
 
-  test('Test LanguageStatus', () {
-    final container = ProviderContainer(overrides: [
-      languageProvider.overrideWith(() =>
-          LanguageController(assetsController: FakeDownloadAssetsController())),
-    ]);
-    LanguageStatus deStatus = container.read(languageStatusProvider('de'));
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    final deStatusNotifier =
-        container.read(languageStatusProvider('de').notifier);
-    deStatusNotifier.check();
-  });
   test('Test checking for updates: no updates', () async {
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
             expect(
                 request.url.toString(),
@@ -59,15 +46,13 @@ void main() {
       languageProvider.overrideWith(() =>
           LanguageController(assetsController: FakeDownloadAssetsController())),
     ]);
-    LanguageStatus deStatus = container.read(languageStatusProvider('de'));
+    LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
     expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    final deStatusNotifier =
-        container.read(languageStatusProvider('de').notifier);
-    expect(await deStatusNotifier.check(), 0);
+    expect(await ref.read(languageStatusProvider('de').notifier).check(), 0);
 
     // The lastCheckedTimestamp should be updated to the current time now()
-    deStatus = container.read(languageStatusProvider('de'));
+    deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
     expect(
         deStatus.lastCheckedTimestamp, isNot(equals(DateTime.utc(2023, 1, 1))));
@@ -75,7 +60,7 @@ void main() {
   });
 
   test('Test checking for updates: 2 updates', () async {
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
             expect(
                 request.url.toString(),
@@ -88,12 +73,11 @@ void main() {
       languageProvider.overrideWith(() =>
           LanguageController(assetsController: FakeDownloadAssetsController())),
     ]);
-    final deStatusNotifier =
-        container.read(languageStatusProvider('de').notifier);
+    final deStatusNotifier = ref.read(languageStatusProvider('de').notifier);
     expect(await deStatusNotifier.check(), 2);
 
     // The lastCheckedTimestamp should be updated to the current time now()
-    LanguageStatus deStatus = container.read(languageStatusProvider('de'));
+    LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
     expect(
         deStatus.lastCheckedTimestamp, isNot(equals(DateTime.utc(2023, 1, 1))));
@@ -101,7 +85,7 @@ void main() {
 
     // If we check for updates a second time, we should get the same results
     expect(await deStatusNotifier.check(), 2);
-    deStatus = container.read(languageStatusProvider('de'));
+    deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
     expect(
         deStatus.lastCheckedTimestamp, isNot(equals(DateTime.utc(2023, 1, 1))));
@@ -109,10 +93,7 @@ void main() {
   });
 
   test('Test checking and updating', () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
+    final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
             expect(
                 request.url.toString(),
@@ -126,12 +107,10 @@ void main() {
           LanguageController(assetsController: FakeDownloadAssetsController())),
     ]);
 
-    final deStatusNotifier =
-        container.read(languageStatusProvider('de').notifier);
-    expect(await deStatusNotifier.check(), 2);
+    expect(await ref.read(languageStatusProvider('de').notifier).check(), 2);
 
     // The lastCheckedTimestamp should be updated to the current time now()
-    LanguageStatus deStatus = container.read(languageStatusProvider('de'));
+    LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
     expect(
         deStatus.lastCheckedTimestamp, isNot(equals(DateTime.utc(2023, 1, 1))));
@@ -139,19 +118,14 @@ void main() {
 
     // Mock downloading the resources (no problem that they don't get available)
     expect(
-        await container
-            .read(languageProvider('de').notifier)
-            .download(force: true),
+        await ref.read(languageProvider('de').notifier).download(force: true),
         false);
-    deStatus = container.read(languageStatusProvider('de'));
+    deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.updatesAvailable, false);
   });
 
   test('Test correct behavior when checking for updates fails', () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
+    final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
             throw ClientException;
           })),
@@ -159,19 +133,17 @@ void main() {
           LanguageController(assetsController: FakeDownloadAssetsController())),
     ]);
 
-    final deStatusNotifier =
-        container.read(languageStatusProvider('de').notifier);
-    expect(await deStatusNotifier.check(), -1);
+    expect(await ref.read(languageStatusProvider('de').notifier).check(), -1);
 
     // The lastCheckedTimestamp should not be changed
-    LanguageStatus deStatus = container.read(languageStatusProvider('de'));
+    LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
     expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 1, 1)));
     expect(deStatus.updatesAvailable, false);
   });
 
   test('Test error handling when API query limit is exceeded', () async {
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
             return Response(
                 json.encode({
@@ -185,11 +157,10 @@ void main() {
       languageProvider.overrideWith(() =>
           LanguageController(assetsController: FakeDownloadAssetsController())),
     ]);
-    final deStatusNotifier =
-        container.read(languageStatusProvider('de').notifier);
-    expect(await deStatusNotifier.check(), apiRateLimitExceeded);
+    expect(await ref.read(languageStatusProvider('de').notifier).check(),
+        apiRateLimitExceeded);
 
-    final deStatus = container.read(languageStatusProvider('de'));
+    final deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
     expect(deStatus.lastCheckedTimestamp,
         equals(equals(DateTime.utc(2023, 1, 1))));
@@ -197,10 +168,7 @@ void main() {
   });
 
   test('Test updatesAvailableProvider', () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
+    final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
             expect(
                 request.url.toString(),
@@ -215,28 +183,24 @@ void main() {
     ]);
 
     // No updates available
-    LanguageStatus deStatus = container.read(languageStatusProvider('de'));
+    LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.updatesAvailable, false);
-    expect(container.read(updatesAvailableProvider), false);
+    expect(ref.read(updatesAvailableProvider), false);
 
     // An update for German is available
-    final deStatusNotifier =
-        container.read(languageStatusProvider('de').notifier);
-    expect(await deStatusNotifier.check(), 2);
-    deStatus = container.read(languageStatusProvider('de'));
+    expect(await ref.read(languageStatusProvider('de').notifier).check(), 2);
+    deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.updatesAvailable, true);
-    expect(container.read(updatesAvailableProvider), true);
+    expect(ref.read(updatesAvailableProvider), true);
 
     // Updating the German resources
     expect(
-        await container
-            .read(languageProvider('de').notifier)
-            .download(force: true),
+        await ref.read(languageProvider('de').notifier).download(force: true),
         false);
 
     // Now there should again be no updates available
-    deStatus = container.read(languageStatusProvider('de'));
+    deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.updatesAvailable, false);
-    expect(container.read(updatesAvailableProvider), false);
+    expect(ref.read(updatesAvailableProvider), false);
   });
 }

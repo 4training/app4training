@@ -13,7 +13,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as path;
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'language_selection_test.dart';
 
@@ -93,17 +92,13 @@ void main() {
   late DownloadAssetsController mock;
 
   test('Test init() when no files are there', () async {
-    var fileSystem = MemoryFileSystem();
     var fakeController = FakeDownloadAssetsController();
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
       languageProvider.overrideWith(
           () => LanguageController(assetsController: fakeController)),
-      fileSystemProvider.overrideWith((ref) => fileSystem),
-      sharedPrefsProvider.overrideWithValue(prefs)
+      fileSystemProvider.overrideWith((ref) => MemoryFileSystem())
     ]);
-    final frTest = container.read(languageProvider('fr').notifier);
+    final frTest = ref.read(languageProvider('fr').notifier);
     expect(await frTest.init(), false);
     expect(frTest.state.downloaded, false);
     // init() shouldn't start a download
@@ -111,17 +106,13 @@ void main() {
   });
 
   test('Test that download() starts the download', () async {
-    var fileSystem = MemoryFileSystem();
     var fakeController = FakeDownloadAssetsController();
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
       languageProvider.overrideWith(
           () => LanguageController(assetsController: fakeController)),
-      fileSystemProvider.overrideWith((ref) => fileSystem),
-      sharedPrefsProvider.overrideWithValue(prefs)
+      fileSystemProvider.overrideWith((ref) => MemoryFileSystem())
     ]);
-    final frTest = container.read(languageProvider('fr').notifier);
+    final frTest = ref.read(languageProvider('fr').notifier);
 
     // as we're mocking, the language won't be available
     expect(await frTest.download(), false);
@@ -132,17 +123,13 @@ void main() {
   });
 
   test('Test failing download', () async {
-    var fileSystem = MemoryFileSystem();
     var throwingController = ThrowingDownloadAssetsController();
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
       languageProvider.overrideWith(
           () => LanguageController(assetsController: throwingController)),
-      fileSystemProvider.overrideWith((ref) => fileSystem),
-      sharedPrefsProvider.overrideWithValue(prefs)
+      fileSystemProvider.overrideWith((ref) => MemoryFileSystem())
     ]);
-    final frTest = container.read(languageProvider('fr').notifier);
+    final frTest = ref.read(languageProvider('fr').notifier);
 
     expect(await frTest.download(), false);
     // download shouldn't throw (if it would the test would fail)
@@ -167,15 +154,12 @@ void main() {
 
     group('Test error handling of incorrect files / structure', () {
       test('Test error handling when no files can be found at all', () async {
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
-        final container = ProviderContainer(overrides: [
+        final ref = ProviderContainer(overrides: [
           languageProvider
               .overrideWith(() => LanguageController(assetsController: mock)),
-          fileSystemProvider.overrideWith((ref) => MemoryFileSystem()),
-          sharedPrefsProvider.overrideWithValue(prefs)
+          fileSystemProvider.overrideWith((ref) => MemoryFileSystem())
         ]);
-        final deTest = container.read(languageProvider('de').notifier);
+        final deTest = ref.read(languageProvider('de').notifier);
 
         expect(await deTest.init(), false);
         expect(deTest.state.downloaded, false);
@@ -190,15 +174,12 @@ void main() {
             fileSystem.file('assets-de/html-de-main/structure/contents.json');
         await contentsJson.writeAsString('invalid');
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
-        final container = ProviderContainer(overrides: [
+        final ref = ProviderContainer(overrides: [
           languageProvider
               .overrideWith(() => LanguageController(assetsController: mock)),
-          fileSystemProvider.overrideWith((ref) => fileSystem),
-          sharedPrefsProvider.overrideWithValue(prefs)
+          fileSystemProvider.overrideWith((ref) => fileSystem)
         ]);
-        final deTest = container.read(languageProvider('de').notifier);
+        final deTest = ref.read(languageProvider('de').notifier);
         expect(await deTest.init(), false);
         expect(deTest.state.downloaded, false);
       });
@@ -217,39 +198,32 @@ void main() {
         await contentsJson
             .writeAsString(await readFileSystem.file(jsonPath).readAsString());
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
-        final container = ProviderContainer(overrides: [
+        final ref = ProviderContainer(overrides: [
           languageProvider
               .overrideWith(() => LanguageController(assetsController: mock)),
-          fileSystemProvider.overrideWith((ref) => fileSystem),
-          sharedPrefsProvider.overrideWithValue(prefs)
+          fileSystemProvider.overrideWith((ref) => fileSystem)
         ]);
 
         // init() should work (even if expected HTML files are missing)
-        final deTest = container.read(languageProvider('de').notifier);
+        final deTest = ref.read(languageProvider('de').notifier);
         expect(await deTest.init(), true);
         expect(deTest.state.downloaded, true);
       });
     });
 
     test('Test everything with real content from test/assets-de/', () async {
-      var fileSystem =
-          ChrootFileSystem(const LocalFileSystem(), path.canonicalize('test/'));
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-      final container = ProviderContainer(overrides: [
+      final ref = ProviderContainer(overrides: [
         languageProvider
             .overrideWith(() => LanguageController(assetsController: mock)),
-        fileSystemProvider.overrideWith((ref) => fileSystem),
-        sharedPrefsProvider.overrideWithValue(prefs)
+        fileSystemProvider.overrideWith((ref) => ChrootFileSystem(
+            const LocalFileSystem(), path.canonicalize('test/')))
       ]);
 
-      final deTest = container.read(languageProvider('de').notifier);
+      final deTest = ref.read(languageProvider('de').notifier);
       expect(await deTest.init(), true);
 
       // Loads Gottes_Geschichte_(fünf_Finger).html
-      String content = await container.read(pageContentProvider(
+      String content = await ref.read(pageContentProvider(
           (name: "God's_Story_(five_fingers)", langCode: 'de')).future);
 
       expect(content, startsWith('<h1>Gottes Geschichte'));
@@ -272,7 +246,7 @@ void main() {
 
       // Test some error handling
       try {
-        content = await container.read(
+        content = await ref.read(
             pageContentProvider((name: 'MissingTest', langCode: 'de')).future);
       } catch (e) {
         expect(e, isA<LanguageCorruptedException>());
@@ -280,7 +254,7 @@ void main() {
             isA<PathNotFoundException>());
       }
       try {
-        content = await container.read(
+        content = await ref.read(
             pageContentProvider((name: 'Invalid', langCode: 'de')).future);
       } catch (e) {
         expect(e, isA<PageNotFoundException>());
@@ -289,17 +263,17 @@ void main() {
   });
 
   test('Test diskUsageProvider', () {
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
       languageProvider.overrideWith(() => DummyLanguageController()),
     ]);
-    expect(container.read(diskUsageProvider), countAvailableLanguages * 42);
+    expect(ref.read(diskUsageProvider), countAvailableLanguages * 42);
   });
 
   test('Test countDownloadedLanguagesProvider', () {
-    final container = ProviderContainer(overrides: [
+    final ref = ProviderContainer(overrides: [
       languageProvider
           .overrideWith(() => TestLanguageController(['de', 'fr', 'en'])),
     ]);
-    expect(container.read(countDownloadedLanguagesProvider), 3);
+    expect(ref.read(countDownloadedLanguagesProvider), 3);
   });
 }
