@@ -10,11 +10,17 @@ import '../data/languages.dart';
 /// Handles the initial route "/":
 /// Currently shows a loading indication while we're initializing
 /// the data in the background.
-// ignore: must_be_immutable
-class StartupPage extends ConsumerWidget {
-  String navigateTo;
+class StartupPage extends ConsumerStatefulWidget {
+  final String navigateTo;
   final Function? initFunction; // For testing (is there a better solution?)
-  StartupPage({required this.navigateTo, super.key, this.initFunction});
+  const StartupPage({required this.navigateTo, super.key, this.initFunction});
+
+  @override
+  ConsumerState<StartupPage> createState() => _StartupPageState();
+}
+
+class _StartupPageState extends ConsumerState<StartupPage> {
+  late String navigateTo = widget.navigateTo;
 
   /// Make sure we have all the resources downloaded in the languages we want
   /// and load the structure
@@ -29,10 +35,11 @@ class StartupPage extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     // When we're finished with loading: Go to the recently opened page
-    Future initResult =
-        ((initFunction != null) ? initFunction!() : initResources(ref));
+    Future initResult = ((widget.initFunction != null)
+        ? widget.initFunction!()
+        : initResources(ref));
     return FutureBuilder(
         future: initResult
             .then((v) => Navigator.pushReplacementNamed(context, navigateTo)),

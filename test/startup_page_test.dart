@@ -42,7 +42,6 @@ void main() {
     expect(find.text('Loading'), findsOneWidget);
     expect(route, isNull);
     completer.complete();
-
     // not sure why runAsync(), idle() and pump() are necessary, but they are...
     await tester.runAsync(() async {
       await tester.idle();
@@ -58,11 +57,15 @@ void main() {
       return TestLanguageController();
     });
 
-    final startupPage = StartupPage(navigateTo: '/test');
-    await tester.pumpWidget(ProviderScope(overrides: [
-      languageProvider.overrideWithProvider(testLanguageProvider)
-    ], child: MaterialApp(home: startupPage)));
-    expect(startupPage.navigateTo, equals('/downloadlanguages'));
+    route = null;
+    await tester.pumpWidget(ProviderScope(
+        overrides: [
+          languageProvider.overrideWithProvider(testLanguageProvider)
+        ],
+        child: MaterialApp(
+            home: const StartupPage(navigateTo: '/test'),
+            onGenerateRoute: generateRoutes)));
+    expect(route, equals('/downloadlanguages'));
   });
 
   testWidgets('Test failing initFunction', (WidgetTester tester) async {
