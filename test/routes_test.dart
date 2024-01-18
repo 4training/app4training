@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:app4training/routes/error_page.dart';
 import 'package:app4training/routes/home_page.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
-//import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
+import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
 import 'package:app4training/routes/onboarding/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,19 +74,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(WelcomePage), findsOneWidget);
 
-    // Test third onboarding step TODO for version 0.8
-/*    unawaited(Navigator.of(tester.element(find.byType(WelcomePage)))
+    // Test third onboarding step
+    unawaited(Navigator.of(tester.element(find.byType(WelcomePage)))
         .pushReplacementNamed('/onboarding/3'));
     await tester.pumpAndSettle();
-    expect(find.byType(SetUpdatePrefsPage), findsOneWidget);*/
+    expect(find.byType(SetUpdatePrefsPage), findsOneWidget);
 
     // Test that routes are handled
-    expect(
-        observer.replacedRoutes,
-        orderedEquals([
-          '/onboarding/2',
-          '/onboarding/1', /*'/onboarding/3'*/
-        ]));
+    expect(observer.replacedRoutes,
+        orderedEquals(['/onboarding/2', '/onboarding/1', '/onboarding/3']));
   });
 
   testWidgets('Test normal startup', (WidgetTester tester) async {

@@ -1,4 +1,5 @@
 import 'package:app4training/data/app_language.dart';
+import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
@@ -57,10 +58,12 @@ class TestDownloadLanguagesPageExt extends ConsumerWidget {
 void main() {
   testWidgets('DownloadLanguagesPage basic test', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => TestLanguageController())
+      languageProvider.overrideWith(() => TestLanguageController()),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
         container: ref, child: TestDownloadLanguagesPage(testObserver)));
@@ -73,8 +76,8 @@ void main() {
 
     // Press the continue button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsEn().letsGo));
+    await tester.tap(
+        find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText));
     await tester.pump();
 
     // Now we see the MissingAppLanguageDialog and close it
@@ -88,30 +91,27 @@ void main() {
     await ref.read(languageProvider('en').notifier).download();
 
     // Now we press the continue button again - this time it should continue
-    expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsEn().letsGo));
+    await tester.tap(
+        find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText));
     await tester.pump();
-    expect(listEquals(testObserver.replacedRoutes, ['/home']), isTrue);
-/*  TODO version 0.8
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText));
-    await tester.pump();
-    expect(listEquals(testObserver.replacedRoutes, ['/onboarding/3']), isTrue);*/
+    expect(listEquals(testObserver.replacedRoutes, ['/onboarding/3']), isTrue);
   });
 
   testWidgets('Test ignoring of MissingAppLanguageDialog',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => TestLanguageController())
+      languageProvider.overrideWith(() => TestLanguageController()),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: TestDownloadLanguagesPage(testObserver)));
 
     // Press the continue button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsEn().letsGo));
+    await tester.tap(
+        find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText));
     await tester.pump();
 
     // Now we see the MissingAppLanguageDialog and press ignore
@@ -120,12 +120,7 @@ void main() {
         .tap(find.widgetWithText(TextButton, AppLocalizationsEn().ignore));
     await tester.pump();
     expect(find.byType(MissingAppLanguageDialog), findsNothing);
-    expect(listEquals(testObserver.replacedRoutes, ['/home']), isTrue);
-/*  TODO version 0.8
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText));
-    await tester.pump();
-    expect(listEquals(testObserver.replacedRoutes, ['/onboarding/3']), isTrue);*/
+    expect(listEquals(testObserver.replacedRoutes, ['/onboarding/3']), isTrue);
   });
 
   testWidgets('Test DownloadLanguagesPage back button in German',
@@ -166,14 +161,13 @@ void main() {
     // No back button
     expect(find.widgetWithText(ElevatedButton, AppLocalizationsDe().back),
         findsNothing);
-// TODO version 0.8    expect(find.widgetWithText(ElevatedButton, AppLocalizationsDe().continueText),
-    expect(find.widgetWithText(ElevatedButton, AppLocalizationsDe().letsGo),
+    expect(
+        find.widgetWithText(ElevatedButton, AppLocalizationsDe().continueText),
         findsOneWidget);
     // Click the continue button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsDe().letsGo));
-// TODO Version 0.8        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsDe().continueText));
+    await tester.tap(
+        find.widgetWithText(ElevatedButton, AppLocalizationsDe().continueText));
     await tester.pump();
 
     // Downloading English; still we see MissingAppLanguageDialog and close it
@@ -187,8 +181,8 @@ void main() {
     // Now we press the continue button again - this time it should continue
     await ref.read(languageProvider('de').notifier).download();
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsDe().letsGo));
+    await tester.tap(
+        find.widgetWithText(ElevatedButton, AppLocalizationsDe().continueText));
     await tester.pump();
 
     expect(listEquals(testObserver.replacedRoutes, ['/test']), isTrue);
