@@ -52,7 +52,7 @@ class LanguagesTable extends ConsumerWidget {
         SizedBox(
             height: 32,
             width: 32,
-            child: lang.downloaded && status.updatesAvailable
+            child: status.updatesAvailable
                 ? UpdateLanguageButton(languageCode)
                 : const Text("")),
         SizedBox(
@@ -76,6 +76,7 @@ class LanguagesTable extends ConsumerWidget {
             4: IntrinsicColumnWidth(),
           },
           children: [
+            // header with all-languages-buttons
             TableRow(
                 decoration: const BoxDecoration(
                     border: Border(

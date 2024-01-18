@@ -1,6 +1,7 @@
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
+import 'package:app4training/data/updates.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
 import 'package:app4training/routes/routes.dart';
@@ -16,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_language_test.dart';
 import 'download_language_button_test.dart';
 import 'routes_test.dart';
+import 'updates_test.dart';
 
 /// Test DownloadLanguagesPage with default values
 class TestDownloadLanguagesPage extends ConsumerWidget {
@@ -127,7 +129,8 @@ void main() {
       (WidgetTester tester) async {
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de'))
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
     ], child: TestDownloadLanguagesPage(testObserver)));
 
     // Check that the page is translated
@@ -148,7 +151,8 @@ void main() {
     final testObserver = TestObserver();
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController())
+      languageProvider.overrideWith(() => TestLanguageController()),
+      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
         container: ref,

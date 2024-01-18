@@ -10,6 +10,7 @@ import 'package:app4training/widgets/languages_table.dart';
 
 import 'app_language_test.dart';
 import 'languages_test.dart';
+import 'updates_test.dart';
 
 // Simulate that German is downloaded
 class TestLanguageController extends DummyLanguageController {
@@ -19,14 +20,6 @@ class TestLanguageController extends DummyLanguageController {
     // For 'de', Language.downloaded will be true, for the rest it will be false
     return Language(
         languageCode, const {}, const [], const {}, '', 0, DateTime.utc(2023));
-  }
-}
-
-// Simulate that German has updates available
-class TestLanguageStatusNotifier extends LanguageStatusNotifier {
-  @override
-  LanguageStatus build(String arg) {
-    return LanguageStatus(arg == 'de', DateTime.utc(2023), DateTime.utc(2023));
   }
 }
 
@@ -49,7 +42,8 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => DummyLanguageController())
+      languageProvider.overrideWith(() => DummyLanguageController()),
+      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
     ], child: const TestLanguagesTable()));
 
     expect(
@@ -76,7 +70,8 @@ void main() {
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       availableLanguagesProvider.overrideWithValue(['de', 'en', 'fr']),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
+      languageStatusProvider.overrideWith(
+          () => TestLanguageStatusNotifier(langWithUpdates: ['de']))
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
         container: ref, child: const TestLanguagesTable()));

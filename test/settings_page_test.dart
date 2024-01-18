@@ -67,9 +67,12 @@ void main() {
 
   testWidgets('Test displaying memory usage on settings page',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => DummyLanguageController())
+      languageProvider.overrideWith(() => DummyLanguageController()),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestSettingsPage()));
     int expectedSize = 42 * countAvailableLanguages;
     expect(find.textContaining('$expectedSize kB'), findsOneWidget);

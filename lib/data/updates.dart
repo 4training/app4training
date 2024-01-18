@@ -74,30 +74,84 @@ final checkFrequencyProvider =
 /// - updatesAvailable is set to false
 @immutable
 class LanguageStatus {
+  /// Are there updates available?
+  final bool updatesAvailable;
+
   /// Same as [Language.downloadTimestamp]; doesn't change here
   /// (but the whole LanguageStatusNotifier gets rebuild when we
   /// delete + download a language as it is watching the languageProvider)
   final DateTime downloadTimestamp; // UTC
 
-  /// Are there updates available?
-  final bool updatesAvailable;
-
   /// When did we check the remote repository last time?
   final DateTime lastCheckedTimestamp; // UTC
   const LanguageStatus(
       this.updatesAvailable, this.downloadTimestamp, this.lastCheckedTimestamp);
+
+  @override
+  String toString() {
+    return 'Updates available: $updatesAvailable '
+        '(downloaded: $downloadTimestamp, last checked: $lastCheckedTimestamp)';
+  }
 }
 
 /// Holds the checking-for-updates function for one language
+/// The timestamp of the last check for updates and whether there are updates
+/// available is persisted into the SharedPreferences
+///
+/// In case the language is not downloaded updatesAvailable will always be false
 class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
   String _languageCode = '';
   @override
   LanguageStatus build(String arg) {
     _languageCode = arg;
-    DateTime timestamp = ref.watch(languageProvider(arg)).downloadTimestamp;
-    assert(timestamp.isUtc);
-    debugPrint('Language $arg: lastCheckedTimestamp = $timestamp (UTC)');
-    return LanguageStatus(false, timestamp, timestamp);
+    if (!ref.watch(languageProvider(arg)).downloaded) {
+      // Remove all SharedPrefs if language is not even downloaded
+      ref.read(sharedPrefsProvider).remove('updatesAvailable-$_languageCode');
+      ref.read(sharedPrefsProvider).remove('lastChecked-$_languageCode');
+      return LanguageStatus(false, DateTime.utc(2023), DateTime.utc(2023));
+    }
+
+    // download timestamp: When was the language downloaded to the device?
+    DateTime dlTimestamp = ref.watch(languageProvider(arg)).downloadTimestamp;
+    assert(dlTimestamp.isUtc);
+    bool updatesAvailable = false;
+    DateTime? lcTimestamp;
+
+    // are there updates available for this language?
+    updatesAvailable = ref
+            .read(sharedPrefsProvider)
+            .getBool('updatesAvailable-$_languageCode') ??
+        false;
+
+    // last checked timestamp: When did we check for updates the last time?
+    String? lcRaw =
+        ref.read(sharedPrefsProvider).getString('lastChecked-$_languageCode');
+    if (lcRaw != null) {
+      try {
+        lcTimestamp = DateTime.parse(lcRaw).toUtc();
+      } on FormatException {
+        debugPrint('Error while trying to parse lastChecked timestamp: $lcRaw');
+        lcTimestamp = null;
+      }
+    }
+    if ((lcTimestamp == null) || (lcTimestamp.compareTo(DateTime.now()) > 0)) {
+      // Invalid last checked timestamp: set to download timestamp
+      lcTimestamp = dlTimestamp;
+    } else if (lcTimestamp.compareTo(dlTimestamp) < 0) {
+      // it seems that the language just got downloaded:
+      // reset lastCheckedTimestamp and updatesAvailable, also in sharedPrefs
+      lcTimestamp = dlTimestamp;
+      updatesAvailable = false;
+      ref
+          .read(sharedPrefsProvider)
+          .setBool('updatesAvailable-$_languageCode', false);
+      ref.read(sharedPrefsProvider).setString(
+          'lastChecked-$_languageCode', lcTimestamp.toIso8601String());
+    }
+
+    final status = LanguageStatus(updatesAvailable, dlTimestamp, lcTimestamp);
+    debugPrint('Language $arg: $status');
+    return status;
   }
 
   /// Query git html repository whether there are updates available:
@@ -110,6 +164,7 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
   ///  -1: any other error
   Future<int> check() async {
     assert(_languageCode != '');
+// TODO    assert(ref.read(languageProvider(_languageCode)).downloaded);
     // since = since.subtract(const Duration(days: 100)); // for testing
     var uri = Globals.getCommitsSince(_languageCode, state.downloadTimestamp);
     debugPrint(uri);
@@ -119,8 +174,16 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
       if (response.statusCode == 200) {
         int commits = json.decode(response.body).length;
         debugPrint('Found $commits new commits ($_languageCode)');
-        state = LanguageStatus(
-            commits > 0, state.downloadTimestamp, DateTime.now().toUtc());
+        DateTime now = DateTime.now().toUtc();
+        // Persist to SharedPreferences
+        await ref
+            .read(sharedPrefsProvider)
+            .setString('lastChecked-$_languageCode', now.toIso8601String());
+        await ref
+            .read(sharedPrefsProvider)
+            .setBool('updatesAvailable-$_languageCode', commits > 0);
+
+        state = LanguageStatus(commits > 0, state.downloadTimestamp, now);
         return commits;
       } else if (response.statusCode == 403) {
         debugPrint('Exceeded github API query limit. Please wait an hour');

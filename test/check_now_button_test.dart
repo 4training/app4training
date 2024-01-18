@@ -11,31 +11,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 
 import 'app_language_test.dart';
 import 'delete_language_button_test.dart';
-
-int countCheckCalled = 0;
-
-/// For testing: first there are no updates available.
-/// The constructor takes the value that check() should return later.
-class TestLanguageStatusNotifier extends LanguageStatusNotifier {
-  final int _checkReturnCode;
-  TestLanguageStatusNotifier(this._checkReturnCode);
-
-  @override
-  LanguageStatus build(String arg) {
-    return LanguageStatus(
-        false, DateTime.utc(2023, 1, 1), DateTime.utc(2023, 1, 1));
-  }
-
-  @override
-  Future<int> check() async {
-    countCheckCalled++;
-    if (_checkReturnCode >= 0) {
-      state = LanguageStatus(_checkReturnCode > 0, state.downloadTimestamp,
-          DateTime.now().toUtc());
-    }
-    return _checkReturnCode;
-  }
-}
+import 'updates_test.dart';
 
 class TestCheckNowButton extends ConsumerWidget {
   const TestCheckNowButton({super.key});
@@ -57,7 +33,8 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier(0))
+      languageStatusProvider
+          .overrideWith(() => TestLanguageStatusNotifier(checkReturnValue: 0))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -79,7 +56,8 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier(2))
+      languageStatusProvider
+          .overrideWith(() => TestLanguageStatusNotifier(checkReturnValue: 2))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -105,8 +83,8 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider
-          .overrideWith(() => TestLanguageStatusNotifier(apiRateLimitExceeded))
+      languageStatusProvider.overrideWith(() =>
+          TestLanguageStatusNotifier(checkReturnValue: apiRateLimitExceeded))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -134,7 +112,8 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier(-1))
+      languageStatusProvider
+          .overrideWith(() => TestLanguageStatusNotifier(checkReturnValue: -1))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(

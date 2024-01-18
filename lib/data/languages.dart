@@ -358,6 +358,13 @@ class Language {
     }
     return titles;
   }
+
+  @override
+  String toString() {
+    return 'Language $languageCode. Downloaded: $downloaded'
+        ' ($downloadTimestamp), size: $sizeInKB, local path: $path,'
+        ' #pages: ${pages.length}, #images: ${images.length}';
+  }
 }
 
 /// Provide combined disk usage of all languages (in KB)

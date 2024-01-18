@@ -62,10 +62,13 @@ void main() {
   });
 
   testWidgets('WelcomePage basic test', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
 
     await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en'))
+      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: TestWelcomePage(testObserver)));
 
     expect(find.text(AppLocalizationsEn().welcome), findsOneWidget);

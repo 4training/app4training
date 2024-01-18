@@ -205,9 +205,12 @@ void main() {
 
   testWidgets('Make sure drawer is closed after returning from settings',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => TestLanguageController())
+      languageProvider.overrideWith(() => TestLanguageController()),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestApp()));
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
