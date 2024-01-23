@@ -324,9 +324,9 @@
     "promoFeature3": "No copyright",
     "downloadLanguages": "Download languages",
     "downloadLanguagesExplanation": "Which languages do you want to use? Download them now and then they're available offline. One language uses less than 1 MB.",
-    "warnMissingAppLanguage" : "Please download English (en) before you proceed. Otherwise the table of content remains empty and you can't do much with the app.",
+    "warnMissingAppLanguage" : "Please download English (en) before you proceed. In order to do something with the app you need to download the app language.",
     "@warnMissingAppLanguage": {
-        "description": "Hint for translators: Replace English (en) with your language. Description: Warning message when user tries to continue from the downloading languages onboarding screen without having downloaded his app language"
+        "description": "Hint for translators: Replace English (en) with your language. Description: Warning message when user tries to continue without having downloaded his app language"
     },
     "gotit": "Got it",
     "ignore": "Ignore",

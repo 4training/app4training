@@ -54,6 +54,10 @@ void main() {
         .tap(find.widgetWithText(ElevatedButton, AppLocalizationsEn().letsGo));
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/home']), isTrue);
+    // Even if user didn't change any setting, after clicking "Continue"
+    // there should be an entry in the SharedPreferences
+    expect(prefs.getString('checkFrequency'), 'weekly');
+    expect(prefs.getString('automaticUpdates'), 'onlyOnWifi');
   });
 
   testWidgets('Test SetUpdatePrefsPage back button in German',
@@ -77,6 +81,4 @@ void main() {
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/onboarding/2']), isTrue);
   });
-
-  // TODO: Test that settings are saved to SharedPreferences after "Let's go!"
 }

@@ -122,6 +122,11 @@ class AutomaticUpdatesNotifier extends Notifier<AutomaticUpdates> {
     state = AutomaticUpdates.fromString(selection);
     ref.read(sharedPrefsProvider).setString('automaticUpdates', state.name);
   }
+
+  /// Save the current setting in SharedPreferences
+  void persistNow() {
+    ref.read(sharedPrefsProvider).setString('automaticUpdates', state.name);
+  }
 }
 
 final automaticUpdatesProvider =

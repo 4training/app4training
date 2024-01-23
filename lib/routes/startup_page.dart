@@ -30,7 +30,7 @@ class _StartupPageState extends ConsumerState<StartupPage> {
       // TODO: look at return value and show snackBar when there was an error
     }
     if (ref.read(countDownloadedLanguagesProvider) == 0) {
-      navigateTo = '/downloadlanguages';
+      navigateTo = '/onboarding/2';
     }
   }
 

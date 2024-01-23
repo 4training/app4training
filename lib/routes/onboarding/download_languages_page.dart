@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app4training/data/app_language.dart';
+import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/languages_table.dart';
@@ -8,37 +9,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Second onboarding screen:
-/// Download languages - show the LanguagesTable full screen
+/// Download languages - show the LanguagesTable full screen.
+/// The user needs to download the app language to be able to continue
+/// (otherwise the continue button is greyed out and shows a warning)
 class DownloadLanguagesPage extends ConsumerWidget {
-  /// Don't show the back button
-  final bool noBackButton;
-
-  /// Which route should be shown after user clicks on 'Continue'
-  final String continueTarget;
-
-  const DownloadLanguagesPage(
-      {this.noBackButton = false,
-      this.continueTarget = '/onboarding/3',
-      super.key});
+  const DownloadLanguagesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLanguage appLanguage = ref.watch(appLanguageProvider);
+    final bool appLanguageDownloaded =
+        ref.watch(languageProvider(appLanguage.languageCode)).downloaded;
 
-    List<Widget> backButton = noBackButton
-        ? []
-        : [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: const StadiumBorder(),
-              ),
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/onboarding/1');
-              },
-              child: Text(context.l10n.back),
-            ),
-            const Spacer()
-          ];
+    // unfortunately an ElevatedButton only looks greyed out when setting
+    // onPressed to null - so create a greyed-out style by hand so that
+    // we can have a clickable greyed-out button.
+    ButtonStyle buttonStyle = appLanguageDownloaded
+        ? ElevatedButton.styleFrom(shape: const StadiumBorder())
+        : ElevatedButton.styleFrom(
+            // https://api.flutter.dev/flutter/material/ElevatedButton/defaultStyleOf.html
+            backgroundColor:
+                Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+            foregroundColor:
+                Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
+            elevation: 0,
+            shape: const StadiumBorder(),
+          );
 
     return Scaffold(
         appBar: AppBar(title: Text(context.l10n.downloadLanguages)),
@@ -57,26 +53,30 @@ class DownloadLanguagesPage extends ConsumerWidget {
                 const SizedBox(height: 20),
                 Row(children: [
                   const Spacer(flex: 2),
-                  ...backButton,
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       shape: const StadiumBorder(),
                     ),
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/onboarding/1');
+                    },
+                    child: Text(context.l10n.back),
+                  ),
+                  const Spacer(),
+                  ElevatedButton(
+                    style: buttonStyle,
                     onPressed: () async {
                       // Show warning if user hasn't downloaded his app language
-                      if (!ref
-                          .read(languageProvider(appLanguage.languageCode))
-                          .downloaded) {
-                        bool result = await showDialog(
+                      if (!appLanguageDownloaded) {
+                        await showDialog(
                             context: context,
                             builder: (context) {
                               return const MissingAppLanguageDialog();
                             });
-                        if (!result) return;
+                        return;
                       }
-                      if (!context.mounted) return;
                       unawaited(Navigator.pushReplacementNamed(
-                          context, continueTarget));
+                          context, getNextRoute(ref)));
                     },
                     child: Text(context.l10n.continueText),
                   ),
@@ -85,12 +85,24 @@ class DownloadLanguagesPage extends ConsumerWidget {
               ],
             )));
   }
+
+  /// Which route should we continue with after this?
+  /// During onboarding (no automatic updates settings saved): go to third step,
+  /// otherwise (user deleted all languages and ends up here): go to /home
+  String getNextRoute(WidgetRef ref) {
+    return ref.read(sharedPrefsProvider).getString('checkFrequency') == null
+        ? '/onboarding/3'
+        : '/home';
+  }
 }
 
 /// Shows a dialog when a user tries to proceed without
-/// having downloaded his app language
+/// having downloaded his app language.
+/// You can add an option to ignore the warning by setting hasIgnoreButton.
+/// By default there is no option to ignore this dialog.
 class MissingAppLanguageDialog extends StatelessWidget {
-  const MissingAppLanguageDialog({super.key});
+  final bool hasIgnoreButton;
+  const MissingAppLanguageDialog({this.hasIgnoreButton = false, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -103,11 +115,15 @@ class MissingAppLanguageDialog extends StatelessWidget {
                 Navigator.of(context).pop(false);
               },
               child: Text(context.l10n.gotit)),
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: Text(context.l10n.ignore))
+          ...hasIgnoreButton
+              ? [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(true);
+                      },
+                      child: Text(context.l10n.ignore))
+                ]
+              : []
         ]);
   }
 }

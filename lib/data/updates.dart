@@ -60,6 +60,11 @@ class CheckFrequencyNotifier extends Notifier<CheckFrequency> {
     state = CheckFrequency.fromString(selection);
     ref.read(sharedPrefsProvider).setString('checkFrequency', state.name);
   }
+
+  /// Save the current setting in SharedPreferences
+  void persistNow() {
+    ref.read(sharedPrefsProvider).setString('checkFrequency', state.name);
+  }
 }
 
 final checkFrequencyProvider =

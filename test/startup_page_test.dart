@@ -62,7 +62,7 @@ void main() {
         child: MaterialApp(
             home: const StartupPage(navigateTo: '/test'),
             onGenerateRoute: generateRoutes)));
-    expect(route, equals('/downloadlanguages'));
+    expect(route, equals('/onboarding/2'));
   });
 
   testWidgets('Test failing initFunction', (WidgetTester tester) async {

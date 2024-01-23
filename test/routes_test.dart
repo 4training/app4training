@@ -162,20 +162,6 @@ void main() {
     expect(find.byType(HomePage), findsOneWidget);
   });
 
-  testWidgets('Test startup with no available languages',
-      (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
-    final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestApp(TestObserver())));
-
-    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
-        .pushNamed('/downloadlanguages'));
-    await tester.pumpAndSettle();
-    expect(find.byType(DownloadLanguagesPage), findsOneWidget);
-  });
-
   testWidgets('Test initial route with loading data from SharedPreferences',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues(

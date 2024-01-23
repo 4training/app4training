@@ -35,18 +35,14 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
     );
   } else if (settings.name == '/home') {
     return MaterialPageRoute<void>(
-      settings: settings,
-      builder: (_) => const HomePage(),
-    );
+        settings: settings, builder: (_) => const HomePage());
   } else if (settings.name!.startsWith('/view')) {
     // route should be /view/pageName/langCode - deep linking is possible
     final List<String> parts = settings.name!.split('/');
     if ((parts.length <= 3) || (parts[2] == '') || (parts[3] == '')) {
       debugPrint('Unexpected route ${settings.name} - redirecting to /home');
       return MaterialPageRoute<void>(
-        settings: settings,
-        builder: (_) => const HomePage(),
-      );
+          settings: settings, builder: (_) => const HomePage());
     }
     String page = parts[2];
     String langCode = parts[3];
@@ -58,9 +54,7 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
         settings: settings, builder: (_) => ViewPage(page, langCode));
   } else if (settings.name == '/settings') {
     return MaterialPageRoute<void>(
-      settings: settings,
-      builder: (_) => const SettingsPage(),
-    );
+        settings: settings, builder: (_) => const SettingsPage());
   } else if (settings.name == '/about') {
     return MaterialPageRoute<void>(
         settings: settings, builder: (_) => const AboutPage());
@@ -78,11 +72,6 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
       return MaterialPageRoute<void>(
           settings: settings, builder: (_) => const SetUpdatePrefsPage());
     }
-  } else if (settings.name == '/downloadlanguages') {
-    return MaterialPageRoute<void>(
-        settings: settings,
-        builder: (_) => const DownloadLanguagesPage(
-            noBackButton: true, continueTarget: '/home'));
   }
 
   return MaterialPageRoute<void>(
