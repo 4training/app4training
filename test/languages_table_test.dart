@@ -43,7 +43,7 @@ void main() {
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
       languageProvider.overrideWith(() => DummyLanguageController()),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
+      languageStatusProvider.overrideWith(() => TestLanguageStatus())
     ], child: const TestLanguagesTable()));
 
     expect(
@@ -70,8 +70,8 @@ void main() {
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       availableLanguagesProvider.overrideWithValue(['de', 'en', 'fr']),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(
-          () => TestLanguageStatusNotifier(langWithUpdates: ['de']))
+      languageStatusProvider
+          .overrideWith(() => TestLanguageStatus(langWithUpdates: ['de']))
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
         container: ref, child: const TestLanguagesTable()));

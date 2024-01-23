@@ -26,10 +26,10 @@ int countCheckCalled = 0;
 /// whether the language is actually downloaded and it doesn't get rebuilt
 /// when a Language gets rebuilt - if you need to test such complex behavior,
 /// use the real LanguageStatusNotifier and override sharedPreferencesProvider
-class TestLanguageStatusNotifier extends LanguageStatusNotifier {
+class TestLanguageStatus extends LanguageStatusNotifier {
   int _checkReturnValue;
   final List<String> _langWithUpdates;
-  TestLanguageStatusNotifier(
+  TestLanguageStatus(
       {int checkReturnValue = 0, List<String> langWithUpdates = const []})
       : _checkReturnValue = checkReturnValue,
         _langWithUpdates = langWithUpdates;
@@ -87,7 +87,7 @@ void main() {
   });
 
   test('Test TestLanguageStatusNotifier class', () async {
-    var testLanguageStatus = TestLanguageStatusNotifier();
+    var testLanguageStatus = TestLanguageStatus();
     var ref = ProviderContainer(overrides: [
       languageStatusProvider.overrideWith(() => testLanguageStatus)
     ]);
@@ -137,7 +137,7 @@ void main() {
       () async {
     final ref = ProviderContainer(overrides: [
       languageStatusProvider
-          .overrideWith(() => TestLanguageStatusNotifier(checkReturnValue: 2))
+          .overrideWith(() => TestLanguageStatus(checkReturnValue: 2))
     ]);
     expect(ref.read(languageStatusProvider('de')).updatesAvailable, false);
     expect(await ref.read(languageStatusProvider('de').notifier).check(), 2);
@@ -147,8 +147,8 @@ void main() {
   test('Test TestLanguageStatusNotifier constructor parameter langsWithUpdates',
       () async {
     var ref = ProviderContainer(overrides: [
-      languageStatusProvider.overrideWith(
-          () => TestLanguageStatusNotifier(langWithUpdates: ['de']))
+      languageStatusProvider
+          .overrideWith(() => TestLanguageStatus(langWithUpdates: ['de']))
     ]);
     expect(ref.read(languageStatusProvider('de')).updatesAvailable, true);
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);

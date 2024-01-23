@@ -130,7 +130,7 @@ void main() {
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
+      languageStatusProvider.overrideWith(() => TestLanguageStatus())
     ], child: TestDownloadLanguagesPage(testObserver)));
 
     // Check that the page is translated
@@ -152,7 +152,7 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(() => TestLanguageStatusNotifier())
+      languageStatusProvider.overrideWith(() => TestLanguageStatus())
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
         container: ref,

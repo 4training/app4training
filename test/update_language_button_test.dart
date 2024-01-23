@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_language_test.dart';
 import 'languages_test.dart';
-import 'updates_test.dart' hide TestLanguageStatusNotifier;
+import 'updates_test.dart' hide TestLanguageStatus;
 
 /// Simulate that Language gets downloaded initially
 /// and that it has a newer timestamp when it gets downloaded again

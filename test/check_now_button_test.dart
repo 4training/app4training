@@ -34,7 +34,7 @@ void main() {
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
       languageStatusProvider
-          .overrideWith(() => TestLanguageStatusNotifier(checkReturnValue: 0))
+          .overrideWith(() => TestLanguageStatus(checkReturnValue: 0))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -57,7 +57,7 @@ void main() {
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
       languageStatusProvider
-          .overrideWith(() => TestLanguageStatusNotifier(checkReturnValue: 2))
+          .overrideWith(() => TestLanguageStatus(checkReturnValue: 2))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -83,8 +83,8 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(() =>
-          TestLanguageStatusNotifier(checkReturnValue: apiRateLimitExceeded))
+      languageStatusProvider.overrideWith(
+          () => TestLanguageStatus(checkReturnValue: apiRateLimitExceeded))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -113,7 +113,7 @@ void main() {
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
       languageStatusProvider
-          .overrideWith(() => TestLanguageStatusNotifier(checkReturnValue: -1))
+          .overrideWith(() => TestLanguageStatus(checkReturnValue: -1))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
