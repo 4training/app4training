@@ -10,30 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'app_language_test.dart';
 import 'languages_test.dart';
 
-/// Simulate that Language gets downloaded initially
-/// and deleted when deleteResources() gets called
-class TestLanguageController extends DummyLanguageController {
-  @override
-  Language build(String arg) {
-    languageCode = arg;
-    return Language(
-        languageCode, const {}, const [], const {}, '', 0, DateTime.utc(2023));
-  }
-
-  @override
-  Future<bool> download({bool force = false}) async {
-    state = Language(languageCode, const {}, const [], const {}, '', 0,
-        DateTime.now().toUtc());
-    return true;
-  }
-
-  @override
-  Future<void> deleteResources() async {
-    state =
-        Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
-  }
-}
-
 class TestDeleteLanguageButton extends ConsumerWidget {
   final String languageCode;
   const TestDeleteLanguageButton(this.languageCode, {super.key});

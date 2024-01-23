@@ -371,7 +371,9 @@ class Language {
 final diskUsageProvider = Provider<int>((ref) {
   int sizeInKB = 0;
   for (String langCode in ref.watch(availableLanguagesProvider)) {
-    sizeInKB += ref.watch(languageProvider(langCode)).sizeInKB;
+    Language lang = ref.watch(languageProvider(langCode));
+    assert(lang.downloaded || (lang.sizeInKB == 0));
+    sizeInKB += lang.sizeInKB;
   }
   return sizeInKB;
 });

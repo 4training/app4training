@@ -11,26 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'app_language_test.dart';
 import 'languages_test.dart';
 
-// Simulate that the specified languages are downloaded with the one page we use
-class TestLanguageController extends DummyLanguageController {
-  // ignore: avoid_public_notifier_properties
-  final List<String> downloadedLanguages;
-  TestLanguageController(this.downloadedLanguages);
-
-  @override
-  Language build(String arg) {
-    languageCode = downloadedLanguages.contains(arg) ? arg : '';
-    return Language(
-        languageCode,
-        const {'Healing': Page('test', 'test', 'test', '1.0')},
-        const [],
-        const {},
-        '',
-        0,
-        DateTime.utc(2023));
-  }
-}
-
 // To simplify testing the LanguagesButton widget in different locales
 class TestLanguagesButton extends ConsumerWidget {
   const TestLanguagesButton({super.key});
@@ -52,7 +32,9 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => TestLanguageController(['de']))
+      languageProvider.overrideWith(() => TestLanguageController(
+          downloadedLanguages: ['de'],
+          pages: {'Healing': const Page('test', 'test', 'test', '1.0')}))
     ], child: const TestLanguagesButton()));
 
     expect(find.byIcon(Icons.translate), findsOneWidget);
@@ -73,8 +55,9 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(
-          () => TestLanguageController(['de', 'en', 'fr', 'es', 'ar']))
+      languageProvider.overrideWith(() => TestLanguageController(
+          downloadedLanguages: ['de', 'en', 'fr', 'es', 'ar'],
+          pages: {'Healing': const Page('test', 'test', 'test', '1.0')}))
     ], child: const TestLanguagesButton()));
 
     expect(find.byIcon(Icons.translate), findsOneWidget);

@@ -11,7 +11,7 @@ import 'package:http/http.dart';
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'delete_language_button_test.dart';
+import 'languages_test.dart';
 
 int countCheckCalled = 0;
 

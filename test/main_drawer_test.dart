@@ -15,7 +15,7 @@ import 'routes_test.dart';
 
 // Simulate that five pages are downloaded in most languages.
 // French only has "Prayer" available.
-class TestLanguageController extends LanguageController {
+class CustomTestLanguageController extends LanguageController {
   @override
   Language build(String arg) {
     Map<String, String> testPageList = {
@@ -78,7 +78,7 @@ void main() {
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith(() => CustomTestLanguageController()),
       sharedPrefsProvider.overrideWithValue(prefs)
     ], child: TestApp(navigatorObserver: testObserver)));
 
@@ -120,7 +120,7 @@ void main() {
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith(() => CustomTestLanguageController()),
       sharedPrefsProvider.overrideWithValue(prefs)
     ], child: TestApp(pageLanguage: 'de', navigatorObserver: testObserver)));
 
@@ -156,7 +156,7 @@ void main() {
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith(() => CustomTestLanguageController()),
       sharedPrefsProvider.overrideWithValue(prefs)
     ], child: TestApp(pageLanguage: 'en', navigatorObserver: testObserver)));
 
@@ -178,7 +178,7 @@ void main() {
     final testObserver = TestObserver();
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith(() => CustomTestLanguageController()),
       sharedPrefsProvider.overrideWithValue(prefs)
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -209,7 +209,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith(() => CustomTestLanguageController()),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestApp()));
 
@@ -235,7 +235,8 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => DummyLanguageController()),
+      languageProvider
+          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
     ], child: const TestApp()));
 
     expect(find.text('Einstellungen'), findsNothing);

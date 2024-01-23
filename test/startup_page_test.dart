@@ -10,7 +10,9 @@ import 'package:app4training/routes/startup_page.dart';
 import 'languages_test.dart';
 
 /// Simulate that no language is available
-class TestLanguageController extends DummyLanguageController {
+class CustomTestLanguageController extends TestLanguageController {
+  CustomTestLanguageController() : super(downloadedLanguages: []);
+
   @override
   Future<bool> init() async {
     return false;
@@ -55,7 +57,7 @@ void main() {
     route = null;
     await tester.pumpWidget(ProviderScope(
         overrides: [
-          languageProvider.overrideWith(() => TestLanguageController())
+          languageProvider.overrideWith(() => CustomTestLanguageController())
         ],
         child: MaterialApp(
             home: const StartupPage(navigateTo: '/test'),

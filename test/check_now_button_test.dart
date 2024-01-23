@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 
 import 'app_language_test.dart';
-import 'delete_language_button_test.dart';
+import 'languages_test.dart';
 import 'updates_test.dart';
 
 class TestCheckNowButton extends ConsumerWidget {

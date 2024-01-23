@@ -71,12 +71,14 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => DummyLanguageController()),
+      languageProvider
+          .overrideWith(() => TestLanguageController(languageSize: 42)),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestSettingsPage()));
     int expectedSize = 42 * countAvailableLanguages;
     expect(find.textContaining('$expectedSize kB'), findsOneWidget);
     // language counter visibility basic test
-    expect(find.textContaining('(0 languages)'), findsOneWidget);
+    expect(find.textContaining('($countAvailableLanguages languages)'),
+        findsOneWidget);
   });
 }

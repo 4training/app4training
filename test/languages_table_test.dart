@@ -12,17 +12,6 @@ import 'app_language_test.dart';
 import 'languages_test.dart';
 import 'updates_test.dart';
 
-// Simulate that German is downloaded
-class TestLanguageController extends DummyLanguageController {
-  @override
-  Language build(String arg) {
-    languageCode = (arg == 'de') ? 'de' : '';
-    // For 'de', Language.downloaded will be true, for the rest it will be false
-    return Language(
-        languageCode, const {}, const [], const {}, '', 0, DateTime.utc(2023));
-  }
-}
-
 // To simplify testing the LanguagesTable widget in different locales
 class TestLanguagesTable extends ConsumerWidget {
   const TestLanguagesTable({super.key});
@@ -42,7 +31,8 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => DummyLanguageController()),
+      languageProvider
+          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
       languageStatusProvider.overrideWith(() => TestLanguageStatus())
     ], child: const TestLanguagesTable()));
 
@@ -69,7 +59,8 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       availableLanguagesProvider.overrideWithValue(['de', 'en', 'fr']),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith(
+          () => TestLanguageController(downloadedLanguages: ['de'])),
       languageStatusProvider
           .overrideWith(() => TestLanguageStatus(langWithUpdates: ['de']))
     ]);

@@ -13,31 +13,6 @@ import 'app_language_test.dart';
 import 'languages_test.dart';
 import 'updates_test.dart' hide TestLanguageStatus;
 
-/// Simulate that Language gets downloaded initially
-/// and that it has a newer timestamp when it gets downloaded again
-class TestLanguageController extends DummyLanguageController {
-  @override
-  Language build(String arg) {
-    languageCode = arg;
-    return Language(
-        languageCode, const {}, const [], const {}, '', 0, DateTime.utc(2023));
-  }
-
-  @override
-  Future<void> deleteResources() async {
-    state =
-        Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
-  }
-
-  @override
-  Future<bool> download({bool force = false}) async {
-    if (force) await deleteResources();
-    state = Language(languageCode, const {}, const [], const {}, '', 0,
-        DateTime.now().toUtc());
-    return true;
-  }
-}
-
 class TestUpdateLanguageButton extends ConsumerWidget {
   final String languageCode;
 

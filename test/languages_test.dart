@@ -7,16 +7,12 @@ import 'package:download_assets/download_assets.dart';
 import 'package:file/chroot.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Page;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as path;
-
-import 'language_selection_test.dart';
-
-class MockLanguageController extends Mock implements LanguageController {}
 
 class MockDownloadAssetsController extends Mock
     implements DownloadAssetsController {}
@@ -78,13 +74,45 @@ class ThrowingDownloadAssetsController extends FakeDownloadAssetsController {
   }
 }
 
-class DummyLanguageController extends LanguageController {
+/// For testing the LanguageController: Simulate essential behavior
+/// without needing access to device file system etc.
+///
+/// By default (downloadLanguages = null), a language is downloaded initially.
+/// For other behavior set downloadedLanguages to [] or a set of languages.
+class TestLanguageController extends LanguageController {
+  final List<String>? _downloadedLanguages;
+  final int _languageSize; // size in KB
+  final Map<String, Page> _pages; // map of pages that are available
+  TestLanguageController(
+      {List<String>? downloadedLanguages,
+      int languageSize = 0,
+      Map<String, Page> pages = const {}})
+      : _downloadedLanguages = downloadedLanguages,
+        _languageSize = languageSize,
+        _pages = pages;
+
   @override
   Language build(String arg) {
     languageCode = arg;
-    // Return dummy Language object using 42 kB
-    return Language(
-        '', const {}, const [], const {}, '', 42, DateTime.utc(2023, 1, 1));
+    bool downloaded = true;
+    if (_downloadedLanguages != null) {
+      downloaded = _downloadedLanguages.contains(arg);
+    }
+    return Language(downloaded ? arg : '', _pages, const [], const {}, '',
+        _languageSize, DateTime.utc(2023));
+  }
+
+  @override
+  Future<bool> download({bool force = false}) async {
+    state = Language(languageCode, _pages, const [], const {}, '',
+        _languageSize, DateTime.now().toUtc());
+    return true;
+  }
+
+  @override
+  Future<void> deleteResources() async {
+    state =
+        Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
   }
 }
 
@@ -264,15 +292,16 @@ void main() {
 
   test('Test diskUsageProvider', () {
     final ref = ProviderContainer(overrides: [
-      languageProvider.overrideWith(() => DummyLanguageController()),
+      languageProvider
+          .overrideWith(() => TestLanguageController(languageSize: 42)),
     ]);
     expect(ref.read(diskUsageProvider), countAvailableLanguages * 42);
   });
 
   test('Test countDownloadedLanguagesProvider', () {
     final ref = ProviderContainer(overrides: [
-      languageProvider
-          .overrideWith(() => TestLanguageController(['de', 'fr', 'en'])),
+      languageProvider.overrideWith(() =>
+          TestLanguageController(downloadedLanguages: ['de', 'fr', 'en'])),
     ]);
     expect(ref.read(countDownloadedLanguagesProvider), 3);
   });

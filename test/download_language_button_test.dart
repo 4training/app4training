@@ -10,24 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'app_language_test.dart';
 import 'languages_test.dart';
 
-/// Simulate that Language is not downloaded initially
-/// and gets downloaded when download() is called
-class TestLanguageController extends DummyLanguageController {
-  @override
-  Language build(String arg) {
-    languageCode = arg;
-    return Language(
-        '', const {}, const [], const {}, '', 0, DateTime.utc(2023));
-  }
-
-  @override
-  Future<bool> download({bool force = false}) async {
-    state = Language(languageCode, const {}, const [], const {}, '', 0,
-        DateTime.now().toUtc());
-    return true;
-  }
-}
-
 class TestDownloadLanguageButton extends ConsumerWidget {
   final String languageCode;
   final bool highlight;
@@ -48,10 +30,10 @@ class TestDownloadLanguageButton extends ConsumerWidget {
 
 void main() {
   testWidgets('Test DownloadLanguageButton', (WidgetTester tester) async {
-    final testLanguageController = TestLanguageController();
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => testLanguageController),
+      languageProvider
+          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -59,12 +41,10 @@ void main() {
 
     expect(find.byIcon(Icons.download), findsOneWidget);
     expect(find.byType(Container), findsNothing); // should not be highlighted
-    expect(testLanguageController.state.downloaded, false);
     expect(ref.read(languageProvider('en')).downloaded, false);
 
     await tester.tap(find.byType(DownloadLanguageButton));
     await tester.pump();
-    expect(testLanguageController.state.downloaded, true);
     expect(ref.read(languageProvider('en')).downloaded, true);
     // Snackbar visible?
     expect(find.text('Englisch (en) ist nun verfügbar'), findsOneWidget);
@@ -73,7 +53,8 @@ void main() {
   testWidgets('Test DownloadAllLanguagesButton', (WidgetTester tester) async {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController())
+      languageProvider
+          .overrideWith(() => TestLanguageController(downloadedLanguages: []))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -102,7 +83,8 @@ void main() {
       (WidgetTester tester) async {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider
+          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(

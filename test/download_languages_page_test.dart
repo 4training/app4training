@@ -15,7 +15,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_language_test.dart';
-import 'download_language_button_test.dart';
+import 'languages_test.dart';
 import 'routes_test.dart';
 import 'updates_test.dart';
 
@@ -64,7 +64,8 @@ void main() {
     final testObserver = TestObserver();
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider
+          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -106,7 +107,8 @@ void main() {
     final testObserver = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider
+          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: TestDownloadLanguagesPage(testObserver)));
 
@@ -151,7 +153,8 @@ void main() {
     final testObserver = TestObserver();
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider
+          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
       languageStatusProvider.overrideWith(() => TestLanguageStatus())
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
