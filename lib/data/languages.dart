@@ -126,7 +126,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
   Language build(String arg) {
     languageCode = arg;
     return Language(
-        '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
+        '', const {}, const [], const {}, '', 0, DateTime.utc(2023));
   }
 
   /// Download this language and make it available.
@@ -213,8 +213,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
       debugPrint(msg);
       // Delete the whole folder
       await _controller.clearAssets();
-      state = Language(
-          '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
+      state =
+          Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
       return false;
     }
   }
@@ -223,8 +223,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
   Future<void> deleteResources() async {
     await _initController();
     await _controller.clearAssets();
-    state = Language(
-        '', const {}, const [], const {}, '', 0, DateTime.utc(2023, 1, 1));
+    state =
+        Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
   }
 
   /// Download all files for one language via DownloadAssetsController

@@ -154,57 +154,75 @@ void main() {
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
   });
 
-  test('Test reading LanguageStatus from SharedPreferences', () async {
-    // Nothing saved in SharedPreferences
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final ref = ProviderContainer(overrides: [
-      languageProvider.overrideWith(() => TestLanguageController()),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ]);
+  group('Test reading LanguageStatus from SharedPreferences', () {
+    late ProviderContainer ref;
+    late SharedPreferences prefs;
 
-    LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    expect(deStatus.updatesAvailable, false);
-    expect(deStatus.lastCheckedTimestamp.isUtc, true);
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      prefs = await SharedPreferences.getInstance();
+      ref = ProviderContainer(overrides: [
+        languageProvider.overrideWith(
+            () => TestLanguageController(downloadedLanguages: ['de'])),
+        sharedPrefsProvider.overrideWith((ref) => prefs)
+      ]);
+    });
 
-    // Correct values in SharedPreferences
-    await prefs.setString('lastChecked-de', '2023-02-02 00:00:00.000Z');
-    await prefs.setBool('updatesAvailable-de', true);
-    deStatus = ref.read(languageStatusProvider('de').notifier).build('de');
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 2, 2)));
-    expect(deStatus.updatesAvailable, true);
+    test('Nothing saved in SharedPreferences', () async {
+      final deStatus = ref.read(languageStatusProvider('de'));
+      expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
+      expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023)));
+      expect(deStatus.updatesAvailable, false);
+      expect(deStatus.lastCheckedTimestamp.isUtc, true);
+    });
 
-    await prefs.setBool('updatesAvailable-de', false);
-    deStatus = ref.read(languageStatusProvider('de').notifier).build('de');
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 2, 2)));
-    expect(deStatus.updatesAvailable, false);
+    test('Correct values in SharedPreferences: updates', () async {
+      await prefs.setString('lastChecked-de', '2023-02-02 00:00:00.000Z');
+      await prefs.setBool('updatesAvailable-de', true);
+      final deStatus = ref.read(languageStatusProvider('de'));
+      expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
+      expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 2, 2)));
+      expect(ref.read(lastCheckedProvider), equals(DateTime.utc(2023, 2, 2)));
+      expect(deStatus.updatesAvailable, true);
+    });
 
-    // Verify that result is always UTC
-    await prefs.setString('lastChecked-de', '2023-02-03T03:00:00+0300');
-    deStatus = ref.read(languageStatusProvider('de').notifier).build('de');
-    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 2, 3)));
-    expect(deStatus.lastCheckedTimestamp.isUtc, true);
+    test('Correct values in SharedPreferences: no updates', () async {
+      await prefs.setString('lastChecked-de', '2023-02-02 00:00:00.000Z');
+      await prefs.setBool('updatesAvailable-de', false);
+      final deStatus = ref.read(languageStatusProvider('de'));
+      expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
+      expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 2, 2)));
+      expect(deStatus.updatesAvailable, false);
+    });
 
-    // Now testing all kinds of weird input for the lastChecked timestamp
-    await prefs.setString('lastChecked-de', 'invalid');
-    deStatus = ref.read(languageStatusProvider('de').notifier).build('de');
-    expect(deStatus.lastCheckedTimestamp, deStatus.downloadTimestamp);
+    test('Verify that result is always UTC', () async {
+      await prefs.setString('lastChecked-de', '2023-02-03T03:00:00+0300');
+      final deStatus = ref.read(languageStatusProvider('de'));
+      expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 2, 3)));
+      expect(deStatus.lastCheckedTimestamp.isUtc, true);
+      expect(ref.read(lastCheckedProvider), equals(DateTime.utc(2023, 2, 3)));
+    });
 
-    await prefs.setString('lastChecked-de', '2022-01-01'); // too old
-    deStatus = ref.read(languageStatusProvider('de').notifier).build('de');
-    expect(deStatus.lastCheckedTimestamp, deStatus.downloadTimestamp);
+    test('Testing invalid input for the lastChecked timestamp', () async {
+      await prefs.setString('lastChecked-de', 'invalid');
+      final deStatus = ref.read(languageStatusProvider('de'));
+      expect(deStatus.lastCheckedTimestamp, deStatus.downloadTimestamp);
+    });
 
-    await prefs.setString(
-        'lastChecked-de',
-        DateTime.now()
-            .add(const Duration(days: 1))
-            .toIso8601String()); // in the future
-    deStatus = ref.read(languageStatusProvider('de').notifier).build('de');
-    expect(deStatus.lastCheckedTimestamp, deStatus.downloadTimestamp);
+    test('Testing too old input for the lastChecked timestamp', () async {
+      await prefs.setString('lastChecked-de', '2022-01-01');
+      final deStatus = ref.read(languageStatusProvider('de'));
+      expect(deStatus.lastCheckedTimestamp, deStatus.downloadTimestamp);
+      expect(ref.read(lastCheckedProvider), equals(DateTime.utc(2023)));
+    });
+
+    test('Testing timestamp with date in the future', () async {
+      DateTime futureDate = DateTime.now().add(const Duration(days: 1));
+      await prefs.setString('lastChecked-de', futureDate.toIso8601String());
+      final deStatus = ref.read(languageStatusProvider('de'));
+      expect(deStatus.lastCheckedTimestamp, deStatus.downloadTimestamp);
+      expect(ref.read(lastCheckedProvider), equals(DateTime.utc(2023)));
+    });
   });
 
   test('Test checking for updates: no updates', () async {
@@ -212,26 +230,28 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
-            expect(
-                request.url.toString(),
-                equals(
-                    Globals.getCommitsSince('de', DateTime.utc(2023, 1, 1))));
+            expect(request.url.toString(),
+                equals(Globals.getCommitsSince('de', DateTime.utc(2023))));
             return Response(json.encode([]), 200);
           })),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith(
+          () => TestLanguageController(downloadedLanguages: ['de'])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
     LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
+    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023)));
+    expect(ref.read(lastCheckedProvider), equals(DateTime.utc(2023)));
     expect(prefs.getBool('updatesAvailable-de'), null);
     expect(await ref.read(languageStatusProvider('de').notifier).check(), 0);
 
     // The lastCheckedTimestamp should be updated to the current time now()
     deStatus = ref.read(languageStatusProvider('de'));
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
     expect(deStatus.lastCheckedTimestamp.compareTo(deStatus.downloadTimestamp),
         greaterThan(0));
+    expect(
+        ref.read(lastCheckedProvider), equals(deStatus.lastCheckedTimestamp));
     expect(deStatus.updatesAvailable, false);
     expect(prefs.getBool('updatesAvailable-de'), false);
     expect(prefs.getString('lastChecked-de'),
@@ -246,15 +266,17 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates(ref)),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith(
+          () => TestLanguageController(downloadedLanguages: ['de', 'en'])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
     final deStatusNotifier = ref.read(languageStatusProvider('de').notifier);
+    expect(ref.read(lastCheckedProvider), equals(DateTime.utc(2023)));
     expect(await deStatusNotifier.check(), 2);
 
-    // The lastCheckedTimestamp should be updated to the current time now()
+    // lastCheckedTimestamp should be updated to the current time now()
     LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
     expect(deStatus.lastCheckedTimestamp.compareTo(deStatus.downloadTimestamp),
         greaterThan(0));
     expect(deStatus.updatesAvailable, true);
@@ -265,13 +287,16 @@ void main() {
     // If we check for updates a second time, we should get the same results
     expect(await deStatusNotifier.check(), 2);
     deStatus = ref.read(languageStatusProvider('de'));
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
     expect(deStatus.lastCheckedTimestamp.compareTo(deStatus.downloadTimestamp),
         greaterThan(0));
     expect(deStatus.updatesAvailable, true);
     expect(prefs.getBool('updatesAvailable-de'), true);
     expect(prefs.getString('lastChecked-de'),
         equals(deStatus.lastCheckedTimestamp.toIso8601String()));
+
+    // As we didn't check for updates for English:
+    expect(ref.read(lastCheckedProvider), equals(DateTime.utc(2023)));
   });
 
   test('Test checking and updating', () async {
@@ -279,15 +304,12 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
-            expect(
-                request.url.toString(),
-                equals(
-                    Globals.getCommitsSince('de', DateTime.utc(2023, 1, 1))));
             // The real response is more complex but as we don't care about
             // all the properties that's enough to simulate two new commits
             return Response(json.encode([0, 1]), 200);
           })),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith(
+          () => TestLanguageController(downloadedLanguages: ['de', 'en'])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
 
@@ -295,21 +317,36 @@ void main() {
 
     // The lastCheckedTimestamp should be updated to the current time now()
     LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
     expect(deStatus.lastCheckedTimestamp.compareTo(deStatus.downloadTimestamp),
         greaterThan(0));
     expect(deStatus.updatesAvailable, true);
     expect(ref.read(sharedPrefsProvider).getBool('updatesAvailable-de'), true);
+    expect(ref.read(lastCheckedProvider), equals(DateTime.utc(2023)));
 
     // check() and download() should not happen at the very same timestamp
     await Future.delayed(const Duration(milliseconds: 1));
 
+    // Checking for updates for English -> lastCheckedProvider be newer now
+    expect(await ref.read(languageStatusProvider('en').notifier).check(), 2);
+    final englishTimestamp =
+        ref.read(languageStatusProvider('en')).lastCheckedTimestamp;
+    expect(
+        ref.read(lastCheckedProvider), equals(deStatus.lastCheckedTimestamp));
+
     // After downloading the resources there shouldn't be updates available
+    await Future.delayed(const Duration(milliseconds: 1));
     await ref.read(languageProvider('de').notifier).download(force: true);
     deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.updatesAvailable, false);
     expect(deStatus.downloadTimestamp, equals(deStatus.lastCheckedTimestamp));
     expect(ref.read(sharedPrefsProvider).getBool('updatesAvailable-de'), false);
+
+    // lastCheckedProvider should have advanced a little bit again
+    expect(ref.read(lastCheckedProvider), equals(englishTimestamp));
+    expect(
+        ref.read(lastCheckedProvider).compareTo(deStatus.lastCheckedTimestamp),
+        lessThan(0));
   });
 
   test('Test correct behavior when checking for updates fails', () async {
@@ -327,8 +364,8 @@ void main() {
 
     // The lastCheckedTimestamp should not be changed
     LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
+    expect(deStatus.lastCheckedTimestamp, equals(DateTime.utc(2023)));
     expect(deStatus.updatesAvailable, false);
     expect(ref.read(sharedPrefsProvider).getBool('updatesAvailable-de'), null);
   });
@@ -354,9 +391,8 @@ void main() {
         apiRateLimitExceeded);
 
     final deStatus = ref.read(languageStatusProvider('de'));
-    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023, 1, 1)));
-    expect(deStatus.lastCheckedTimestamp,
-        equals(equals(DateTime.utc(2023, 1, 1))));
+    expect(deStatus.downloadTimestamp, equals(DateTime.utc(2023)));
+    expect(deStatus.lastCheckedTimestamp, equals(equals(DateTime.utc(2023))));
     expect(deStatus.updatesAvailable, false);
     expect(ref.read(sharedPrefsProvider).getBool('updatesAvailable-de'), null);
   });
@@ -366,10 +402,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
-            expect(
-                request.url.toString(),
-                equals(
-                    Globals.getCommitsSince('de', DateTime.utc(2023, 1, 1))));
+            expect(request.url.toString(),
+                equals(Globals.getCommitsSince('de', DateTime.utc(2023))));
             // The real response is more complex but as we don't care about
             // all the properties that's enough to simulate two new commits
             return Response(json.encode([0, 1]), 200);

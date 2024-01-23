@@ -28,7 +28,6 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
             _isLoading = true;
           });
 
-          DateTime timestamp = DateTime.now().toUtc();
           bool hasError = false;
           bool exceededLimit = false;
           int countAvailableUpdates = 0;
@@ -52,7 +51,6 @@ class _CheckNowButtonState extends ConsumerState<CheckNowButton> {
           }
 
           if (!hasError) {
-            ref.read(lastCheckedProvider.notifier).state = timestamp;
             ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
                 content: Text(l10n.nUpdatesAvailable(countAvailableUpdates))));
           } else {

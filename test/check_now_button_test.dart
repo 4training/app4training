@@ -65,13 +65,13 @@ void main() {
 
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
     expect(ref.read(languageStatusProvider('en')).lastCheckedTimestamp,
-        equals(DateTime.utc(2023, 1, 1)));
+        equals(DateTime.utc(2023)));
 
     await tester.tap(find.byType(CheckNowButton));
     await tester.pump();
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, true);
     expect(ref.read(languageStatusProvider('en')).lastCheckedTimestamp,
-        isNot(equals(DateTime.utc(2023, 1, 1))));
+        isNot(equals(DateTime.utc(2023))));
     // snackbar correct?
     expect(find.text('Updates für 34 Sprachen verfügbar'), findsOneWidget);
     expect(countCheckCalled, countAvailableLanguages);
@@ -92,13 +92,13 @@ void main() {
 
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
     expect(ref.read(languageStatusProvider('en')).lastCheckedTimestamp,
-        equals(DateTime.utc(2023, 1, 1)));
+        equals(DateTime.utc(2023)));
 
     await tester.tap(find.byType(CheckNowButton));
     await tester.pump();
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
     expect(ref.read(languageStatusProvider('en')).lastCheckedTimestamp,
-        equals(DateTime.utc(2023, 1, 1)));
+        equals(DateTime.utc(2023)));
     // snackbar correct?
     expect(
         find.text(AppLocalizationsDe().checkingUpdatesLimit), findsOneWidget);
@@ -121,13 +121,13 @@ void main() {
 
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
     expect(ref.read(languageStatusProvider('en')).lastCheckedTimestamp,
-        equals(DateTime.utc(2023, 1, 1)));
+        equals(DateTime.utc(2023)));
 
     await tester.tap(find.byType(CheckNowButton));
     await tester.pump();
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
     expect(ref.read(languageStatusProvider('en')).lastCheckedTimestamp,
-        equals(DateTime.utc(2023, 1, 1)));
+        equals(DateTime.utc(2023)));
     // snackbar correct?
     expect(
         find.text(AppLocalizationsDe().checkingUpdatesError), findsOneWidget);

@@ -60,7 +60,7 @@ void main() {
     expect(find.byIcon(Icons.refresh), findsOneWidget);
     expect(ref.read(languageProvider('en')).downloaded, true);
     final firstTimestamp = ref.read(languageProvider('en')).downloadTimestamp;
-    expect(firstTimestamp, equals(DateTime.utc(2023, 1, 1)));
+    expect(firstTimestamp, equals(DateTime.utc(2023)));
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
 
     await ref.read(languageStatusProvider('en').notifier).check();

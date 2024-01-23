@@ -99,6 +99,7 @@ class LanguageStatus {
 /// available is persisted into the SharedPreferences
 ///
 /// In case the language is not downloaded updatesAvailable will always be false
+/// and the timestamps will be DateTime.utc(2023)
 class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
   String _languageCode = '';
   @override
@@ -224,6 +225,11 @@ final updatesAvailableProvider = StateProvider<bool>((ref) {
 /// When was the last time we checked for updates? (UTC)
 /// We have this property for each language in the LanguageStatus,
 /// here we have the summary: the oldest of these (in case they're not the same)
+///
+/// We're only watching languageStatusProviders and not languageProviders
+/// because the former will get rebuilt if a language gets downloaded
+/// (and I'm not totally sure if there could be weird race conditions
+/// in case we're watching both...?)
 final lastCheckedProvider = StateProvider<DateTime>((ref) {
   DateTime timestamp = DateTime.now().toUtc();
   bool downloadedSomeLanguage = false;
@@ -231,7 +237,9 @@ final lastCheckedProvider = StateProvider<DateTime>((ref) {
     if (!ref.read(languageProvider(languageCode)).downloaded) continue;
     downloadedSomeLanguage = true;
     DateTime languageTimestamp =
-        ref.read(languageStatusProvider(languageCode)).lastCheckedTimestamp;
+        ref.watch(languageStatusProvider(languageCode)).lastCheckedTimestamp;
+    assert(languageTimestamp.isUtc);
+    assert(!languageTimestamp.isBefore(DateTime.utc(2023)));
     if (languageTimestamp.isBefore(timestamp)) timestamp = languageTimestamp;
   }
   // For the edge case that not a single language is downloaded
