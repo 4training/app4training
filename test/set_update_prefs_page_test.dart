@@ -1,3 +1,4 @@
+import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
@@ -12,18 +13,17 @@ import 'package:flutter_gen/gen_l10n/app_localizations_en.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app_language_test.dart';
 import 'routes_test.dart';
 
 class TestSetUpdatePrefsPage extends ConsumerWidget {
-  final String languageCode;
   final TestObserver navigatorObserver;
-  const TestSetUpdatePrefsPage(this.languageCode, this.navigatorObserver,
-      {super.key});
+  const TestSetUpdatePrefsPage(this.navigatorObserver, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: Locale(languageCode),
+        locale: ref.watch(appLanguageProvider).locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         onGenerateRoute: (settings) => generateRoutes(settings, ref),
@@ -38,9 +38,10 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestSetUpdatePrefsPage('en', testObserver)));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      sharedPrefsProvider.overrideWithValue(prefs)
+    ], child: TestSetUpdatePrefsPage(testObserver)));
 
     expect(find.text(AppLocalizationsEn().updatesExplanation), findsOneWidget);
     expect(find.text(AppLocalizationsEn().doAutomaticUpdates), findsOneWidget);
@@ -66,9 +67,10 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestSetUpdatePrefsPage('de', testObserver)));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      sharedPrefsProvider.overrideWithValue(prefs)
+    ], child: TestSetUpdatePrefsPage(testObserver)));
 
     // Check that the page is in German
     expect(find.text(AppLocalizationsDe().updatesExplanation), findsOneWidget);

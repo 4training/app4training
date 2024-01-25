@@ -1,3 +1,4 @@
+import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
@@ -6,8 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'app_language_test.dart';
+
 /// Simplify testing of the ViewPage widget
 class TestViewPage extends ConsumerWidget {
+  static const languageCode = 'de';
+
   /// To simulate different pageContentProvider behaviour
   final FutureProviderFamily<String, Resource> testPageContentProvider;
   const TestViewPage(this.testPageContentProvider, {super.key});
@@ -16,10 +21,11 @@ class TestViewPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ProviderScope(
         overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage(languageCode)),
           pageContentProvider.overrideWithProvider(testPageContentProvider)
         ],
         child: const MaterialApp(
-            locale: Locale('de'),
+            locale: Locale(languageCode),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: ViewPage('Healing', 'de')));
