@@ -1,11 +1,13 @@
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/exceptions.dart';
+import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_language_test.dart';
 
@@ -13,32 +15,30 @@ import 'app_language_test.dart';
 class TestViewPage extends ConsumerWidget {
   static const languageCode = 'de';
 
-  /// To simulate different pageContentProvider behaviour
-  final FutureProviderFamily<String, Resource> testPageContentProvider;
-  const TestViewPage(this.testPageContentProvider, {super.key});
+  const TestViewPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ProviderScope(
-        overrides: [
-          appLanguageProvider.overrideWith(() => TestAppLanguage(languageCode)),
-          pageContentProvider.overrideWithProvider(testPageContentProvider)
-        ],
-        child: const MaterialApp(
-            locale: Locale(languageCode),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: ViewPage('Healing', 'de')));
+    return MaterialApp(
+        locale: ref.read(appLanguageProvider).locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const ViewPage('Healing', 'de'));
   }
 }
 
 void main() {
   testWidgets('Test normal behaviour', (WidgetTester tester) async {
-    await tester.pumpWidget(
-        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
-      return 'TestContent';
-    })));
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      pageContentProvider.overrideWith((ref, page) async => 'TestContent'),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
+    ], child: const TestViewPage()));
 
+    expect(prefs.getString('recentPage'), isNull);
+    expect(prefs.getString('recentLang'), isNull);
     // First there should be the loading animation
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Loading content...'), findsOneWidget);
@@ -46,14 +46,18 @@ void main() {
 
     // Now our content should be shown
     expect(find.textContaining('TestContent'), findsOneWidget);
+    // recentPage and recentLang should be set in SharedPreferences
+    expect(prefs.getString('recentPage'), 'Healing');
+    expect(prefs.getString('recentLang'), 'de');
   });
 
   testWidgets('Test LanguageNotDownloadedException handling',
       (WidgetTester tester) async {
-    await tester.pumpWidget(
-        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
-      throw LanguageNotDownloadedException('de');
-    })));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      pageContentProvider.overrideWith(
+          (ref, arg) async => throw LanguageNotDownloadedException('de')),
+    ], child: const TestViewPage()));
     await tester.pump();
 
     // Now we should see a warning (in German)
@@ -68,10 +72,11 @@ void main() {
 
   testWidgets('Test PageNotFoundException handling',
       (WidgetTester tester) async {
-    await tester.pumpWidget(
-        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
-      throw PageNotFoundException('Healing', 'de');
-    })));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      pageContentProvider.overrideWith(
+          (ref, page) async => throw PageNotFoundException('Healing', 'de'))
+    ], child: const TestViewPage()));
     await tester.pump();
 
     // Now we should see a warning (in German)
@@ -87,27 +92,28 @@ void main() {
 
   testWidgets('Test LanguageCorruptedException handling',
       (WidgetTester tester) async {
-    await tester.pumpWidget(
-        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
-      throw LanguageCorruptedException('de', 'BadLuck');
-    })));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      pageContentProvider.overrideWith((ref, page) async =>
+          throw LanguageCorruptedException('de', 'BadLuck'))
+    ], child: const TestViewPage()));
     await tester.pump();
 
     // Now we should see an error message in German
     expect(find.byIcon(Icons.error), findsOneWidget);
-    expect(find.text('Fehler'), findsOneWidget);
+    expect(find.text('Error'), findsOneWidget);
     expect(
         find.textContaining(
-            "Die Sprachdaten von 'Deutsch (de)' scheinen beschädigt zu sein"),
+            "Language data for 'German (de)' seems to be corrupted"),
         findsOneWidget);
   });
 
   testWidgets('Test unexpected exception handling',
       (WidgetTester tester) async {
-    await tester.pumpWidget(
-        TestViewPage(FutureProvider.family<String, Resource>((ref, page) async {
-      throw TestFailure;
-    })));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      pageContentProvider.overrideWith((ref, arg) async => throw TestFailure)
+    ], child: const TestViewPage()));
     await tester.pump();
 
     // Now we should see an error (internalError in German)

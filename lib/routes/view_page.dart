@@ -29,11 +29,17 @@ class ViewPage extends ConsumerWidget {
         drawer: MainDrawer(page, langCode),
         body: pageContent.when(
             loading: () => loadingAnimation("Loading content..."),
-            data: (content) => HtmlView(
-                content,
-                (Globals.rtlLanguages.contains(langCode))
-                    ? TextDirection.rtl
-                    : TextDirection.ltr),
+            data: (content) {
+              // Save the selected page to the SharedPreferences to continue here
+              // in case the user closes the app
+              ref.read(sharedPrefsProvider).setString('recentPage', page);
+              ref.read(sharedPrefsProvider).setString('recentLang', langCode);
+              return HtmlView(
+                  content,
+                  (Globals.rtlLanguages.contains(langCode))
+                      ? TextDirection.rtl
+                      : TextDirection.ltr);
+            },
             error: (e, st) {
               if (e is App4TrainingException) {
                 if ((e is PageNotFoundException) ||

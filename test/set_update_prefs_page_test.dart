@@ -26,7 +26,7 @@ class TestSetUpdatePrefsPage extends ConsumerWidget {
         locale: ref.watch(appLanguageProvider).locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        onGenerateRoute: (settings) => generateRoutes(settings, ref),
+        onGenerateRoute: (settings) => generateRoutes(settings),
         navigatorObservers: [navigatorObserver],
         home: const SetUpdatePrefsPage());
   }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app4training/data/languages.dart';
 import 'package:app4training/routes/error_page.dart';
 import 'package:app4training/routes/home_page.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
@@ -15,6 +16,8 @@ import 'package:app4training/routes/settings_page.dart';
 import 'package:app4training/routes/startup_page.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'languages_test.dart';
 
 // For observing the routes that get pushed and replaced
 class TestObserver extends NavigatorObserver {
@@ -33,15 +36,15 @@ class TestObserver extends NavigatorObserver {
 }
 
 // Put this in a class so that we easily have the WidgetRef for generateRoutes()
-class TestApp extends ConsumerWidget {
+class TestApp extends StatelessWidget {
   final TestObserver observer;
   const TestApp(this.observer, {super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return MaterialApp(
       navigatorObservers: [observer],
-      onGenerateRoute: (settings) => generateRoutes(settings, ref),
+      onGenerateRoute: (settings) => generateRoutes(settings),
       locale: const Locale('de'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
     );
@@ -60,6 +63,8 @@ void main() {
 
     // Test that onboarding process get's started on first app usage
     expect(find.byType(TestApp), findsOneWidget);
+    expect(find.byType(StartupPage), findsOneWidget);
+    await tester.pumpAndSettle();
     expect(find.byType(WelcomePage), findsOneWidget);
 
     // Test second onboarding step
@@ -81,8 +86,14 @@ void main() {
     expect(find.byType(SetUpdatePrefsPage), findsOneWidget);
 
     // Test that routes are handled
-    expect(observer.replacedRoutes,
-        orderedEquals(['/onboarding/2', '/onboarding/1', '/onboarding/3']));
+    expect(
+        observer.replacedRoutes,
+        orderedEquals([
+          '/onboarding/1',
+          '/onboarding/2',
+          '/onboarding/1',
+          '/onboarding/3'
+        ]));
   });
 
   testWidgets('Test normal startup', (WidgetTester tester) async {
@@ -90,19 +101,15 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final TestObserver observer = TestObserver();
-    await tester.pumpWidget(ProviderScope(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestApp(observer)));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      languageProvider
+          .overrideWith(() => TestLanguageController(initReturns: true)),
+      sharedPrefsProvider.overrideWithValue(prefs)
+    ], child: TestApp(observer)));
 
     // Test initial route /
     expect(find.byType(TestApp), findsOneWidget);
     expect(find.byType(StartupPage), findsOneWidget);
-    StartupPage startupPage =
-        find.byType(StartupPage).evaluate().single.widget as StartupPage;
-    expect(startupPage.navigateTo, equals('/home'));
-
-    expect(prefs.getString('recentPage'), null);
-    expect(prefs.getString('recentLang'), null);
 
     // Test home page
     unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
@@ -127,10 +134,6 @@ void main() {
     expect(viewPage.page, equals('Forgiving_Step_by_Step'));
     expect(viewPage.langCode, equals('en'));
 
-    // Test that recentPage and recentLang are now set in SharedPreferences
-    expect(prefs.getString('recentPage'), equals('Forgiving_Step_by_Step'));
-    expect(prefs.getString('recentLang'), equals('en'));
-
     // Test that routes are handled
     expect(
         observer.routes, orderedEquals(['/', '/home', '/settings', viewRoute]));
@@ -140,10 +143,9 @@ void main() {
     SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
     final prefs = await SharedPreferences.getInstance();
 
-    final TestObserver observer = TestObserver();
     await tester.pumpWidget(ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestApp(observer)));
+        child: TestApp(TestObserver())));
 
     // All of the following errorneous routes should result in showing /home
     unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
@@ -160,21 +162,6 @@ void main() {
         .pushNamed('/view/Forgiving_Step_by_Step/'));
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
-  });
-
-  testWidgets('Test initial route with loading data from SharedPreferences',
-      (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues(
-        {'appLanguage': 'de', 'recentPage': 'Healing', 'recentLang': 'de'});
-    final prefs = await SharedPreferences.getInstance();
-
-    await tester.pumpWidget(ProviderScope(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestApp(TestObserver())));
-
-    StartupPage startupPage =
-        find.byType(StartupPage).evaluate().single.widget as StartupPage;
-    expect(startupPage.navigateTo, equals('/view/Healing/de'));
   });
 
   testWidgets('Test unknown route', (WidgetTester tester) async {

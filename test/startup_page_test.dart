@@ -1,29 +1,21 @@
 import 'dart:async';
 
+import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/routes/startup_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'languages_test.dart';
-
-/// Simulate that no language is available
-class CustomTestLanguageController extends TestLanguageController {
-  CustomTestLanguageController() : super(downloadedLanguages: []);
-
-  @override
-  Future<bool> init() async {
-    return false;
-  }
-}
 
 void main() {
   // Mocking the globalInit() function:
   // We want to be able to test all the different outcomes of the future
-  Completer completer = Completer();
-  Future mockInitFunction() {
+  Completer<String> completer = Completer<String>();
+  Future<String> mockInitFunction() {
     return completer.future;
   }
 
@@ -35,46 +27,56 @@ void main() {
   }
 
   testWidgets('Test normal behaviour', (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: StartupPage(navigateTo: '/test', initFunction: mockInitFunction),
-      onGenerateRoute: generateRoutes,
-    ));
+    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+    final prefs = await SharedPreferences.getInstance();
+    expect(route, isNull);
+    await tester.pumpWidget(ProviderScope(
+        overrides: [
+          languageProvider
+              .overrideWith(() => TestLanguageController(initReturns: true)),
+          sharedPrefsProvider.overrideWith((ref) => prefs)
+        ],
+        child: MaterialApp(
+          home: const StartupPage(),
+          onGenerateRoute: generateRoutes,
+        )));
     // First there should be the loading animation
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Loading'), findsOneWidget);
-    expect(route, isNull);
-    completer.complete();
-    // not sure why runAsync(), idle() and pump() are necessary, but they are...
-    await tester.runAsync(() async {
-      await tester.idle();
-      await tester.pump();
-      expect(route, equals('/test')); // Now we went on to this route
-    });
+    await tester.pump();
+    expect(route, equals('/home')); // Now we went on to this route
   });
 
   testWidgets('Test different routing when no languages are downloaded',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+    final prefs = await SharedPreferences.getInstance();
     route = null;
     await tester.pumpWidget(ProviderScope(
         overrides: [
-          languageProvider.overrideWith(() => CustomTestLanguageController())
+          languageProvider.overrideWith(
+              () => TestLanguageController(downloadedLanguages: [])),
+          sharedPrefsProvider.overrideWith((ref) => prefs)
         ],
         child: MaterialApp(
-            home: const StartupPage(navigateTo: '/test'),
-            onGenerateRoute: generateRoutes)));
+            home: const StartupPage(), onGenerateRoute: generateRoutes)));
     expect(route, equals('/onboarding/2'));
   });
 
   testWidgets('Test failing initFunction', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+    final prefs = await SharedPreferences.getInstance();
     completer = Completer();
     route = null;
-    await tester.pumpWidget(MaterialApp(
-      locale: const Locale('en'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: StartupPage(navigateTo: '/test', initFunction: mockInitFunction),
-      onGenerateRoute: generateRoutes,
-    ));
+    await tester.pumpWidget(ProviderScope(
+        overrides: [sharedPrefsProvider.overrideWith((ref) => prefs)],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: StartupPage(initFunction: mockInitFunction),
+          onGenerateRoute: generateRoutes,
+        )));
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Loading'), findsOneWidget);
     completer.completeError("Failed");
@@ -82,5 +84,24 @@ void main() {
     expect(find.text('Loading'), findsNothing);
     expect(find.textContaining('Failed'), findsOneWidget);
     expect(route, isNull);
+  });
+
+  testWidgets('Test loading data from SharedPreferences',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues(
+        {'appLanguage': 'de', 'recentPage': 'Healing', 'recentLang': 'de'});
+    final prefs = await SharedPreferences.getInstance();
+    route = null;
+    await tester.pumpWidget(ProviderScope(
+        overrides: [
+          languageProvider
+              .overrideWith(() => TestLanguageController(initReturns: true)),
+          sharedPrefsProvider.overrideWithValue(prefs)
+        ],
+        child: MaterialApp(
+            home: const StartupPage(), onGenerateRoute: generateRoutes)));
+
+    await tester.pump();
+    expect(route, equals('/view/Healing/de'));
   });
 }

@@ -31,7 +31,7 @@ class App4Training extends ConsumerWidget {
       theme: lightTheme,
       themeMode: ThemeMode.system,
       initialRoute: '/',
-      onGenerateRoute: (settings) => generateRoutes(settings, ref),
+      onGenerateRoute: (settings) => generateRoutes(settings),
       locale: appLanguage.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

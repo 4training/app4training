@@ -5,33 +5,16 @@ import 'package:app4training/routes/onboarding/download_languages_page.dart';
 import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
 import 'package:app4training/routes/onboarding/welcome_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app4training/data/globals.dart';
 import 'package:app4training/routes/settings_page.dart';
 import 'package:app4training/routes/startup_page.dart';
 import 'package:app4training/routes/view_page.dart';
 
-Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
+Route<Object?> generateRoutes(RouteSettings settings) {
   debugPrint('Handling route "${settings.name}"');
   if ((settings.name == null) || (settings.name == '/')) {
-    if (ref.read(sharedPrefsProvider).getString('appLanguage') == null) {
-      // First app usage: Let's start onboarding
-      return MaterialPageRoute<void>(
-        settings: settings, // Necessary for the NavigatorObserver while testing
-        builder: (_) => const WelcomePage(),
-      );
-    }
-    String page = ref.read(sharedPrefsProvider).getString('recentPage') ?? '';
-    String lang = ref.read(sharedPrefsProvider).getString('recentLang') ?? '';
-    String navigateTo = '/home';
-    if ((page != '') &&
-        (lang != '') &&
-        ref.read(availableLanguagesProvider).contains(lang)) {
-      navigateTo = '/view/$page/$lang';
-    }
     return MaterialPageRoute<void>(
       settings: settings, // Necessary for the NavigatorObserver while testing
-      builder: (_) => StartupPage(navigateTo: navigateTo),
+      builder: (_) => const StartupPage(),
     );
   } else if (settings.name == '/home') {
     return MaterialPageRoute<void>(
@@ -46,10 +29,6 @@ Route<Object?> generateRoutes(RouteSettings settings, WidgetRef ref) {
     }
     String page = parts[2];
     String langCode = parts[3];
-    // Save the selected page to the SharedPreferences to continue here
-    // in case the user closes the app
-    ref.read(sharedPrefsProvider).setString('recentPage', page);
-    ref.read(sharedPrefsProvider).setString('recentLang', langCode);
     return MaterialPageRoute<void>(
         settings: settings, builder: (_) => ViewPage(page, langCode));
   } else if (settings.name == '/settings') {

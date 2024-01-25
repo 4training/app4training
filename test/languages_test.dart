@@ -83,13 +83,16 @@ class TestLanguageController extends LanguageController {
   final List<String>? _downloadedLanguages;
   final int _languageSize; // size in KB
   final Map<String, Page> _pages; // map of pages that are available
+  final bool _initReturns;
   TestLanguageController(
       {List<String>? downloadedLanguages,
       int languageSize = 0,
-      Map<String, Page> pages = const {}})
+      Map<String, Page> pages = const {},
+      initReturns = false})
       : _downloadedLanguages = downloadedLanguages,
         _languageSize = languageSize,
-        _pages = pages;
+        _pages = pages,
+        _initReturns = initReturns;
 
   @override
   Language build(String arg) {
@@ -113,6 +116,11 @@ class TestLanguageController extends LanguageController {
   Future<void> deleteResources() async {
     state =
         Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
+  }
+
+  @override
+  Future<bool> init() async {
+    return _initReturns;
   }
 }
 
