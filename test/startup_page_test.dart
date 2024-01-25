@@ -27,7 +27,8 @@ void main() {
   }
 
   testWidgets('Test normal behaviour', (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+    SharedPreferences.setMockInitialValues(
+        {'appLanguage': 'de', 'checkFrequency': 'weekly'});
     final prefs = await SharedPreferences.getInstance();
     expect(route, isNull);
     await tester.pumpWidget(ProviderScope(
@@ -37,9 +38,7 @@ void main() {
           sharedPrefsProvider.overrideWith((ref) => prefs)
         ],
         child: MaterialApp(
-          home: const StartupPage(),
-          onGenerateRoute: generateRoutes,
-        )));
+            home: const StartupPage(), onGenerateRoute: generateRoutes)));
     // First there should be the loading animation
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Loading'), findsOneWidget);
@@ -61,6 +60,23 @@ void main() {
         child: MaterialApp(
             home: const StartupPage(), onGenerateRoute: generateRoutes)));
     expect(route, equals('/onboarding/2'));
+  });
+
+  testWidgets('Test continuing to third onboarding step',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+    final prefs = await SharedPreferences.getInstance();
+    route = null;
+    await tester.pumpWidget(ProviderScope(
+        overrides: [
+          languageProvider
+              .overrideWith(() => TestLanguageController(initReturns: true)),
+          sharedPrefsProvider.overrideWith((ref) => prefs)
+        ],
+        child: MaterialApp(
+            home: const StartupPage(), onGenerateRoute: generateRoutes)));
+    await tester.pump();
+    expect(route, equals('/onboarding/3'));
   });
 
   testWidgets('Test failing initFunction', (WidgetTester tester) async {
@@ -86,10 +102,14 @@ void main() {
     expect(route, isNull);
   });
 
-  testWidgets('Test loading data from SharedPreferences',
+  testWidgets('Test loading recent page from SharedPreferences',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues(
-        {'appLanguage': 'de', 'recentPage': 'Healing', 'recentLang': 'de'});
+    SharedPreferences.setMockInitialValues({
+      'appLanguage': 'en',
+      'checkFrequency': 'weekly',
+      'recentPage': 'Healing',
+      'recentLang': 'de'
+    });
     final prefs = await SharedPreferences.getInstance();
     route = null;
     await tester.pumpWidget(ProviderScope(
@@ -103,5 +123,20 @@ void main() {
 
     await tester.pump();
     expect(route, equals('/view/Healing/de'));
+
+    // This time German isn't loaded so recent page should get ignored
+    route = null;
+    final ref = ProviderContainer(overrides: [
+      languageProvider.overrideWith(() => TestLanguageController(
+          downloadedLanguages: ['en'], initReturns: true)),
+      sharedPrefsProvider.overrideWithValue(prefs)
+    ]);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: ref,
+        child: MaterialApp(
+            home: const StartupPage(), onGenerateRoute: generateRoutes)));
+
+    await tester.pump();
+    expect(route, equals('/home'));
   });
 }
