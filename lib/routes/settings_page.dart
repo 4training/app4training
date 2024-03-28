@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/updates.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/check_now_button.dart';
-import 'package:app4training/widgets/dropdownbutton_theme.dart';
 import 'package:app4training/widgets/languages_table.dart';
 import 'package:intl/intl.dart';
 import '../widgets/dropdownbutton_app_language.dart';
@@ -123,21 +122,5 @@ class UpdateSettings extends ConsumerWidget {
         ],
       ),*/
     ]);
-  }
-}
-
-/// TODO select light / dark theme
-class DesignSettings extends StatelessWidget {
-  const DesignSettings({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(context.l10n.theme, style: Theme.of(context).textTheme.bodyMedium),
-        const DropDownButtonTheme(),
-      ],
-    );
   }
 }
