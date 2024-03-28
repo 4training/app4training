@@ -42,8 +42,8 @@ dependencies:
     sdk: flutter
   intl: any
   test: ^1.24.1
-  mocktail: ^0.3.0
-  file: ^6.1.4
+  mocktail: ^1.0.3
+  file: ^7.0.0
   shared_preferences: ^2.2.0
   flutter_riverpod: ^2.3.7
   html: ^0.15.4
@@ -52,7 +52,6 @@ dependencies:
   flutter_linkify: ^6.0.0
   package_info_plus: ^5.0.1
   workmanager: ^0.5.2
-  connectivity_plus: ^5.0.2
 
 
 dev_dependencies:
@@ -64,12 +63,10 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.2
   full_coverage: ^1.0.0
-  custom_lint: ^0.5.2
+  custom_lint: ^0.6.2
   riverpod_lint: ^2.0.3
-  integration_test:
-    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -51,7 +51,9 @@ class FakeDownloadAssetsController extends Fake
       {required List<String> assetsUrls,
       List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
       Function(double p1)? onProgress,
+      Function()? onStartUnziping,
       Function()? onCancel,
+      Function()? onDone,
       Map<String, dynamic>? requestQueryParams,
       Map<String, String> requestExtraHeaders = const {}}) async {
     // TODO: implement startDownload
@@ -66,7 +68,9 @@ class ThrowingDownloadAssetsController extends FakeDownloadAssetsController {
       {required List<String> assetsUrls,
       List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
       Function(double p1)? onProgress,
+      Function()? onStartUnziping,
       Function()? onCancel,
+      Function()? onDone,
       Map<String, dynamic>? requestQueryParams,
       Map<String, String> requestExtraHeaders = const {}}) async {
     startDownloadCalled = true;
