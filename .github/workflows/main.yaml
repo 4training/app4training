@@ -7,7 +7,7 @@ jobs:
   flutter-tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: subosito/flutter-action@v2
       with:
         channel: 'stable'
@@ -36,3 +36,27 @@ jobs:
       with:
         files: coverage/lcov.info
         verbose: true
+
+
+  integration_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+
+    - name: Install packages
+      run: flutter pub get
+
+    - name: Enable KVM
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    - name: run integration test
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 29
+        script: flutter test integration_test

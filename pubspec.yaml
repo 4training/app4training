@@ -67,6 +67,8 @@ dev_dependencies:
   full_coverage: ^1.0.0
   custom_lint: ^0.6.2
   riverpod_lint: ^2.0.3
+  integration_test:
+    sdk: flutter
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

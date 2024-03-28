@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
@@ -30,6 +31,9 @@ void backgroundTask() {
   Workmanager().executeTask((task, inputData) async {
     try {
       await backgroundMain();
+      // For the integration test: Send a message to indicate we're finished
+      final sendPort = IsolateNameServer.lookupPortByName('test');
+      if (sendPort != null) sendPort.send('success');
     } catch (e) {
       await writeLog('Unexpected error while trying to run backgroundMain: $e');
     }
