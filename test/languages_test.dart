@@ -124,6 +124,24 @@ class TestLanguageController extends LanguageController {
   }
 }
 
+/// Create a test file system which simulates that the specified languages
+/// are downloaded. This is simulated in a very basic way:
+/// Only structure/contents.json is existing (with dummy contents)
+/// But that's enough for Languages.lazyInit()
+Future<MemoryFileSystem> createTestFileSystem(
+    List<String> downloadedLangs) async {
+  var fileSystem = MemoryFileSystem();
+  for (final lang in downloadedLangs) {
+    await fileSystem
+        .directory('assets-$lang/html-$lang-main/structure')
+        .create(recursive: true);
+    String jsonPath = 'assets-$lang/html-$lang-main/structure/contents.json';
+    var contentsJson = fileSystem.file(jsonPath);
+    await contentsJson.writeAsString('{}');
+  }
+  return fileSystem;
+}
+
 void main() {
   late DownloadAssetsController mock;
 
@@ -139,6 +157,18 @@ void main() {
     expect(frTest.state.downloaded, false);
     // init() shouldn't start a download
     expect(fakeController.startDownloadCalled, false);
+  });
+
+  test('Test lazyInit() when no files are there', () async {
+    var fakeController = FakeDownloadAssetsController();
+    final ref = ProviderContainer(overrides: [
+      languageProvider.overrideWith(
+          () => LanguageController(assetsController: fakeController)),
+      fileSystemProvider.overrideWith((ref) => MemoryFileSystem())
+    ]);
+    final frTest = ref.read(languageProvider('fr').notifier);
+    expect(await frTest.lazyInit(), false);
+    expect(frTest.state.downloaded, false);
   });
 
   test('Test that download() starts the download', () async {
@@ -244,7 +274,26 @@ void main() {
         final deTest = ref.read(languageProvider('de').notifier);
         expect(await deTest.init(), true);
         expect(deTest.state.downloaded, true);
+        expect(deTest.state.downloadTimestamp.compareTo(DateTime(2023)),
+            greaterThan(0));
       });
+    });
+
+    test('Test lazyInit() when language is available', () async {
+      // We construct a file system in memory with structure/contents.json
+      final fileSystem = await createTestFileSystem(['de']);
+      final ref = ProviderContainer(overrides: [
+        languageProvider
+            .overrideWith(() => LanguageController(assetsController: mock)),
+        fileSystemProvider.overrideWith((ref) => fileSystem)
+      ]);
+
+      expect(await ref.read(languageProvider('de').notifier).lazyInit(), true);
+      final deStatus = ref.read(languageProvider('de'));
+      expect(deStatus.downloaded, true);
+      expect(deStatus.path, equals('assets-de/html-de-main'));
+      expect(
+          deStatus.downloadTimestamp.compareTo(DateTime(2023)), greaterThan(0));
     });
 
     test('Test everything with real content from test/assets-de/', () async {

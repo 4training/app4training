@@ -117,7 +117,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
   Future<void> _initController() async {
     if (!_isInitialized) {
       assert(languageCode != '');
-      await _controller.init(assetDir: 'assets-$languageCode');
+      await _controller.init(assetDir: Globals.getAssetsDir(languageCode));
       _isInitialized = true;
     }
   }
@@ -149,6 +149,29 @@ class LanguageController extends FamilyNotifier<Language, String> {
     return await _load();
   }
 
+  /// Checks whether the language is downloaded to device but doesn't
+  /// load any details into memory.
+  /// Returns true when the language is now available, false if not
+  Future<bool> lazyInit() async {
+    await _initController();
+    String path =
+        '${_controller.assetsDir}/${Globals.getResourcesDir(languageCode)}';
+    final stat = await ref
+        .watch(fileSystemProvider)
+        .stat(join(path, 'structure', 'contents.json'));
+    bool downloaded = (stat.type != FileSystemEntityType.notFound);
+    debugPrint(
+        "QuickInit trying to load '$languageCode', downloaded: $downloaded");
+    if (downloaded) {
+      DateTime timestamp = stat.modified.toUtc(); // Always store UTC internally
+
+      state = Language(
+          languageCode, const {}, const [], const {}, path, 0, timestamp);
+      return true;
+    }
+    return false;
+  }
+
   /// Load our Language structure from the file system resources.
   /// Returns whether everything went well and the language is available now.
   /// This method shouldn't throw
@@ -159,7 +182,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
     try {
       // Now we store the full path to the language
       String path =
-          '${_controller.assetsDir!}/${Globals.getLocalPath(languageCode)}';
+          '${_controller.assetsDir}/${Globals.getResourcesDir(languageCode)}';
       debugPrint("Path: $path");
       Directory dir = fileSystem.directory(path);
 
@@ -172,7 +195,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
 
       // Get the timestamp: When were our contents stored on the device?
       FileStat stat =
-          await FileStat.stat(join(path, 'structure', 'contents.json'));
+          await fileSystem.stat(join(path, 'structure', 'contents.json'));
       DateTime timestamp = stat.modified.toUtc(); // Always store UTC internally
 
       // Read structure/contents.json as our source of truth:

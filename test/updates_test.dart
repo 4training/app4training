@@ -55,12 +55,48 @@ class TestLanguageStatus extends LanguageStatusNotifier {
   }
 }
 
+// Fake HTTP response: no updates available
+Response fakeResponseNoUpdates() {
+  return Response(json.encode([]), 200);
+}
+
+// Fake HTTP response: two updates available
+// The real response is more complex but as we don't care about
+// all the properties that's enough to simulate two new commits
+Response fakeResponseTwoUpdates() {
+  return Response(json.encode([0, 1]), 200);
+}
+
+// Fake HTTP response: [count] updates available
+// Again, the real response is more complex but for us this is enough
+Response fakeResponseNUpdates(int count) {
+  List<int> response = [];
+  for (int i = 0; i < count; i++) {
+    response.add(i);
+  }
+  return Response(json.encode(response), 200);
+}
+
 /// Mock checking for updates: returns that we have two updates available
-Client mockReturnTwoUpdates(ProviderRef<Client> ref) {
+Client mockReturnTwoUpdates() {
   return MockClient((request) async {
-    // The real response is more complex but as we don't care about
-    // all the properties that's enough to simulate two new commits
-    return Response(json.encode([0, 1]), 200);
+    return fakeResponseTwoUpdates();
+  });
+}
+
+/// Mock checking for updates: allow different responses for different languages
+/// e.g. with parameter {'de': 0, 'en': 2, 'fr': 1}
+/// languages not found in the map will default to 0 updates
+Client mockCheckResponse(Map<String, int> languageUpdateMap) {
+  return MockClient((request) async {
+    // Get our language code from the URL that looks something like this:
+    // https://api.github.com/repos/4training/html-de/commits?since=...
+    final String languageCode = request.url.pathSegments
+        .firstWhere((element) => element.startsWith('html-'),
+            orElse: () => 'html-xyz')
+        .substring(5);
+    int countUpdates = languageUpdateMap[languageCode] ?? 0;
+    return fakeResponseNUpdates(countUpdates);
   });
 }
 
@@ -265,7 +301,7 @@ void main() {
     });
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
-      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates(ref)),
+      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
       languageProvider.overrideWith(
           () => TestLanguageController(downloadedLanguages: ['de', 'en'])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
@@ -303,11 +339,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
-      httpClientProvider.overrideWith((ref) => MockClient((request) async {
-            // The real response is more complex but as we don't care about
-            // all the properties that's enough to simulate two new commits
-            return Response(json.encode([0, 1]), 200);
-          })),
+      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
       languageProvider.overrideWith(
           () => TestLanguageController(downloadedLanguages: ['de', 'en'])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
@@ -401,13 +433,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
-      httpClientProvider.overrideWith((ref) => MockClient((request) async {
-            expect(request.url.toString(),
-                equals(Globals.getCommitsSince('de', DateTime.utc(2023))));
-            // The real response is more complex but as we don't care about
-            // all the properties that's enough to simulate two new commits
-            return Response(json.encode([0, 1]), 200);
-          })),
+      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
       languageProvider.overrideWith(() => TestLanguageController()),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);

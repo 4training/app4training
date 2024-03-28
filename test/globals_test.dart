@@ -7,7 +7,8 @@ void main() {
         Globals.getRemoteUrl('de'),
         equals(
             'https://github.com/4training/html-de/archive/refs/heads/main.zip'));
-    expect(Globals.getLocalPath('de'), equals('html-de-main'));
+    expect(Globals.getAssetsDir('de'), equals('assets-de'));
+    expect(Globals.getResourcesDir('de'), equals('html-de-main'));
     expect(
         Globals.getCommitsSince('de', DateTime.utc(2023)),
         equals(

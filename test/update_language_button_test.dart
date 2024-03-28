@@ -51,7 +51,7 @@ void main() {
       languageProvider.overrideWith(() => TestLanguageController()),
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       sharedPrefsProvider.overrideWith((ref) => prefs),
-      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates(ref))
+      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -89,7 +89,7 @@ void main() {
       languageProvider.overrideWith(
           () => LanguageController(assetsController: throwingController)),
       sharedPrefsProvider.overrideWith((ref) => prefs),
-      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates(ref))
+      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -117,7 +117,7 @@ void main() {
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
       sharedPrefsProvider.overrideWith((ref) => prefs),
-      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates(ref))
+      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
     ]);
 
     expect(ref.read(updatesAvailableProvider), false);
@@ -160,7 +160,7 @@ void main() {
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController()),
       sharedPrefsProvider.overrideWith((ref) => prefs),
-      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates(ref))
+      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
     ]);
     expect(ref.read(languageProvider('de')).downloadTimestamp,
         equals(DateTime.utc(2023)));

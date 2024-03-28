@@ -152,12 +152,16 @@ class Globals {
     return 'https://github.com/$githubUser/$htmlPath-$languageCode$remoteZipUrl';
   }
 
-  /// File system path (relative to assets directory)
-  /// of the resources in a language
-  /// Must be the main folder name that is inside the zip file we download,
-  /// e.g. 'html-en-main'
-  static String getLocalPath(String languageCode) {
+  /// Folder name of the resources of a language. Example: html-en-main
+  ///
+  /// Must be the main folder name that is inside the zip file we download.
+  static String getResourcesDir(String languageCode) {
     return '$htmlPath-$languageCode-$branch';
+  }
+
+  /// Folder name of the assets dir of a language
+  static String getAssetsDir(String languageCode) {
+    return 'assets-$languageCode';
   }
 
   /// URL of Github API to query whether there are new commits since [timestamp]
