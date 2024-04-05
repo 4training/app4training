@@ -30,7 +30,7 @@ void main() {
   test('Test background check: de has updates available', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    var fileSystem = await createTestFileSystem(['de', 'en']);
+    var fileSystem = await createBasicFileSystem(['de', 'en']);
     var fakeController = FakeDownloadAssetsController();
 
     final ref = ProviderContainer(overrides: [
@@ -51,4 +51,11 @@ void main() {
     expect(ref.read(languageStatusProvider('fr')).updatesAvailable, false);
     expect(ref.read(updatesAvailableProvider), true);
   });
+
+  test("Make sure backgroundTestMain() doesn't throw", () async {
+    await backgroundTestMain();
+  });
+
+  // The rest of the background task gets tested in the integration test
+  // (unfortunately that is not counted for test coverage currently...)
 }

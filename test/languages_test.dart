@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:app4training/background_test.dart';
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:dio/dio.dart';
@@ -7,7 +8,6 @@ import 'package:download_assets/download_assets.dart';
 import 'package:file/chroot.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
-import 'package:flutter/material.dart' hide Page;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/languages.dart';
@@ -132,7 +132,7 @@ class TestLanguageController extends LanguageController {
 /// are downloaded. This is simulated in a very basic way:
 /// Only structure/contents.json is existing (with dummy contents)
 /// But that's enough for Languages.lazyInit()
-Future<MemoryFileSystem> createTestFileSystem(
+Future<MemoryFileSystem> createBasicFileSystem(
     List<String> downloadedLangs) async {
   var fileSystem = MemoryFileSystem();
   for (final lang in downloadedLangs) {
@@ -147,8 +147,6 @@ Future<MemoryFileSystem> createTestFileSystem(
 }
 
 void main() {
-  late DownloadAssetsController mock;
-
   test('Test init() when no files are there', () async {
     var fakeController = FakeDownloadAssetsController();
     final ref = ProviderContainer(overrides: [
@@ -208,25 +206,11 @@ void main() {
   });
 
   group('Test correct behavior after downloading', () {
-    // We assume files are already downloaded, so just mock this
-    setUp(() {
-      mock = MockDownloadAssetsController();
-      when(() => mock.init(assetDir: 'assets-de')).thenAnswer((_) async {
-        debugPrint('Successfully called mock.init()');
-        return;
-      });
-      when(mock.clearAssets).thenAnswer((_) async {
-        return;
-      });
-      when(() => mock.assetsDir).thenReturn('assets-de');
-      when(() => mock.assetsDirAlreadyExists()).thenAnswer((_) async => true);
-    });
-
     group('Test error handling of incorrect files / structure', () {
       test('Test error handling when no files can be found at all', () async {
         final ref = ProviderContainer(overrides: [
-          languageProvider
-              .overrideWith(() => LanguageController(assetsController: mock)),
+          languageProvider.overrideWith(() => LanguageController(
+              assetsController: createMockDownloadAssetsController())),
           fileSystemProvider.overrideWith((ref) => MemoryFileSystem())
         ]);
         final deTest = ref.read(languageProvider('de').notifier);
@@ -245,8 +229,8 @@ void main() {
         await contentsJson.writeAsString('invalid');
 
         final ref = ProviderContainer(overrides: [
-          languageProvider
-              .overrideWith(() => LanguageController(assetsController: mock)),
+          languageProvider.overrideWith(() => LanguageController(
+              assetsController: createMockDownloadAssetsController())),
           fileSystemProvider.overrideWith((ref) => fileSystem)
         ]);
         final deTest = ref.read(languageProvider('de').notifier);
@@ -269,8 +253,8 @@ void main() {
             .writeAsString(await readFileSystem.file(jsonPath).readAsString());
 
         final ref = ProviderContainer(overrides: [
-          languageProvider
-              .overrideWith(() => LanguageController(assetsController: mock)),
+          languageProvider.overrideWith(() => LanguageController(
+              assetsController: createMockDownloadAssetsController())),
           fileSystemProvider.overrideWith((ref) => fileSystem)
         ]);
 
@@ -285,10 +269,10 @@ void main() {
 
     test('Test lazyInit() when language is available', () async {
       // We construct a file system in memory with structure/contents.json
-      final fileSystem = await createTestFileSystem(['de']);
+      final fileSystem = await createBasicFileSystem(['de']);
       final ref = ProviderContainer(overrides: [
-        languageProvider
-            .overrideWith(() => LanguageController(assetsController: mock)),
+        languageProvider.overrideWith(() => LanguageController(
+            assetsController: createMockDownloadAssetsController())),
         fileSystemProvider.overrideWith((ref) => fileSystem)
       ]);
 
@@ -302,8 +286,8 @@ void main() {
 
     test('Test everything with real content from test/assets-de/', () async {
       final ref = ProviderContainer(overrides: [
-        languageProvider
-            .overrideWith(() => LanguageController(assetsController: mock)),
+        languageProvider.overrideWith(() => LanguageController(
+            assetsController: createMockDownloadAssetsController())),
         fileSystemProvider.overrideWith((ref) => ChrootFileSystem(
             const LocalFileSystem(), path.canonicalize('test/')))
       ]);

@@ -53,10 +53,13 @@ void main() {
 
   testWidgets('Test LanguageNotDownloadedException handling',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       pageContentProvider.overrideWith(
           (ref, arg) async => throw LanguageNotDownloadedException('de')),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestViewPage()));
     await tester.pump();
 
@@ -72,10 +75,13 @@ void main() {
 
   testWidgets('Test PageNotFoundException handling',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       pageContentProvider.overrideWith(
-          (ref, page) async => throw PageNotFoundException('Healing', 'de'))
+          (ref, page) async => throw PageNotFoundException('Healing', 'de')),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestViewPage()));
     await tester.pump();
 
@@ -92,10 +98,13 @@ void main() {
 
   testWidgets('Test LanguageCorruptedException handling',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
       pageContentProvider.overrideWith((ref, page) async =>
-          throw LanguageCorruptedException('de', 'BadLuck'))
+          throw LanguageCorruptedException('de', 'BadLuck')),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestViewPage()));
     await tester.pump();
 
@@ -110,9 +119,12 @@ void main() {
 
   testWidgets('Test unexpected exception handling',
       (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      pageContentProvider.overrideWith((ref, arg) async => throw TestFailure)
+      pageContentProvider.overrideWith((ref, arg) async => throw TestFailure),
+      sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestViewPage()));
     await tester.pump();
 

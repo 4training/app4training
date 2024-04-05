@@ -35,7 +35,6 @@ class TestObserver extends NavigatorObserver {
   }
 }
 
-// Put this in a class so that we easily have the WidgetRef for generateRoutes()
 class TestApp extends StatelessWidget {
   final TestObserver observer;
   const TestApp(this.observer, {super.key});

@@ -1,5 +1,6 @@
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/updates.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/error_message.dart';
 import 'package:app4training/widgets/html_view.dart';
@@ -17,47 +18,101 @@ class ViewPage extends ConsumerWidget {
   final String langCode;
   const ViewPage(this.page, this.langCode, {super.key});
 
+  Future<String> checkForBackgroundActivity(WidgetRef ref) async {
+    debugPrint("Checking for background activity");
+    await ref.read(sharedPrefsProvider).reload();
+    for (String languageCode in ref.read(availableLanguagesProvider)) {
+      // We don't check languages that are not downloaded
+      if (!ref.read(languageProvider(languageCode)).downloaded) continue;
+
+      DateTime lcTimestampOrig =
+          ref.read(languageStatusProvider(languageCode)).lastCheckedTimestamp;
+      DateTime? lcTimestamp;
+      String? lcRaw =
+          ref.read(sharedPrefsProvider).getString('lastChecked-$languageCode');
+      if (lcRaw != null) {
+        try {
+          lcTimestamp = DateTime.parse(lcRaw).toUtc();
+        } on FormatException {
+          debugPrint(
+              'Error while trying to parse lastChecked timestamp: $lcRaw');
+          lcTimestamp = null;
+        }
+      }
+      if ((lcTimestamp != null) &&
+          (lcTimestamp.compareTo(DateTime.now()) <= 0) &&
+          lcTimestamp.compareTo(lcTimestampOrig) > 0) {
+        // It looks like there has been background activity!
+        debugPrint(
+            'Background activity detected: lastChecked was $lcTimestampOrig, sharedPrefs says $lcTimestamp');
+      } else {
+        debugPrint(
+            'No background activity. lastChecked: $lcTimestampOrig, sharedPrefs says $lcRaw');
+      }
+    }
+    debugPrint('Checking for background activity done');
+    return "Test";
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<String> pageContent =
-        ref.watch(pageContentProvider((name: page, langCode: langCode)));
     return Scaffold(
         appBar: AppBar(
           title: const Text(Globals.appTitle),
           actions: const [LanguagesButton()],
         ),
         drawer: MainDrawer(page, langCode),
-        body: pageContent.when(
-            loading: () => loadingAnimation("Loading content..."),
-            data: (content) {
-              // Save the selected page to the SharedPreferences to continue here
-              // in case the user closes the app
-              ref.read(sharedPrefsProvider).setString('recentPage', page);
-              ref.read(sharedPrefsProvider).setString('recentLang', langCode);
-              return HtmlView(
-                  content,
-                  (Globals.rtlLanguages.contains(langCode))
-                      ? TextDirection.rtl
-                      : TextDirection.ltr);
-            },
-            error: (e, st) {
-              if (e is App4TrainingException) {
-                if ((e is PageNotFoundException) ||
-                    (e is LanguageNotDownloadedException)) {
-                  return ErrorMessage(
-                      context.l10n.warning,
-                      '${context.l10n.cantDisplayPage(page, context.l10n.getLanguageName(langCode))}\n'
-                      '${context.l10n.reason} ${e.toLocalizedString(context)}',
-                      icon: Icons.warning_amber,
-                      iconColor: Colors.black);
-                } else if (e is LanguageCorruptedException) {
-                  return ErrorMessage(
-                      context.l10n.error, e.toLocalizedString(context));
-                }
+        body: FutureBuilder(
+            future: Future.wait([
+              ref.watch(
+                  pageContentProvider((name: page, langCode: langCode)).future),
+              checkForBackgroundActivity(ref)
+            ]),
+            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              debugPrint(snapshot.connectionState.toString());
+
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                case ConnectionState.active:
+                  return loadingAnimation("Loading content...");
+                case ConnectionState.done:
+                  debugPrint(
+                      'Done, hasData: ${snapshot.hasData}, Error: ${snapshot.hasError}');
+                  if (snapshot.hasError) {
+                    final e = snapshot.error;
+                    if (e is App4TrainingException) {
+                      if ((e is PageNotFoundException) ||
+                          (e is LanguageNotDownloadedException)) {
+                        return ErrorMessage(
+                            context.l10n.warning,
+                            '${context.l10n.cantDisplayPage(page, context.l10n.getLanguageName(langCode))}\n'
+                            '${context.l10n.reason} ${e.toLocalizedString(context)}',
+                            icon: Icons.warning_amber,
+                            iconColor: Colors.black);
+                      } else if (e is LanguageCorruptedException) {
+                        return ErrorMessage(
+                            context.l10n.error, e.toLocalizedString(context));
+                      }
+                    }
+                    // What happened?!
+                    return ErrorMessage(context.l10n.error,
+                        context.l10n.internalError(e.toString()));
+                  } else {
+                    String content = snapshot.data[0];
+                    // Save the selected page to the SharedPreferences to continue here
+                    // in case the user closes the app
+                    ref.read(sharedPrefsProvider).setString('recentPage', page);
+                    ref
+                        .read(sharedPrefsProvider)
+                        .setString('recentLang', langCode);
+                    return HtmlView(
+                        content,
+                        (Globals.rtlLanguages.contains(langCode))
+                            ? TextDirection.rtl
+                            : TextDirection.ltr);
+                  }
               }
-              // What happened?!
-              return ErrorMessage(
-                  context.l10n.error, context.l10n.internalError(e.toString()));
             }));
   }
 }

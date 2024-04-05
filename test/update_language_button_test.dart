@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_language_test.dart';
 import 'languages_test.dart';
-import 'updates_test.dart' hide TestLanguageStatus;
+import 'updates_test.dart';
 
 class TestUpdateLanguageButton extends ConsumerWidget {
   final String languageCode;

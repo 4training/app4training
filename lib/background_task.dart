@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:app4training/background_test.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/data/updates.dart';
@@ -30,27 +31,48 @@ Future<void> writeLog(String message) async {
 void backgroundTask() {
   Workmanager().executeTask((task, inputData) async {
     try {
-      await backgroundMain();
-      // For the integration test: Send a message to indicate we're finished
-      final sendPort = IsolateNameServer.lookupPortByName('test');
-      if (sendPort != null) sendPort.send('success');
+      if (task == 'testTask') {
+        // We're in the integration test
+        await backgroundTestMain();
+        // Send a message to indicate we're finished
+        final sendPort = IsolateNameServer.lookupPortByName('test');
+        if (sendPort != null) sendPort.send('success');
+      } else {
+        await backgroundMain();
+      }
     } catch (e) {
-      await writeLog('Unexpected error while trying to run backgroundMain: $e');
+      await writeLog('Unexpected error in background task: $e');
     }
     return Future.value(true);
   });
 }
 
 Future<void> backgroundMain() async {
+  await writeLog("Background task is starting...");
   final prefs = await SharedPreferences.getInstance();
 
-  await writeLog("Background task is starting...");
   final ref = ProviderContainer(
       overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
   await backgroundCheck(ref);
 
   // TODO: check automatic updates setting; if necessary check connectivity
   // TODO: if all is fine: download languages with updates
+}
+
+/// For the integration test: Simulates that we have
+/// German downloaded
+Future<void> backgroundTestMain() async {
+  await writeLog("Background task is starting in test mode...");
+  final prefs = await SharedPreferences.getInstance();
+  var fileSystem = await createTestFileSystem();
+
+  final ref = ProviderContainer(overrides: [
+    sharedPrefsProvider.overrideWithValue(prefs),
+    fileSystemProvider.overrideWith((ref) => fileSystem),
+    languageProvider.overrideWith(() => LanguageController(
+        assetsController: createMockDownloadAssetsController()))
+  ]);
+  await backgroundCheck(ref);
 }
 
 /// Check for updates for all downloaded languages
