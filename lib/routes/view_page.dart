@@ -1,6 +1,6 @@
+import 'package:app4training/background/background_result.dart';
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
-import 'package:app4training/data/updates.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/error_message.dart';
 import 'package:app4training/widgets/html_view.dart';
@@ -18,40 +18,22 @@ class ViewPage extends ConsumerWidget {
   final String langCode;
   const ViewPage(this.page, this.langCode, {super.key});
 
-  Future<String> checkForBackgroundActivity(WidgetRef ref) async {
-    debugPrint("Checking for background activity");
-    await ref.read(sharedPrefsProvider).reload();
-    for (String languageCode in ref.read(availableLanguagesProvider)) {
-      // We don't check languages that are not downloaded
-      if (!ref.read(languageProvider(languageCode)).downloaded) continue;
-
-      DateTime lcTimestampOrig =
-          ref.read(languageStatusProvider(languageCode)).lastCheckedTimestamp;
-      DateTime? lcTimestamp;
-      String? lcRaw =
-          ref.read(sharedPrefsProvider).getString('lastChecked-$languageCode');
-      if (lcRaw != null) {
-        try {
-          lcTimestamp = DateTime.parse(lcRaw).toUtc();
-        } on FormatException {
-          debugPrint(
-              'Error while trying to parse lastChecked timestamp: $lcRaw');
-          lcTimestamp = null;
-        }
-      }
-      if ((lcTimestamp != null) &&
-          (lcTimestamp.compareTo(DateTime.now()) <= 0) &&
-          lcTimestamp.compareTo(lcTimestampOrig) > 0) {
-        // It looks like there has been background activity!
-        debugPrint(
-            'Background activity detected: lastChecked was $lcTimestampOrig, sharedPrefs says $lcTimestamp');
-      } else {
-        debugPrint(
-            'No background activity. lastChecked: $lcTimestampOrig, sharedPrefs says $lcRaw');
-      }
+  /// First check whether the background process did something since
+  /// the last time we checked.
+  /// Then load the pageContent
+  Future<String> checkAndLoad(BuildContext context, WidgetRef ref) async {
+    // Get l10n now as we can't access context after async gap later
+    AppLocalizations l10n = context.l10n;
+    final foundActivity =
+        await ref.read(backgroundResultProvider.notifier).checkForActivity();
+    debugPrint("backgroundActivity: $foundActivity");
+    if (foundActivity) {
+      ref
+          .watch(scaffoldMessengerProvider)
+          .showSnackBar(SnackBar(content: Text(l10n.foundBgActivity)));
     }
-    debugPrint('Checking for background activity done');
-    return "Test";
+    return ref
+        .watch(pageContentProvider((name: page, langCode: langCode)).future);
   }
 
   @override
@@ -63,11 +45,7 @@ class ViewPage extends ConsumerWidget {
         ),
         drawer: MainDrawer(page, langCode),
         body: FutureBuilder(
-            future: Future.wait([
-              ref.watch(
-                  pageContentProvider((name: page, langCode: langCode)).future),
-              checkForBackgroundActivity(ref)
-            ]),
+            future: checkAndLoad(context, ref),
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
               debugPrint(snapshot.connectionState.toString());
 
@@ -99,7 +77,7 @@ class ViewPage extends ConsumerWidget {
                     return ErrorMessage(context.l10n.error,
                         context.l10n.internalError(e.toString()));
                   } else {
-                    String content = snapshot.data[0];
+                    String content = snapshot.data;
                     // Save the selected page to the SharedPreferences to continue here
                     // in case the user closes the app
                     ref.read(sharedPrefsProvider).setString('recentPage', page);

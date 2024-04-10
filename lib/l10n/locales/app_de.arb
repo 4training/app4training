@@ -332,5 +332,6 @@
     "ignore": "Ignorieren",
     "updatesExplanation": "Ab und zu werden manche Materialien aktualisiert: Wir veröffentlichen eine neue Version eines Arbeitsblattes oder fügen eine neue Übersetzung hinzu.\nUnser Ziel ist, dass du dir darüber keine Gedanken machen brauchst, sondern immer die aktuellsten Versionen einsatzbereit dabei hast. Deshalb kann die App im Hintergrund nach Aktualisierungen suchen und sie automatisch herunterladen, wenn du das möchtest.",
     "letsGo": "Los geht's!",
-    "homeExplanation": "Gott baut sein Reich überall auf der Welt. Er möchte, dass wir dabei mitmachen und andere zu Jüngern machen!\nDiese App will dir diese Aufgabe erleichtern: Wir stellen dir gute Trainingsmaterialien zur Verfügung. Und das Beste ist: Du kannst dasselbe Arbeitsblatt in verschiedenen Sprachen anschauen, so dass du immer weißt, was es bedeutet, selbst wenn du eine Sprache nicht verstehst.\n\nAlle Inhalte sind nun offline verfügbar und jederzeit bereit auf deinem Handy:"
+    "homeExplanation": "Gott baut sein Reich überall auf der Welt. Er möchte, dass wir dabei mitmachen und andere zu Jüngern machen!\nDiese App will dir diese Aufgabe erleichtern: Wir stellen dir gute Trainingsmaterialien zur Verfügung. Und das Beste ist: Du kannst dasselbe Arbeitsblatt in verschiedenen Sprachen anschauen, so dass du immer weißt, was es bedeutet, selbst wenn du eine Sprache nicht verstehst.\n\nAlle Inhalte sind nun offline verfügbar und jederzeit bereit auf deinem Handy:",
+    "foundBgActivity": "Im Hintergrund wurde nach Updates gesucht"
 }

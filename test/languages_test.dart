@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:app4training/background_test.dart';
+import 'package:app4training/background/background_test.dart';
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:dio/dio.dart';

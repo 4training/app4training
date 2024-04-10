@@ -332,5 +332,6 @@
     "ignore": "Ignore",
    "updatesExplanation": "From time to time the resources get updated: We release a new version of a worksheet or add a new translation.\nWe want you to not worry about that but be always ready to use the latest versions. Therefore the app can check for updates in the background and download them automatically if you want.",
     "letsGo": "Let's go!",
-    "homeExplanation": "God is building His kingdom all around the world. He wants us to join in His work and make disciples!\nThis app wants to serve you and make your job easier: We equip you with good training worksheets. The best thing is: You can access the same worksheet in different languages so that you always know what it means, even if you don't understand the language.\n\nAll this content is now available offline, always ready on your phone:"
+    "homeExplanation": "God is building His kingdom all around the world. He wants us to join in His work and make disciples!\nThis app wants to serve you and make your job easier: We equip you with good training worksheets. The best thing is: You can access the same worksheet in different languages so that you always know what it means, even if you don't understand the language.\n\nAll this content is now available offline, always ready on your phone:",
+    "foundBgActivity": "Searched for updates in the background"
 }

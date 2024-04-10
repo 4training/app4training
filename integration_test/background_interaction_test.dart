@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
 
-import 'package:app4training/background_task.dart';
-import 'package:app4training/background_test.dart';
+import 'package:app4training/background/background_task.dart';
+import 'package:app4training/background/background_test.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/main.dart';
@@ -15,6 +15,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +77,7 @@ void main() async {
     // The languageStatusProvider haven't been loaded into memory yet -
     // Let's open the settings and close them again to make sure we have them
     // so that we can detect background activity later
+    await tester.ensureVisible(find.text('Einstellungen'));
     await tester.tap(find.text('Einstellungen'));
     await tester.pumpAndSettle();
     Navigator.of(tester.element(find.byType(Scaffold))).pop();
@@ -89,7 +91,7 @@ void main() async {
     final msg = await completer.future.timeout(const Duration(seconds: 10));
     expect(msg, equals('success'));
 
-    // Now open a worksheet to trigger ViewPage.checkForBackgroundActivity()
+    // Now open a worksheet to trigger the check for background activity
     await tester.tap(find.text('Grundlagen'));
     await tester.pumpAndSettle();
     expect(find.text('Schritte der Vergebung'), findsOneWidget);
@@ -98,17 +100,8 @@ void main() async {
     await tester.pumpAndSettle();
     expect(find.byType(ViewPage), findsOneWidget);
 
-    /* TODO
-    checkForBackgroundActivity correctly detects activity (see debug prints),
-    but how do we make a test out of this?
-    ViewPage viewPage =
-        find.byType(ViewPage).evaluate().single.widget as ViewPage;
-    // Cast the widget to the appropriate type to access the WidgetRef
-    final ref = ProviderContainer(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
-    expect(viewPage.checkForBackgroundActivity(), true);*/
-
-    await Future.delayed(const Duration(seconds: 10));
+    // Check whether the snack bar is visible
+    expect(find.text(AppLocalizationsDe().foundBgActivity), findsOneWidget);
   });
 }
 

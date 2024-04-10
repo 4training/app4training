@@ -1,4 +1,4 @@
-import 'package:app4training/background_task.dart';
+import 'package:app4training/background/background_task.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/data/updates.dart';

@@ -17,6 +17,11 @@ void main() async {
     sharedPrefsProvider.overrideWithValue(prefs),
     packageInfoProvider.overrideWithValue(packageInfo)
   ], child: const App4Training()));
+
+/*
+  await Workmanager().initialize(backgroundTask, isInDebugMode: false);
+  await Workmanager().registerOneOffTask("task-identifier", "simpleTask",
+      initialDelay: const Duration(seconds: 10));*/
 }
 
 class App4Training extends ConsumerWidget {
