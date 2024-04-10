@@ -65,7 +65,7 @@ void main() {
     expect(await ref.read(backgroundResultProvider.notifier).checkForActivity(),
         false);
 
-    // Now we set the lastChecked timestamp to an invalid value
+    // Trying an invalid value, a date in the future and a too-old date
     await prefs.setString('lastChecked-de', 'invalid');
     expect(await ref.read(backgroundResultProvider.notifier).checkForActivity(),
         false);
@@ -77,7 +77,7 @@ void main() {
 
     await prefs.setString('lastChecked-de', DateTime(2023).toIso8601String());
     expect(await ref.read(backgroundResultProvider.notifier).checkForActivity(),
-        true);
+        false);
 
     expect(ref.read(languageStatusProvider('de')).lastCheckedTimestamp,
         equals(oldTime));
