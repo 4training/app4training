@@ -18,8 +18,10 @@ void main() {
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
 
+    expect(ref.read(backgroundResultProvider).foundActivity, false);
     expect(await ref.read(backgroundResultProvider.notifier).checkForActivity(),
         false);
+    expect(ref.read(backgroundResultProvider).foundActivity, false);
   });
 
   test('There was some background activity', () async {
@@ -33,8 +35,10 @@ void main() {
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
 
+    expect(ref.read(backgroundResultProvider).foundActivity, false);
     expect(await ref.read(backgroundResultProvider.notifier).checkForActivity(),
         false);
+    expect(ref.read(backgroundResultProvider).foundActivity, false);
 
     // Now we change the lastChecked timestamp for German
     final currentTime = DateTime.now().toUtc();
@@ -44,11 +48,19 @@ void main() {
 
     expect(await ref.read(backgroundResultProvider.notifier).checkForActivity(),
         true);
+    expect(ref.read(backgroundResultProvider).foundActivity, true);
+    // languageStatusProvider should now have our new timestamp
+    expect(ref.read(languageStatusProvider('de')).lastCheckedTimestamp,
+        equals(currentTime));
 
-//  TODO: It would probably be good if checkForActivity also updates
-//  the language status providers if necessary
-//    expect(ref.read(languageStatusProvider('de')).lastCheckedTimestamp,
-//        equals(currentTime));
+    // There shouldn't be any changes for another language status provider
+    expect(ref.read(languageStatusProvider('en')).lastCheckedTimestamp,
+        equals(DateTime.utc(2023)));
+
+    // next check shouldn't find any background activity
+    expect(await ref.read(backgroundResultProvider.notifier).checkForActivity(),
+        false);
+    expect(ref.read(backgroundResultProvider).foundActivity, false);
   });
 
   test('Test edge case: invalid values', () async {

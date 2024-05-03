@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:app4training/background/background_scheduler.dart';
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/routes/error_page.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,9 @@ class StartupPage extends ConsumerWidget {
     if (ref.read(sharedPrefsProvider).getString('checkFrequency') == null) {
       return '/onboarding/3';
     }
+
+    // Start the periodic background task
+    unawaited(ref.read(backgroundSchedulerProvider.notifier).schedule());
 
     // Go to recently opened page or to /home
     String navigateTo = '/home';

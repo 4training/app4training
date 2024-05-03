@@ -1,3 +1,4 @@
+import 'package:app4training/background/background_scheduler.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/updates.dart';
 import 'package:app4training/l10n/l10n.dart';
@@ -50,10 +51,11 @@ class SetUpdatePrefsPage extends ConsumerWidget {
                       shape: const StadiumBorder(),
                     ),
                     onPressed: () {
-                      // Make sure settings are saved
-                      // so that this page won't be shown again
+                      // Make sure settings are saved: onboarding completed
                       ref.read(automaticUpdatesProvider.notifier).persistNow();
                       ref.read(checkFrequencyProvider.notifier).persistNow();
+                      // Make sure background task gets scheduled
+                      ref.read(backgroundSchedulerProvider.notifier).schedule();
                       Navigator.pushReplacementNamed(context, '/home');
                     },
                     child: Text(context.l10n.letsGo),

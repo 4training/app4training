@@ -1,8 +1,10 @@
+import 'package:app4training/background/background_task.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/routes/routes.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
 import 'data/app_language.dart';
 import 'data/globals.dart';
 import 'design/theme.dart';
@@ -13,15 +15,13 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final packageInfo = await PackageInfo.fromPlatform();
 
+  // Run initialization for our background task
+  await Workmanager().initialize(backgroundTask, isInDebugMode: false);
+
   runApp(ProviderScope(overrides: [
     sharedPrefsProvider.overrideWithValue(prefs),
     packageInfoProvider.overrideWithValue(packageInfo)
   ], child: const App4Training()));
-
-/*
-  await Workmanager().initialize(backgroundTask, isInDebugMode: false);
-  await Workmanager().registerOneOffTask("task-identifier", "simpleTask",
-      initialDelay: const Duration(seconds: 10));*/
 }
 
 class App4Training extends ConsumerWidget {

@@ -66,12 +66,15 @@ class BackgroundResultNotifier extends Notifier<BackgroundResult> {
           (lcTimestamp.compareTo(DateTime.now()) <= 0) &&
           lcTimestamp.compareTo(lcTimestampOrig) > 0) {
         // It looks like there has been background activity!
-        debugPrint(
-            'Background activity detected: lastChecked was $lcTimestampOrig, sharedPrefs says $lcTimestamp');
+        debugPrint("Background activity detected for language '$languageCode': "
+            'lastChecked was $lcTimestampOrig, sharedPrefs says $lcTimestamp');
         foundBgActivity = true;
+        // invalidate the languageStatusProvider so it re-reads its value
+        // from the shared preferences on next access
+        ref.invalidate(languageStatusProvider(languageCode));
       } else {
-        debugPrint(
-            'No background activity. lastChecked: $lcTimestampOrig, sharedPrefs says $lcRaw');
+        debugPrint("No background activity for language '$languageCode'. "
+            'lastChecked: $lcTimestampOrig, sharedPrefs says $lcRaw');
       }
     }
     debugPrint('Checking for background activity done');

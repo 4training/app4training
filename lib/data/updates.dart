@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:app4training/background/background_scheduler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/globals.dart';
@@ -20,7 +21,8 @@ enum CheckFrequency {
   never,
   daily,
   weekly,
-  monthly;
+  monthly,
+  testinterval;
 
   /// Safe conversion method that handles invalid values as well as null
   /// Default value is CheckFrequency.weekly
@@ -43,6 +45,27 @@ enum CheckFrequency {
         return context.l10n.weekly;
       case CheckFrequency.monthly:
         return context.l10n.monthly;
+      case CheckFrequency.testinterval:
+        return context.l10n.testinterval;
+    }
+  }
+}
+
+extension CheckFrequencyExt on CheckFrequency {
+  /// Return the Duration of the CheckFrequency value.
+  /// Returns null in case of CheckFrequency.never
+  Duration? getDuration() {
+    switch (this) {
+      case CheckFrequency.never:
+        return null;
+      case CheckFrequency.daily:
+        return const Duration(days: 1);
+      case CheckFrequency.weekly:
+        return const Duration(days: 7);
+      case CheckFrequency.monthly:
+        return const Duration(days: 30);
+      case CheckFrequency.testinterval:
+        return const Duration(minutes: 15);
     }
   }
 }
@@ -59,6 +82,8 @@ class CheckFrequencyNotifier extends Notifier<CheckFrequency> {
   void setCheckFrequency(String? selection) {
     state = CheckFrequency.fromString(selection);
     ref.read(sharedPrefsProvider).setString('checkFrequency', state.name);
+    // re-schedule our background task
+    ref.read(backgroundSchedulerProvider.notifier).schedule();
   }
 
   /// Save the current setting in SharedPreferences

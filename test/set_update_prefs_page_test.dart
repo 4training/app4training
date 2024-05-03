@@ -1,3 +1,4 @@
+import 'package:app4training/background/background_scheduler.dart';
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/l10n/l10n.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_language_test.dart';
+import 'background_scheduler_test.dart';
 import 'routes_test.dart';
 
 class TestSetUpdatePrefsPage extends ConsumerWidget {
@@ -38,11 +40,15 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(overrides: [
+    final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+      backgroundSchedulerProvider.overrideWith(() => TestBackgroundScheduler()),
       sharedPrefsProvider.overrideWithValue(prefs)
-    ], child: TestSetUpdatePrefsPage(testObserver)));
+    ]);
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: ref, child: TestSetUpdatePrefsPage(testObserver)));
 
+    expect(ref.read(backgroundSchedulerProvider), false);
     expect(find.text(AppLocalizationsEn().updatesExplanation), findsOneWidget);
     expect(find.text(AppLocalizationsEn().doAutomaticUpdates), findsOneWidget);
     expect(find.byType(DropdownButtonAutomaticUpdates), findsOneWidget);
@@ -59,6 +65,7 @@ void main() {
     // there should be an entry in the SharedPreferences
     expect(prefs.getString('checkFrequency'), 'weekly');
     expect(prefs.getString('automaticUpdates'), 'onlyOnWifi');
+    expect(ref.read(backgroundSchedulerProvider), true);
   });
 
   testWidgets('Test SetUpdatePrefsPage back button in German',

@@ -13,6 +13,7 @@
     "daily" : "daily",
     "weekly" : "weekly",
     "monthly" : "monthly",
+    "testinterval" : "15min (Test)",
     "lastCheck" : "Last check:",
     "checkNow" : "Check now",
     "doAutomaticUpdates" : "Do automatic updates",
