@@ -8,8 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Button in the top right corner of the main view to open language selection
 /// Implemented with MenuAnchor+MenuItemButton
 /// (seems to be preferred over PopupMenuButton since Material 3)
-class LanguagesButton extends ConsumerWidget {
-  const LanguagesButton({super.key});
+class LanguageSelectionButton extends ConsumerWidget {
+  const LanguageSelectionButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/widgets/loading_animation.dart';
 import 'package:app4training/widgets/main_drawer.dart';
-import 'package:app4training/widgets/language_selection.dart';
+import 'package:app4training/widgets/language_selection_button.dart';
 
 /// The standard view of this app:
 /// Show a page (worksheet)
@@ -41,7 +41,7 @@ class ViewPage extends ConsumerWidget {
     return Scaffold(
         appBar: AppBar(
           title: const Text(Globals.appTitle),
-          actions: const [LanguagesButton()],
+          actions: const [LanguageSelectionButton()],
         ),
         drawer: MainDrawer(page, langCode),
         body: FutureBuilder(

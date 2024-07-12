@@ -2,7 +2,7 @@ import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/view_page.dart';
-import 'package:app4training/widgets/language_selection.dart';
+import 'package:app4training/widgets/language_selection_button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Page;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,7 +40,7 @@ void main() {
     expect(find.byIcon(Icons.translate), findsOneWidget);
     expect(find.text('German (de)'), findsNothing);
 
-    await tester.tap(find.byType(LanguagesButton));
+    await tester.tap(find.byType(LanguageSelectionButton));
     await tester.pump();
 
     expect(find.text('Show current page in:'), findsOneWidget);
@@ -64,7 +64,7 @@ void main() {
     expect(find.text('Deutsch (de)'), findsNothing);
     expect(find.text('Arabisch (ar)'), findsNothing);
 
-    await tester.tap(find.byType(LanguagesButton));
+    await tester.tap(find.byType(LanguageSelectionButton));
     await tester.pump();
 
     expect(find.text('Seite anzeigen auf:'), findsOneWidget);
