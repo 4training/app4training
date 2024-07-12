@@ -1,7 +1,4 @@
-import 'package:app4training/data/updates.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:workmanager/workmanager.dart';
 
 /// The state indicates whether our background task is scheduled or not.
 /// The schedule() method gets called
@@ -20,6 +17,7 @@ class BackgroundScheduler extends Notifier<bool> {
   ///
   /// Make sure TestBackgroundScheduler.schedule() has the same logic
   Future<void> schedule() async {
+    /* TODO Enable this with version 0.9
     debugPrint('Cancelling all currently scheduled background tasks');
     await Workmanager().cancelByUniqueName('backgroundTask');
     Duration? interval = ref.read(checkFrequencyProvider).getDuration();
@@ -32,6 +30,7 @@ class BackgroundScheduler extends Notifier<bool> {
         initialDelay: interval ~/ 2);
     debugPrint('Succesfully scheduled the background task: $interval');
     state = true;
+    */
   }
 }
 

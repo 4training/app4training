@@ -46,8 +46,8 @@ By contributing you release your contributed code under the licensing terms expl
 
 ## Roadmap
 * **0.7**: Go to Google Play Store
-* **0.8**: Implement automatic updates
-* **0.9**: Provide PDF files as well for all worksheets
+* **0.8**: Provide PDF files as well for all worksheets
+* **0.9**: Enable automatic updates (half-way implemented already but currently not operational - waiting for backend development to catch up)
 * **1.0**: We're solid now and excited about the future
 
 We plan to release an iOS version sometime in 2024.
