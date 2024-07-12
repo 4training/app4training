@@ -4,6 +4,8 @@ import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/view_page.dart';
+import 'package:app4training/widgets/language_selection_button.dart';
+import 'package:app4training/widgets/share_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -49,6 +51,10 @@ void main() {
     // recentPage and recentLang should be set in SharedPreferences
     expect(prefs.getString('recentPage'), 'Healing');
     expect(prefs.getString('recentLang'), 'de');
+
+    // Our two action buttons should be visible
+    expect(find.byType(LanguageSelectionButton), findsOneWidget);
+    expect(find.byType(ShareButton), findsOneWidget);
   });
 
   testWidgets('Test LanguageNotDownloadedException handling',
