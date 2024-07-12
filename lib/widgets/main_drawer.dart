@@ -173,9 +173,9 @@ class CategoryTile extends ConsumerWidget {
               child: TextButton(
                   style: ButtonStyle(
                       alignment: Alignment.centerLeft,
-                      shape: const MaterialStatePropertyAll(
+                      shape: const WidgetStatePropertyAll(
                           RoundedRectangleBorder()),
-                      backgroundColor: MaterialStatePropertyAll(
+                      backgroundColor: WidgetStatePropertyAll(
                           (englishName == _page)
                               ? Theme.of(context).focusColor
                               : null)),
