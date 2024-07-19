@@ -155,7 +155,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
   Future<bool> lazyInit() async {
     await _initController();
     String path =
-        '${_controller.assetsDir}/${Globals.getResourcesDir(languageCode)}';
+        join(_controller.assetsDir!, Globals.getResourcesDir(languageCode));
     final stat = await ref
         .watch(fileSystemProvider)
         .stat(join(path, 'structure', 'contents.json'));
@@ -182,16 +182,16 @@ class LanguageController extends FamilyNotifier<Language, String> {
     try {
       // Now we store the full path to the language
       String path =
-          '${_controller.assetsDir}/${Globals.getResourcesDir(languageCode)}';
+          join(_controller.assetsDir!, Globals.getResourcesDir(languageCode));
       debugPrint("Path: $path");
-      Directory dir = fileSystem.directory(path);
 
       bool downloaded = await _controller.assetsDirAlreadyExists();
       debugPrint("Trying to load '$languageCode', downloaded: $downloaded");
       if (!downloaded) return false;
 
-      // Store the size of the downloaded directory
-      int sizeInKB = await _calculateMemoryUsage(dir);
+      // Store the size of the downloaded files (HTML + PDF)
+      int sizeInKB = await _calculateMemoryUsage(
+          fileSystem.directory(_controller.assetsDir!));
 
       // Get the timestamp: When were our contents stored on the device?
       FileStat stat =
@@ -207,14 +207,41 @@ class LanguageController extends FamilyNotifier<Language, String> {
       final Map<String, Page> pages = {};
       final List<String> pageIndex = [];
       final Map<String, Image> images = {};
+      final Set<String> pdfFiles = {};
 
+      // Go through existing PDF files
+      var pdfPath =
+          join(_controller.assetsDir!, Globals.getPdfDir(languageCode));
+      var pdfDir = fileSystem.directory(pdfPath);
+      if (await pdfDir.exists()) {
+        await for (var file
+            in pdfDir.list(recursive: false, followLinks: false)) {
+          if (file is File) {
+            pdfFiles.add(file.basename);
+          } else {
+            debugPrint("Found unexpected element $file in the PDF directory");
+          }
+        }
+      }
+
+      // Store everything in our data structures
       for (var element in structure["worksheets"]) {
         // TODO add error handling
         pageIndex.add(element['page']);
+        String? pdfName; // Stores PDF file name if it is available
+        if (element.containsKey('pdf') && pdfFiles.contains(element['pdf'])) {
+          pdfName = join(pdfPath, element['pdf']);
+          pdfFiles.remove(element['pdf']);
+        }
         pages[element['page']] = Page(element['page'], element['title'],
-            element['filename'], element['version']);
+            element['filename'], element['version'], pdfName);
       }
-      await _checkConsistency(dir, pages);
+
+      // Consistency checking...
+      if (pdfFiles.isNotEmpty) {
+        debugPrint("Found unexpected PDF file(s): $pdfFiles");
+      }
+      await _checkConsistency(fileSystem.directory(path), pages);
 
       // Register available images
       var filesDir = fileSystem.directory(join(path, 'files'));
@@ -222,7 +249,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
         await for (var file
             in filesDir.list(recursive: false, followLinks: false)) {
           if (file is File) {
-            images[basename(file.path)] = Image(basename(file.path));
+            images[file.basename] = Image(file.basename);
           } else {
             debugPrint("Found unexpected element $file in files/ directory");
           }
@@ -251,36 +278,25 @@ class LanguageController extends FamilyNotifier<Language, String> {
   }
 
   /// Download all files for one language via DownloadAssetsController
-  /// Returns whether we were successful and shouldn't throw
+  /// Returns whether we were successful. Shouldn't throw
   Future<bool> _download() async {
     await _initController();
     debugPrint("Starting to download language '$languageCode' ...");
-    // URL of the zip file to be downloaded
-    String remoteUrl = Globals.getRemoteUrl(languageCode);
 
     try {
-      await _controller.startDownload(
-        assetsUrls: [remoteUrl],
-        onProgress: (progressValue) {
-          if (progressValue < 20) {
-            // The value goes for some reason only up to 18.7 or so ...
-            String progress = "Downloading $languageCode: ";
-
-            for (int i = 0; i < 20; i++) {
-              progress += (i <= progressValue) ? "|" : ".";
-            }
-            debugPrint("$progress ${progressValue.round()}");
-          } else {
-            debugPrint("Download completed");
-          }
-        },
-      );
+      // assetUrls takes an array, but we can't specify both URLs in one call:
+      // DownloadAssets throws when both files have the same name (main.zip) :-/
+      await _controller
+          .startDownload(assetsUrls: [Globals.getRemoteUrlHtml(languageCode)]);
+      await _controller
+          .startDownload(assetsUrls: [Globals.getRemoteUrlPdf(languageCode)]);
     } catch (e) {
       debugPrint("Error while downloading language '$languageCode': $e");
       // delete the empty folder left behind by startDownload()
       await _controller.clearAssets();
       return false;
     }
+    debugPrint("Downloading language '$languageCode' finished.");
     return true;
   }
 
@@ -303,7 +319,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
     Set<String> files = {};
     await for (var file in dir.list(recursive: false, followLinks: false)) {
       if (file is File) {
-        files.add(basename(file.path));
+        files.add(file.basename);
       }
     }
     pages.forEach((key, page) {
@@ -331,7 +347,10 @@ class Page {
 
   final String version;
 
-  const Page(this.name, this.title, this.fileName, this.version);
+  /// Full path of the associated PDF file if it exists on the device
+  final String? pdfName;
+
+  const Page(this.name, this.title, this.fileName, this.version, this.pdfName);
 }
 
 /// Holds properties of an image.

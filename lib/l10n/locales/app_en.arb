@@ -338,5 +338,6 @@
     "sharePdf": "Share PDF",
     "openPdf": "Open PDF",
     "openInBrowser": "Open in browser",
-    "shareLink": "Share link"
+    "shareLink": "Share link",
+    "pdfNotAvailable": "Unfortunately there is no PDF available yet for this worksheet. If you want to help make this change soon, please contact us!"
 }

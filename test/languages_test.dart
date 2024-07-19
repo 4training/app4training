@@ -314,7 +314,7 @@ void main() {
             'Schritte der Vergebung',
             'MissingTest'
           ]));
-      expect(deTest.state.sizeInKB, 80);
+      expect(deTest.state.sizeInKB, 84);
       expect(deTest.state.path, equals('assets-de/html-de-main'));
 
       // Test some error handling

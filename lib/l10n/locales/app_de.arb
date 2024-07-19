@@ -338,5 +338,6 @@
     "sharePdf": "PDF teilen",
     "openPdf": "PDF öffnen",
     "openInBrowser": "Im Browser öffnen",
-    "shareLink": "Link teilen"
+    "shareLink": "Link teilen",
+    "pdfNotAvailable": "Für dieses Arbeitsblatt ist leider noch kein PDF verfügbar. Wenn du mithelfen möchtest, damit sich das bald ändert, dann melde dich bitte!"
 }

@@ -5,11 +5,10 @@ import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/categories.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
+import 'package:app4training/design/theme.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-const double smileySize = 50;
 
 /// Our main menu with the list of pages, organized into categories.
 /// The currently shown page is highlighted and the category it belongs to
