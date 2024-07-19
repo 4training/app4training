@@ -45,16 +45,18 @@ class ShareButton extends ConsumerWidget {
                   Column(children: [
                     ListTile(
                       dense: true,
-                      title: Text(context.l10n.sharePdf),
-                      leading: const Icon(Icons.picture_as_pdf),
+                      title: Text(context.l10n.openPdf),
+                      leading: const ImageIcon(
+                          AssetImage("assets/file-document-outline.png")),
                       onTap: () {
                         menuController.close();
                       },
                     ),
                     ListTile(
                       dense: true,
-                      title: Text(context.l10n.openPdf),
-                      leading: const Icon(Icons.picture_as_pdf_outlined),
+                      title: Text(context.l10n.sharePdf),
+                      leading: const ImageIcon(AssetImage(
+                          "assets/file-document-arrow-right-outline.png")),
                       onTap: () {
                         menuController.close();
                       },
@@ -71,7 +73,7 @@ class ShareButton extends ConsumerWidget {
                     ListTile(
                       dense: true,
                       title: Text(context.l10n.shareLink),
-                      leading: const Icon(Icons.content_copy),
+                      leading: const ImageIcon(AssetImage("assets/link.png")),
                       onTap: () {
                         menuController.close();
                         Share.share(
