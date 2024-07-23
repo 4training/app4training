@@ -305,6 +305,11 @@ void main() {
       expect(content, contains('src="data:image/png;base64,'));
       // This should still be there as the image file is missing
       expect(content, contains('src="files/Hand_5.png"'));
+      // PDF should be available
+      expect(deTest.state.pages['Forgiving_Step_by_Step']?.pdfPath,
+          equals('assets-de/pdf-de-main/Schritte_der_Vergebung.pdf'));
+      // This PDF is missing
+      expect(deTest.state.pages['MissingTest']?.pdfPath, isNull);
 
       // Test Languages.getPageTitles()
       expect(
@@ -314,7 +319,7 @@ void main() {
             'Schritte der Vergebung',
             'MissingTest'
           ]));
-      expect(deTest.state.sizeInKB, 84);
+      expect(deTest.state.sizeInKB, 163);
       expect(deTest.state.path, equals('assets-de/html-de-main'));
 
       // Test some error handling

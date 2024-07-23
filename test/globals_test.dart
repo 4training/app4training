@@ -13,6 +13,7 @@ void main() {
             'https://github.com/4training/pdf-de/archive/refs/heads/main.zip'));
     expect(Globals.getAssetsDir('de'), equals('assets-de'));
     expect(Globals.getResourcesDir('de'), equals('html-de-main'));
+    expect(Globals.getPdfDir('de'), equals('pdf-de-main'));
     expect(
         Globals.getCommitsSince('de', DateTime.utc(2023)),
         equals(

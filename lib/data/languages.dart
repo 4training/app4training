@@ -219,16 +219,16 @@ class LanguageController extends FamilyNotifier<Language, String> {
           if (file is File) {
             pdfFiles.add(file.basename);
           } else {
-            debugPrint("Found unexpected element $file in the PDF directory");
+            debugPrint('Found unexpected element $file in the PDF directory');
           }
         }
       }
 
       // Store everything in our data structures
-      for (var element in structure["worksheets"]) {
+      for (var element in structure['worksheets']) {
         // TODO add error handling
         pageIndex.add(element['page']);
-        String? pdfName; // Stores PDF file name if it is available
+        String? pdfName; // Stores PDF file name (full path) if it is available
         if (element.containsKey('pdf') && pdfFiles.contains(element['pdf'])) {
           pdfName = join(pdfPath, element['pdf']);
           pdfFiles.remove(element['pdf']);
@@ -239,7 +239,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
 
       // Consistency checking...
       if (pdfFiles.isNotEmpty) {
-        debugPrint("Found unexpected PDF file(s): $pdfFiles");
+        debugPrint('Found unexpected PDF file(s): $pdfFiles');
       }
       await _checkConsistency(fileSystem.directory(path), pages);
 
@@ -251,7 +251,7 @@ class LanguageController extends FamilyNotifier<Language, String> {
           if (file is File) {
             images[file.basename] = Image(file.basename);
           } else {
-            debugPrint("Found unexpected element $file in files/ directory");
+            debugPrint('Found unexpected element $file in files/ directory');
           }
         }
       }
@@ -348,9 +348,9 @@ class Page {
   final String version;
 
   /// Full path of the associated PDF file if it exists on the device
-  final String? pdfName;
+  final String? pdfPath;
 
-  const Page(this.name, this.title, this.fileName, this.version, this.pdfName);
+  const Page(this.name, this.title, this.fileName, this.version, this.pdfPath);
 }
 
 /// Holds properties of an image.
