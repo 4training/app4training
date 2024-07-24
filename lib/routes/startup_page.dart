@@ -37,10 +37,11 @@ class StartupPage extends ConsumerWidget {
       return '/onboarding/2'; // Go to DownloadLanguagesPage
     }
 
+/*  TODO for version 0.9
     // Check whether user completed third onboarding step
     if (ref.read(sharedPrefsProvider).getString('checkFrequency') == null) {
       return '/onboarding/3';
-    }
+    }*/
 
     // Start the periodic background task
     unawaited(ref.read(backgroundSchedulerProvider.notifier).schedule());

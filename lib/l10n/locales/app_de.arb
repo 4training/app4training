@@ -324,7 +324,7 @@
     "promoFeature2": "Funktioniert offline",
     "promoFeature3": "Kein Copyright",
     "downloadLanguages": "Sprachen herunterladen",
-    "downloadLanguagesExplanation": "Welche Sprachen möchtest du nutzen? Lade sie jetzt herunter und dann sind sie offline verfügbar. Eine Sprache verbraucht weniger als 1 MB.",
+    "downloadLanguagesExplanation": "Welche Sprachen möchtest du nutzen? Lade sie jetzt herunter und dann sind sie offline verfügbar. Eine Sprache verbraucht weniger als 4 MB.",
     "warnMissingAppLanguage" : "Bitte lade Deutsch (de) herunter, bevor du fortfährst. Damit du die App sinnvoll nutzen kannst, muss die App-Sprache heruntergeladen sein.",
     "@warnMissingAppLanguage": {
         "description": "Hint for translators: Replace English (en) with your language. Description: Warning message when user tries to continue without having downloaded his app language"

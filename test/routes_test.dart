@@ -4,7 +4,6 @@ import 'package:app4training/data/languages.dart';
 import 'package:app4training/routes/error_page.dart';
 import 'package:app4training/routes/home_page.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
-import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
 import 'package:app4training/routes/onboarding/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,11 +77,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(WelcomePage), findsOneWidget);
 
+/*  TODO for version 0.9
     // Test third onboarding step
     unawaited(Navigator.of(tester.element(find.byType(WelcomePage)))
         .pushReplacementNamed('/onboarding/3'));
     await tester.pumpAndSettle();
     expect(find.byType(SetUpdatePrefsPage), findsOneWidget);
+*/
 
     // Test that routes are handled
     expect(
@@ -91,7 +92,7 @@ void main() {
           '/onboarding/1',
           '/onboarding/2',
           '/onboarding/1',
-          '/onboarding/3'
+//          '/onboarding/3'
         ]));
   });
 

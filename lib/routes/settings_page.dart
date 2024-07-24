@@ -82,7 +82,7 @@ class UpdateSettings extends ConsumerWidget {
           alignment: Alignment.topLeft,
           child: Text(context.l10n.updates,
               style: Theme.of(context).textTheme.titleLarge)),
-      // Check for updates TODO for version 0.8
+      // Check for updates TODO for version 0.9
 /*      Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -108,7 +108,7 @@ class UpdateSettings extends ConsumerWidget {
         children: [CheckNowButton(buttonText: context.l10n.checkNow)],
       ),
 /*      const SizedBox(height: 10),
-      // Do automatic updates TODO for version 0.8
+      // Do automatic updates TODO for version 0.9
 
       Row(
         mainAxisAlignment: MainAxisAlignment.start,
