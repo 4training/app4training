@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 /// A class around all sharing functionality to enable testing
 /// (Packages: share_plus, url_launcher, open_filex)
@@ -25,7 +26,7 @@ class ShareService {
 
   /// Wraps launchUrl (package url_launcher)
   Future<bool> launchUrl(Uri url) {
-    return launchUrl(url);
+    return url_launcher.launchUrl(url);
   }
 
   /// Wraps OpenFilex.open (package open_filex)

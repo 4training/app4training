@@ -22,7 +22,7 @@ class FakeDownloadAssetsController extends Fake
   late String _assetDir;
   bool initCalled = false;
   bool clearAssetsCalled = false;
-  bool startDownloadCalled = false;
+  int startDownloadCalls = 0;
 
   // TODO use this class to test the startDownload() functionality
   @override
@@ -57,7 +57,7 @@ class FakeDownloadAssetsController extends Fake
       Map<String, dynamic>? requestQueryParams,
       Map<String, String> requestExtraHeaders = const {}}) async {
     // TODO: implement startDownload
-    startDownloadCalled = true;
+    startDownloadCalls += 1;
     return;
   }
 }
@@ -73,7 +73,7 @@ class ThrowingDownloadAssetsController extends FakeDownloadAssetsController {
       Function()? onDone,
       Map<String, dynamic>? requestQueryParams,
       Map<String, String> requestExtraHeaders = const {}}) async {
-    startDownloadCalled = true;
+    startDownloadCalls += 1;
     throw DioException(requestOptions: RequestOptions());
   }
 }
@@ -158,7 +158,7 @@ void main() {
     expect(await frTest.init(), false);
     expect(frTest.state.downloaded, false);
     // init() shouldn't start a download
-    expect(fakeController.startDownloadCalled, false);
+    expect(fakeController.startDownloadCalls, 0);
   });
 
   test('Test lazyInit() when no files are there', () async {
@@ -186,7 +186,7 @@ void main() {
     expect(await frTest.download(), false);
     // Verify that download got started
     expect(fakeController.initCalled, true);
-    expect(fakeController.startDownloadCalled, true);
+    expect(fakeController.startDownloadCalls, 2);
     expect(fakeController.clearAssetsCalled, false);
   });
 
@@ -201,7 +201,7 @@ void main() {
 
     expect(await frTest.download(), false);
     // download shouldn't throw (if it would the test would fail)
-    expect(throwingController.startDownloadCalled, true);
+    expect(throwingController.startDownloadCalls, 1);
     expect(throwingController.clearAssetsCalled, true);
   });
 
