@@ -2,54 +2,16 @@ import 'dart:async';
 
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/design/theme.dart';
+import 'package:app4training/features/share/share_service.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:open_filex/open_filex.dart';
-import 'package:share_plus/share_plus.dart';
 
 // TODO: Use build_runner with flutter_gen instead
 const String openPdfImage = 'assets/file-document-outline.png';
 const String sharePdfImage = 'assets/file-document-arrow-right-outline.png';
 const String shareLinkImage = 'assets/link.png';
-
-/// A class around all sharing functionality to enable testing
-/// (Packages: share_plus, url_launcher, open_filex)
-///
-/// Other options for testing (dependency injection etc.) are hard to use here
-/// because of the usage of context.findAncestorWidgetOfExactType
-/// so this is probably the best way to do it
-class ShareService {
-  /// Wraps Share.share() (package share_plus)
-  Future<void> share(String text) {
-    return Share.share(text);
-  }
-
-  /// Wraps Share.shareXFiles() (package share_plus)
-  ///
-  /// Not using the same argument List<XFile> because that would make it
-  /// harder to verify that the function gets called with correct arguments
-  /// with mocktail
-  Future<ShareResult> shareFile(String path) {
-    return Share.shareXFiles([XFile(path)]);
-  }
-
-  /// Wraps launchUrl (package url_launcher)
-  Future<bool> launchUrl(Uri url) {
-    return launchUrl(url);
-  }
-
-  /// Wraps OpenFilex.open (package open_filex)
-  Future<OpenResult> open(String? filePath) {
-    return OpenFilex.open(filePath);
-  }
-}
-
-/// A provider for all sharing functionality to enable testing
-final shareProvider = Provider<ShareService>((ref) {
-  return ShareService();
-});
 
 /// Share button in the top right corner of the main view.
 /// Opens a dropdown with several sharing options.

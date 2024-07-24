@@ -1,8 +1,9 @@
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/languages.dart';
+import 'package:app4training/features/share/share_service.dart';
+import 'package:app4training/features/share/share_button.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/view_page.dart';
-import 'package:app4training/widgets/share_button.dart';
 import 'package:flutter/material.dart' hide Page;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,7 +43,7 @@ Finder findAssetImageIcon(String assetName, [Color? color]) {
 class MockShareService extends Mock implements ShareService {}
 
 void main() {
-  testWidgets('Smoke test: open the share menu (English locale)',
+  testWidgets('Smoke test: open and close the share menu (English locale)',
       (WidgetTester tester) async {
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
@@ -64,6 +65,11 @@ void main() {
     expect(findAssetImageIcon(openPdfImage), findsOneWidget);
     expect(findAssetImageIcon(sharePdfImage), findsOneWidget);
     expect(findAssetImageIcon(shareLinkImage), findsOneWidget);
+
+    await tester.tap(find.byType(ShareButton));
+    await tester.pump();
+    expect(find.byIcon(Icons.share), findsOneWidget);
+    expect(find.text('Open PDF'), findsNothing);
   });
 
   testWidgets('Test when PDFs are not available', (WidgetTester tester) async {

@@ -4,7 +4,7 @@ import 'package:app4training/data/globals.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/error_message.dart';
 import 'package:app4training/widgets/html_view.dart';
-import 'package:app4training/widgets/share_button.dart';
+import 'package:app4training/features/share/share_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/languages.dart';
