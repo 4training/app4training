@@ -4,11 +4,16 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('Test remote URLs and local path', () {
     expect(
-        Globals.getRemoteUrl('de'),
+        Globals.getRemoteUrlHtml('de'),
         equals(
             'https://github.com/4training/html-de/archive/refs/heads/main.zip'));
+    expect(
+        Globals.getRemoteUrlPdf('de'),
+        equals(
+            'https://github.com/4training/pdf-de/archive/refs/heads/main.zip'));
     expect(Globals.getAssetsDir('de'), equals('assets-de'));
     expect(Globals.getResourcesDir('de'), equals('html-de-main'));
+    expect(Globals.getPdfDir('de'), equals('pdf-de-main'));
     expect(
         Globals.getCommitsSince('de', DateTime.utc(2023)),
         equals(

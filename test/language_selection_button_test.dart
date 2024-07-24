@@ -34,7 +34,7 @@ void main() {
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
       languageProvider.overrideWith(() => TestLanguageController(
           downloadedLanguages: ['de'],
-          pages: {'Healing': const Page('test', 'test', 'test', '1.0')}))
+          pages: {'Healing': const Page('test', 'test', 'test', '1.0', null)}))
     ], child: const TestLanguagesButton()));
 
     expect(find.byIcon(Icons.translate), findsOneWidget);
@@ -57,7 +57,7 @@ void main() {
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider.overrideWith(() => TestLanguageController(
           downloadedLanguages: ['de', 'en', 'fr', 'es', 'ar'],
-          pages: {'Healing': const Page('test', 'test', 'test', '1.0')}))
+          pages: {'Healing': const Page('test', 'test', 'test', '1.0', null)}))
     ], child: const TestLanguagesButton()));
 
     expect(find.byIcon(Icons.translate), findsOneWidget);

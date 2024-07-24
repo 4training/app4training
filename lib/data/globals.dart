@@ -145,11 +145,17 @@ class Globals {
   static const String githubUser = '4training';
   static const String branch = 'main';
   static const String htmlPath = 'html';
+  static const String pdfPath = 'pdf';
   static const String remoteZipUrl = '/archive/refs/heads/$branch.zip';
 
   /// Url of the zip file for the HTML resources of a language
-  static String getRemoteUrl(String languageCode) {
+  static String getRemoteUrlHtml(String languageCode) {
     return 'https://github.com/$githubUser/$htmlPath-$languageCode$remoteZipUrl';
+  }
+
+  /// Url of the zip file for the HTML resources of a language
+  static String getRemoteUrlPdf(String languageCode) {
+    return 'https://github.com/$githubUser/$pdfPath-$languageCode$remoteZipUrl';
   }
 
   /// Folder name of the resources of a language. Example: html-en-main
@@ -157,6 +163,13 @@ class Globals {
   /// Must be the main folder name that is inside the zip file we download.
   static String getResourcesDir(String languageCode) {
     return '$htmlPath-$languageCode-$branch';
+  }
+
+  /// Folder name of the PDF files of a language. Example: pdf-en-main
+  ///
+  /// Must be the main folder name that is inside the zip file we download.
+  static String getPdfDir(String languageCode) {
+    return '$pdfPath-$languageCode-$branch';
   }
 
   /// Folder name of the assets dir of a language

@@ -41,3 +41,6 @@ ThemeData lightTheme = _defaultLightTheme.copyWith(
 ThemeData darkTheme =
     FlexThemeData.dark(scheme: FlexScheme.red, useMaterial3: true)
         .copyWith(appBarTheme: darkAppBarTheme);
+
+/// Size of smileys (used on "sorry, not yet available" dialogs)
+const double smileySize = 50;

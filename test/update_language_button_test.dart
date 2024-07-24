@@ -100,7 +100,7 @@ void main() {
 
     await tester.tap(find.byType(UpdateLanguageButton));
     await tester.pump();
-    expect(throwingController.startDownloadCalled, true);
+    expect(throwingController.startDownloadCalls, 1);
     expect(throwingController.clearAssetsCalled, true);
     // Snackbar visible?
     expect(
