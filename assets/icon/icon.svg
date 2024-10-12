@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="302px" height="302px" viewBox="0 0 302 302" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>4training--logo</title>
+    <g id="4training--logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M302.199,273.852 C302.199,289.443 289.442,302.199 273.851,302.199 L28.347,302.199 C12.756,302.199 2.84217094e-14,289.443 2.84217094e-14,273.852 L2.84217094e-14,28.347 C2.84217094e-14,12.756 12.756,1.42108547e-13 28.347,1.42108547e-13 L273.852,1.42108547e-13 C289.443,1.42108547e-13 302.199,12.756 302.199,28.347 L302.199,273.852 L302.199,273.852 Z" id="Path" fill="#870000" fill-rule="nonzero"></path>
+        <path d="M225.852,77.517 L302.199,232.395 L302.199,273.852 C302.199,289.443 289.442,302.199 273.851,302.199 L123.294,302.199 L49.957,152.295 L225.852,77.517 Z" id="Combined-Shape" fill="#5B0000" fill-rule="nonzero"></path>
+        <polygon id="Path" fill="#FFFFFF" fill-rule="nonzero" points="225.852 77.517 152.489 254.826 130.038 173.331 49.957 152.295"></polygon>
+    </g>
+</svg>

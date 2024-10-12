@@ -13,9 +13,7 @@ class WelcomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(title: const Text(Globals.appTitle)),
-        body: const WelcomeScreen());
+    return Scaffold(appBar: AppBar(title: const Text(Globals.appTitle)), body: const WelcomeScreen());
   }
 }
 
@@ -32,12 +30,10 @@ class WelcomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+    return LayoutBuilder(builder: (BuildContext context, BoxConstraints viewportConstraints) {
       return SingleChildScrollView(
           child: ConstrainedBox(
-              constraints:
-                  BoxConstraints(minHeight: viewportConstraints.maxHeight),
+              constraints: BoxConstraints(minHeight: viewportConstraints.maxHeight),
               child: IntrinsicHeight(
                   child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -47,8 +43,7 @@ class WelcomeScreen extends ConsumerWidget {
                           const Spacer(),
                           Text(context.l10n.welcome,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontSize: 40, fontWeight: FontWeight.bold)),
+                              style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
                           const Spacer(),
                           Text(context.l10n.selectAppLanguage),
                           const SizedBox(height: 20),
@@ -64,11 +59,8 @@ class WelcomeScreen extends ConsumerWidget {
                             onPressed: () {
                               // Make sure appLanguage is now saved
                               // so that WelcomePage won't be shown again next time
-                              ref
-                                  .read(appLanguageProvider.notifier)
-                                  .persistNow();
-                              Navigator.pushReplacementNamed(
-                                  context, '/onboarding/2');
+                              ref.read(appLanguageProvider.notifier).persistNow();
+                              Navigator.pushReplacementNamed(context, '/onboarding/2');
                             },
                             child: Text(context.l10n.continueText),
                           ),
@@ -99,16 +91,13 @@ class PromoBlock extends StatelessWidget {
     return Column(
       children: [
         const SizedBox(height: 10),
-        Image.asset('assets/for_training.png', width: 100, height: 100),
-        Center(
-            child: Text(context.l10n.appName,
-                style: Theme.of(context).textTheme.headlineMedium)),
+        Image.asset('assets/icon/icon.png', width: 100, height: 100),
+        Center(child: Text(context.l10n.appName, style: Theme.of(context).textTheme.headlineMedium)),
         const SizedBox(height: 10),
         Align(
           alignment: Alignment.center,
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start, // Align children to the left
+            crossAxisAlignment: CrossAxisAlignment.start, // Align children to the left
             children: [
               Text(
                 '• $countAvailableLanguages ${context.l10n.languages}',

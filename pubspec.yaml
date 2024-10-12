@@ -54,6 +54,7 @@ dependencies:
   workmanager: ^0.5.2
   share_plus: ^7.2.2
   open_filex: ^4.4.0
+  flutter_launcher_icons: ^0.14.1
 
 
 dev_dependencies:
@@ -89,6 +90,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
+    - assets/icon/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
