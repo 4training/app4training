@@ -55,6 +55,7 @@ dependencies:
   share_plus: ^7.2.2
   open_filex: ^4.4.0
   flutter_launcher_icons: ^0.14.1
+  email_validator: ^3.0.0
 
 
 dev_dependencies:

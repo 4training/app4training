@@ -97,6 +97,18 @@ class TableOfContent extends ConsumerWidget {
         },
       ),
       ListTile(
+        title: Text("Get in touch"),
+        leading: const Icon(Icons.feedback_rounded),
+        onTap: () {
+          // Drawer should be closed when user leaves the settings page
+          context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
+          Navigator.pushNamed(
+            context,
+            '/feedback',
+          );
+        },
+      ),
+      ListTile(
         title: Text(context.l10n.about),
         leading: const Icon(Icons.info),
         onTap: () {

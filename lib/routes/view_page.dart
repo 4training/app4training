@@ -12,6 +12,8 @@ import 'package:app4training/widgets/loading_animation.dart';
 import 'package:app4training/widgets/main_drawer.dart';
 import 'package:app4training/widgets/language_selection_button.dart';
 
+import '../widgets/feedback_button.dart';
+
 /// The standard view of this app:
 /// Show a page (worksheet)
 class ViewPage extends ConsumerWidget {
@@ -42,7 +44,14 @@ class ViewPage extends ConsumerWidget {
     return Scaffold(
         appBar: AppBar(
           title: const Text(Globals.appTitle),
-          actions: const [ShareButton(), LanguageSelectionButton()],
+          actions: [
+            FeedbackButton(
+              page: page,
+              langCode: langCode,
+            ),
+            const ShareButton(),
+            const LanguageSelectionButton()
+          ],
         ),
         drawer: MainDrawer(page, langCode),
         body: FutureBuilder(

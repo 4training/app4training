@@ -1,5 +1,6 @@
 import 'package:app4training/routes/about_page.dart';
 import 'package:app4training/routes/error_page.dart';
+import 'package:app4training/routes/feedback_page.dart';
 import 'package:app4training/routes/home_page.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
 import 'package:app4training/routes/onboarding/set_update_prefs_page.dart';
@@ -37,6 +38,16 @@ Route<Object?> generateRoutes(RouteSettings settings) {
   } else if (settings.name == '/about') {
     return MaterialPageRoute<void>(
         settings: settings, builder: (_) => const AboutPage());
+  } else if (settings.name == '/feedback') {
+    return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => FeedbackPage(
+            worksheetPage: settings.arguments is FeedbackArguments
+                ? (settings.arguments as FeedbackArguments).worksheetPage
+                : null,
+            langCode: settings.arguments is FeedbackArguments
+                ? (settings.arguments as FeedbackArguments).langCode
+                : null));
   } else if (settings.name!.startsWith('/onboarding')) {
     final List<String> parts = settings.name!.split('/');
     String step = '1';
