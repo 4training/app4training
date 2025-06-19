@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app4training/data/languages.dart';
+import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:app4training/routes/error_page.dart';
 import 'package:app4training/routes/home_page.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
@@ -9,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/globals.dart';
-import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/routes.dart';
 import 'package:app4training/routes/settings_page.dart';
 import 'package:app4training/routes/startup_page.dart';

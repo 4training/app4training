@@ -2,7 +2,7 @@ import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/data/updates.dart';
-import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:app4training/widgets/update_language_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

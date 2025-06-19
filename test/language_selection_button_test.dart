@@ -1,6 +1,6 @@
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/languages.dart';
-import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:app4training/widgets/language_selection_button.dart';
 import 'package:flutter/foundation.dart';

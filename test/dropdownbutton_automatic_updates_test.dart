@@ -1,9 +1,9 @@
+import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:app4training/widgets/dropdownbutton_automatic_updates.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/globals.dart';
-import 'package:app4training/l10n/l10n.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

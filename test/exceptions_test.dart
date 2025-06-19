@@ -1,5 +1,5 @@
 import 'package:app4training/data/exceptions.dart';
-import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:file/file.dart';
 import 'package:flutter_test/flutter_test.dart';

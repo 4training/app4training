@@ -1,6 +1,7 @@
 import 'package:app4training/background/background_result.dart';
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/error_message.dart';
 import 'package:app4training/widgets/html_view.dart';

@@ -6,6 +6,7 @@ import 'package:app4training/background/background_task.dart';
 import 'package:app4training/background/background_test.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
+import 'package:app4training/l10n/generated/app_localizations_de.dart';
 import 'package:app4training/main.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations_de.dart';
 
 void main() async {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

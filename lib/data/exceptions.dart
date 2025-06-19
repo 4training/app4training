@@ -1,6 +1,6 @@
+import 'package:app4training/l10n/generated/app_localizations_en.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations_en.dart';
 
 abstract class App4TrainingException {
   String toLocalizedString(BuildContext context);

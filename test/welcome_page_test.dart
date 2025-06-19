@@ -1,7 +1,8 @@
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/categories.dart';
 import 'package:app4training/data/globals.dart';
-import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/l10n/generated/app_localizations.dart';
+import 'package:app4training/l10n/generated/app_localizations_en.dart';
 import 'package:app4training/routes/onboarding/welcome_page.dart';
 import 'package:app4training/routes/routes.dart';
 import 'package:app4training/widgets/dropdownbutton_app_language.dart';
@@ -9,7 +10,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations_en.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_language_test.dart';

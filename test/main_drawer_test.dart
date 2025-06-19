@@ -1,6 +1,6 @@
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/languages.dart';
-import 'package:app4training/l10n/l10n.dart';
+import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:app4training/routes/routes.dart';
 import 'package:app4training/widgets/main_drawer.dart';
 import 'package:flutter/material.dart' hide Page;
