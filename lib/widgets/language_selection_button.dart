@@ -66,14 +66,21 @@ class LanguageSelectionButton extends ConsumerWidget {
                   // TODO better 2-column design for odd numbers of languages
                   menuItems.length > 10
                       ? Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Column(
-                              children:
-                                  menuItems.sublist(0, menuItems.length ~/ 2),
-                            ),
-                            Column(
+                            Flexible(
+                              fit: FlexFit.loose,
+                              child: Column(
                                 children:
-                                    menuItems.sublist(menuItems.length ~/ 2))
+                                    menuItems.sublist(0, menuItems.length ~/ 2),
+                              ),
+                            ),
+                            Flexible(
+                              fit: FlexFit.loose,
+                              child: Column(
+                                  children:
+                                      menuItems.sublist(menuItems.length ~/ 2)),
+                            )
                           ],
                         )
                       : Column(children: menuItems),

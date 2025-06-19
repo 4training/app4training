@@ -1,6 +1,8 @@
 import 'package:app4training/data/app_language.dart';
+import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/generated/app_localizations.dart';
+import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:app4training/widgets/language_selection_button.dart';
 import 'package:flutter/foundation.dart';
@@ -90,5 +92,40 @@ void main() {
     expect(listEquals(offsets, sortedOffsets), isTrue);
   });
 
-  // TODO add test for 2-column layout
+  testWidgets('Test 2-column layout', (WidgetTester tester) async {
+    final container = ProviderContainer();
+    final availableLanguages = container.read(availableLanguagesProvider);
+
+    await tester.pumpWidget(UncontrolledProviderScope(
+        container: container,
+        child: ProviderScope(overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          languageProvider.overrideWith(() => TestLanguageController(
+                  downloadedLanguages: availableLanguages,
+                  pages: {
+                    'Healing': const Page('test', 'test', 'test', '1.0', null)
+                  }))
+        ], child: const TestLanguagesButton())));
+
+    expect(find.byIcon(Icons.translate), findsOneWidget);
+    expect(find.text('Deutsch (de)'), findsNothing);
+    expect(find.text('Arabisch (ar)'), findsNothing);
+
+    await tester.tap(find.byType(LanguageSelectionButton));
+    await tester.pump();
+
+    expect(find.text('Seite anzeigen auf:'), findsOneWidget);
+    expect(find.byIcon(Icons.settings), findsOneWidget);
+    expect(find.text('Sprachen verwalten'), findsOneWidget);
+    // Check that all available languages are there
+    for (final lang in availableLanguages) {
+      final langName = tester
+          .element(find.byType(LanguageSelectionButton))
+          .l10n
+          .getLanguageName(lang);
+      expect(find.text(langName), findsOneWidget);
+    }
+
+    // TODO add more tests (correct order of languages, correct 2-column layout)
+  });
 }
