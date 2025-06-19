@@ -29,7 +29,8 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdkVersion 34
+    namespace "net.app4training"
+    compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
