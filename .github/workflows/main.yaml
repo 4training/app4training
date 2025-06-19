@@ -15,6 +15,12 @@ jobs:
     - name: Install packages
       run: flutter pub get
 
+    - name: Show flutter version
+      run: flutter --version
+
+    - name: Show dart version
+      run: dart --version
+
     - name: Run full_coverage to generate test/full_coverage_test.dart
       run: |
         dart pub global activate full_coverage
