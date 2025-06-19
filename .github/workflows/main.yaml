@@ -21,6 +21,9 @@ jobs:
     - name: Show dart version
       run: dart --version
 
+    - name: Debug dart format issues
+      run: file lib/l10n/generated/app_localizations.dart
+
     - name: Run full_coverage to generate test/full_coverage_test.dart
       run: |
         dart pub global activate full_coverage
