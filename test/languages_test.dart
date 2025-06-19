@@ -48,7 +48,8 @@ class FakeDownloadAssetsController extends Fake
 
   @override
   Future startDownload(
-      {required List<String> assetsUrls,
+      {required List<AssetUrl> assetsUrls,
+      bool? checkSize,
       List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
       Function(double p1)? onProgress,
       Function()? onStartUnziping,
@@ -65,7 +66,8 @@ class FakeDownloadAssetsController extends Fake
 class ThrowingDownloadAssetsController extends FakeDownloadAssetsController {
   @override
   Future startDownload(
-      {required List<String> assetsUrls,
+      {required List<AssetUrl> assetsUrls,
+      bool? checkSize,
       List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
       Function(double p1)? onProgress,
       Function()? onStartUnziping,

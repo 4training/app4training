@@ -286,10 +286,10 @@ class LanguageController extends FamilyNotifier<Language, String> {
     try {
       // assetUrls takes an array, but we can't specify both URLs in one call:
       // DownloadAssets throws when both files have the same name (main.zip) :-/
-      await _controller
-          .startDownload(assetsUrls: [Globals.getRemoteUrlHtml(languageCode)]);
-      await _controller
-          .startDownload(assetsUrls: [Globals.getRemoteUrlPdf(languageCode)]);
+      await _controller.startDownload(
+          assetsUrls: [AssetUrl(url: Globals.getRemoteUrlHtml(languageCode))]);
+      await _controller.startDownload(
+          assetsUrls: [AssetUrl(url: Globals.getRemoteUrlPdf(languageCode))]);
     } catch (e) {
       debugPrint("Error while downloading language '$languageCode': $e");
       // delete the empty folder left behind by startDownload()

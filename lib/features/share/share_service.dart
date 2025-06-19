@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher.dart' as url_launcher;
 class ShareService {
   /// Wraps Share.share() (package share_plus)
   Future<void> share(String text) {
-    return Share.share(text);
+    return SharePlus.instance.share(ShareParams(text: text));
   }
 
   /// Wraps Share.shareXFiles() (package share_plus)
@@ -21,7 +21,7 @@ class ShareService {
   /// harder to verify that the function gets called with correct arguments
   /// with mocktail
   Future<ShareResult> shareFile(String path) {
-    return Share.shareXFiles([XFile(path)]);
+    return SharePlus.instance.share(ShareParams(files: [XFile(path)]));
   }
 
   /// Wraps launchUrl (package url_launcher)
@@ -30,7 +30,7 @@ class ShareService {
   }
 
   /// Wraps OpenFilex.open (package open_filex)
-  Future<OpenResult> open(String? filePath) {
+  Future<OpenResult> open(String filePath) {
     return OpenFilex.open(filePath);
   }
 }
