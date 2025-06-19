@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.1 - 2025-06-20
+- upgrade to flutter 3.32 and upgrade dependencies
+
 ## 0.8.0 - 2024-07-24
 New features:
 - Download PDF files as well and provide them offline

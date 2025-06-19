@@ -10,7 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 void main() {
   testWidgets('Basic test', (WidgetTester tester) async {
-    const testVersion = '0.8.0';
+    const testVersion = '0.8.1';
     await tester.pumpWidget(ProviderScope(
         overrides: [
           packageInfoProvider.overrideWithValue(PackageInfo(

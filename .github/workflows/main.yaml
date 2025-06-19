@@ -34,12 +34,15 @@ jobs:
 
     - name: Ensure standard dart formatting
       run: |
+        # TODO resolve this strange issue where dart format wants to change one file on every run (but not on local machine)
+        # dart format --output=none --set-exit-if-changed .
         dart format .
         git diff
 
     - name: Run linters
       run: |
-        # dart analyze --fatal-infos TODO clean up the dart analyzer info stuff
+        # TODO clean up the dart analyzer info stuff
+        # dart analyze --fatal-infos
         dart analyze
         dart run custom_lint
 
