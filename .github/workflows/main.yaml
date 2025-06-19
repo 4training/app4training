@@ -21,6 +21,9 @@ jobs:
     - name: Show dart version
       run: dart --version
 
+    - name: Show dart format version
+      run: dart format --version
+
     - name: Debug dart format issues
       run: file lib/l10n/generated/app_localizations.dart
 
