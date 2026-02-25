@@ -18,6 +18,7 @@ import 'package:app4training/widgets/language_selection_button.dart';
 class ViewPage extends ConsumerWidget {
   final String page; // Name of the currently selected page
   final String langCode;
+
   const ViewPage(this.page, this.langCode, {super.key});
 
   /// First check whether the background process did something since
@@ -86,11 +87,13 @@ class ViewPage extends ConsumerWidget {
                     ref
                         .read(sharedPrefsProvider)
                         .setString('recentLang', langCode);
-                    return HtmlView(
-                        content,
-                        (Globals.rtlLanguages.contains(langCode))
-                            ? TextDirection.rtl
-                            : TextDirection.ltr);
+                    return SafeArea(
+                      child: HtmlView(
+                          content,
+                          (Globals.rtlLanguages.contains(langCode))
+                              ? TextDirection.rtl
+                              : TextDirection.ltr),
+                    );
                   }
               }
             }));

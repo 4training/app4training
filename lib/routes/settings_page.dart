@@ -16,24 +16,26 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.settings)),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          // Set app language
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(context.l10n.appLanguage,
-                  style: Theme.of(context).textTheme.bodyMedium),
-              const DropdownButtonAppLanguage(),
-            ],
-          ),
-          const SizedBox(height: 10),
-          const Expanded(child: LanguageSettings()),
-          const UpdateSettings()
-          // const SizedBox(height: 10),
-          // const DesignSettings()
-        ]),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(children: [
+            // Set app language
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(context.l10n.appLanguage,
+                    style: Theme.of(context).textTheme.bodyMedium),
+                const DropdownButtonAppLanguage(),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Expanded(child: LanguageSettings()),
+            const UpdateSettings()
+            // const SizedBox(height: 10),
+            // const DesignSettings()
+          ]),
+        ),
       ),
     );
   }

@@ -15,7 +15,7 @@ class WelcomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text(Globals.appTitle)),
-        body: const WelcomeScreen());
+        body: const SafeArea(child: WelcomeScreen()));
   }
 }
 
