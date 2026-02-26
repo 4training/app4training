@@ -37,52 +37,54 @@ class DownloadLanguagesPage extends ConsumerWidget {
 
     return Scaffold(
         appBar: AppBar(title: Text(context.l10n.downloadLanguages)),
-        body: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                Text(context.l10n.downloadLanguagesExplanation),
-                const SizedBox(height: 20),
-                Expanded(
-                    child: LanguagesTable(
-                  highlightLang: appLanguage.languageCode,
-                )),
-                const SizedBox(height: 20),
-                Row(children: [
-                  const Spacer(flex: 2),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: const StadiumBorder(),
-                    ),
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/onboarding/1');
-                    },
-                    child: Text(context.l10n.back),
-                  ),
-                  const Spacer(),
-                  ElevatedButton(
-                    style: buttonStyle,
-                    onPressed: () async {
-                      // Show warning if user hasn't downloaded his app language
-                      if (!appLanguageDownloaded) {
-                        await showDialog(
-                            context: context,
-                            builder: (context) {
-                              return const MissingAppLanguageDialog();
-                            });
-                        return;
-                      }
-                      unawaited(Navigator.pushReplacementNamed(
-                          context, getNextRoute(ref)));
-                    },
-                    child: Text(context.l10n.continueText),
-                  ),
-                  const Spacer(flex: 2),
-                ])
-              ],
-            )));
+        body: SafeArea(
+            child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 20),
+                    Text(context.l10n.downloadLanguagesExplanation),
+                    const SizedBox(height: 20),
+                    Expanded(
+                        child: LanguagesTable(
+                      highlightLang: appLanguage.languageCode,
+                    )),
+                    const SizedBox(height: 20),
+                    Row(children: [
+                      const Spacer(flex: 2),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder(),
+                        ),
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(
+                              context, '/onboarding/1');
+                        },
+                        child: Text(context.l10n.back),
+                      ),
+                      const Spacer(),
+                      ElevatedButton(
+                        style: buttonStyle,
+                        onPressed: () async {
+                          // Show warning if user hasn't downloaded his app language
+                          if (!appLanguageDownloaded) {
+                            await showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return const MissingAppLanguageDialog();
+                                });
+                            return;
+                          }
+                          unawaited(Navigator.pushReplacementNamed(
+                              context, getNextRoute(ref)));
+                        },
+                        child: Text(context.l10n.continueText),
+                      ),
+                      const Spacer(flex: 2),
+                    ])
+                  ],
+                ))));
   }
 
   /// Which route should we continue with after this?

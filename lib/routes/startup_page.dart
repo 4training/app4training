@@ -64,29 +64,30 @@ class StartupPage extends ConsumerWidget {
     Future<String> initResult =
         ((initFunction != null) ? initFunction!() : init(ref));
     return FutureBuilder(
-        future: initResult.then((String navigateTo) =>
-            Navigator.pushReplacementNamed(context, navigateTo)),
-        initialData: "Loading",
-        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-          debugPrint(snapshot.connectionState.toString());
+      future: initResult.then((String navigateTo) =>
+          Navigator.pushReplacementNamed(context, navigateTo)),
+      initialData: "Loading",
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        debugPrint(snapshot.connectionState.toString());
 
-          switch (snapshot.connectionState) {
-            case ConnectionState.none:
-            case ConnectionState.waiting:
-            case ConnectionState.active:
-              return loadingAnimation('Loading');
-            case ConnectionState.done:
-              debugPrint(
-                  'Done, hasData: ${snapshot.hasData}, Error: ${snapshot.hasError}');
-              if (snapshot.hasError) {
-                // TODO do something more helpful for the user ("try again...")
-                return ErrorPage(snapshot.error.toString());
-              } else {
-                // This is actually never called because as soon
-                // as we push the new route he's out of here...
-                return loadingAnimation('Redirecting ...');
-              }
-          }
-        });
+        switch (snapshot.connectionState) {
+          case ConnectionState.none:
+          case ConnectionState.waiting:
+          case ConnectionState.active:
+            return loadingAnimation('Loading');
+          case ConnectionState.done:
+            debugPrint(
+                'Done, hasData: ${snapshot.hasData}, Error: ${snapshot.hasError}');
+            if (snapshot.hasError) {
+              // TODO do something more helpful for the user ("try again...")
+              return ErrorPage(snapshot.error.toString());
+            } else {
+              // This is actually never called because as soon
+              // as we push the new route he's out of here...
+              return loadingAnimation('Redirecting ...');
+            }
+        }
+      },
+    );
   }
 }
