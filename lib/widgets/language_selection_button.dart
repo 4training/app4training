@@ -40,62 +40,68 @@ class LanguageSelectionButton extends ConsumerWidget {
 
     final menuController = MenuController();
     return MenuAnchor(
-        controller: menuController,
-        builder:
-            (BuildContext context, MenuController controller, Widget? child) {
-          return IconButton(
-            onPressed: () {
-              if (controller.isOpen) {
-                controller.close();
-              } else {
-                controller.open();
-              }
-            },
-            icon: const Icon(Icons.translate),
-            tooltip: 'Language selection',
-          );
-        },
-        menuChildren: [
-          Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: Column(
-                children: [
-                  Text(context.l10n.languageSelectionHeader),
-                  // Split list into two columns if we have many languages
-                  // TODO improve decision on when to make two columns
-                  // TODO better 2-column design for odd numbers of languages
-                  menuItems.length > 10
-                      ? Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              fit: FlexFit.loose,
-                              child: Column(
-                                children:
-                                    menuItems.sublist(0, menuItems.length ~/ 2),
-                              ),
-                            ),
-                            Flexible(
-                              fit: FlexFit.loose,
-                              child: Column(
-                                  children:
-                                      menuItems.sublist(menuItems.length ~/ 2)),
-                            )
-                          ],
+      style: MenuStyle(
+        maximumSize: WidgetStatePropertyAll(
+          Size(400, 500),
+        ),
+      ),
+      controller: menuController,
+      builder:
+          (BuildContext context, MenuController controller, Widget? child) {
+        return IconButton(
+          onPressed: () {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+          icon: const Icon(Icons.translate),
+          tooltip: 'Language selection',
+        );
+      },
+      menuChildren: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          child: Column(
+            children: [
+              Text(context.l10n.languageSelectionHeader),
+              // Split list into two columns if we have many languages
+              // TODO improve decision on when to make two columns
+              // TODO better 2-column design for odd numbers of languages
+              menuItems.length > 10
+                  ? Row(
+                      children: [
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Column(
+                            children:
+                                menuItems.sublist(0, menuItems.length ~/ 2),
+                          ),
+                        ),
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Column(
+                              children:
+                                  menuItems.sublist(menuItems.length ~/ 2)),
                         )
-                      : Column(children: menuItems),
-                  const Divider(),
-                  ListTile(
-                    dense: true,
-                    title: Text(context.l10n.manageLanguages),
-                    leading: const Icon(Icons.settings),
-                    onTap: () {
-                      menuController.close();
-                      Navigator.pushNamed(context, '/settings');
-                    },
-                  ),
-                ],
-              ))
-        ]);
+                      ],
+                    )
+                  : Column(children: menuItems),
+              const Divider(),
+              ListTile(
+                dense: true,
+                title: Text(context.l10n.manageLanguages),
+                leading: const Icon(Icons.settings),
+                onTap: () {
+                  menuController.close();
+                  Navigator.pushNamed(context, '/settings');
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

@@ -18,9 +18,9 @@ class HomePage extends ConsumerWidget {
           title: const Text(Globals.appTitle),
         ),
         drawer: const MainDrawer(null, null),
-        body: TableOfContent(null, null,
+        body: SafeArea(child: TableOfContent(null, null,
             header: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                child: Text(context.l10n.homeExplanation))));
+                child: Text(context.l10n.homeExplanation)))));
   }
 }

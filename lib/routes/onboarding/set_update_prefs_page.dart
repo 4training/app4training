@@ -16,53 +16,61 @@ class SetUpdatePrefsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
         appBar: AppBar(title: Text(context.l10n.updates)),
-        body: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Spacer(),
-                Text(context.l10n.updatesExplanation),
-                const Spacer(flex: 2),
-                Text(context.l10n.checkFrequency,
-                    style: Theme.of(context).textTheme.labelLarge),
-                const SizedBox(height: 10),
-                const DropdownButtonCheckFrequency(),
-                const Spacer(flex: 2),
-                Text(context.l10n.doAutomaticUpdates,
-                    style: Theme.of(context).textTheme.labelLarge),
-                const SizedBox(height: 10),
-                const DropdownButtonAutomaticUpdates(),
-                const Spacer(flex: 8),
-                Row(children: [
-                  const Spacer(flex: 2),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: const StadiumBorder(),
-                    ),
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/onboarding/2');
-                    },
-                    child: Text(context.l10n.back),
-                  ),
-                  const Spacer(),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: const StadiumBorder(),
-                    ),
-                    onPressed: () {
-                      // Make sure settings are saved: onboarding completed
-                      ref.read(automaticUpdatesProvider.notifier).persistNow();
-                      ref.read(checkFrequencyProvider.notifier).persistNow();
-                      // Make sure background task gets scheduled
-                      ref.read(backgroundSchedulerProvider.notifier).schedule();
-                      Navigator.pushReplacementNamed(context, '/home');
-                    },
-                    child: Text(context.l10n.letsGo),
-                  ),
-                  const Spacer(flex: 2),
-                ])
-              ],
-            )));
+        body: SafeArea(
+            child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Spacer(),
+                    Text(context.l10n.updatesExplanation),
+                    const Spacer(flex: 2),
+                    Text(context.l10n.checkFrequency,
+                        style: Theme.of(context).textTheme.labelLarge),
+                    const SizedBox(height: 10),
+                    const DropdownButtonCheckFrequency(),
+                    const Spacer(flex: 2),
+                    Text(context.l10n.doAutomaticUpdates,
+                        style: Theme.of(context).textTheme.labelLarge),
+                    const SizedBox(height: 10),
+                    const DropdownButtonAutomaticUpdates(),
+                    const Spacer(flex: 8),
+                    Row(children: [
+                      const Spacer(flex: 2),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder(),
+                        ),
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(
+                              context, '/onboarding/2');
+                        },
+                        child: Text(context.l10n.back),
+                      ),
+                      const Spacer(),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder(),
+                        ),
+                        onPressed: () {
+                          // Make sure settings are saved: onboarding completed
+                          ref
+                              .read(automaticUpdatesProvider.notifier)
+                              .persistNow();
+                          ref
+                              .read(checkFrequencyProvider.notifier)
+                              .persistNow();
+                          // Make sure background task gets scheduled
+                          ref
+                              .read(backgroundSchedulerProvider.notifier)
+                              .schedule();
+                          Navigator.pushReplacementNamed(context, '/home');
+                        },
+                        child: Text(context.l10n.letsGo),
+                      ),
+                      const Spacer(flex: 2),
+                    ])
+                  ],
+                ))));
   }
 }

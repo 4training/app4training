@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 /// This error page is shown to the user in case of internal errors.
 class ErrorPage extends StatelessWidget {
   final String message;
+
   const ErrorPage(this.message, {super.key});
 
   @override
@@ -15,7 +16,8 @@ class ErrorPage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(title: const Text(Globals.appTitle)),
         drawer: const MainDrawer(null, null),
-        body: ErrorMessage(
-            context.l10n.error, context.l10n.internalError(message)));
+        body: SafeArea(
+            child: ErrorMessage(
+                context.l10n.error, context.l10n.internalError(message))));
   }
 }
