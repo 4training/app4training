@@ -308,9 +308,11 @@ class LanguageController extends Notifier<Language> {
 
   /// Return the total size of all files in our directory in kB
   Future<int> _calculateMemoryUsage(Directory dir) async {
-    var files = await dir.list(recursive: true).toList();
-    var sizeInBytes =
-        files.fold(0, (int sum, file) => sum + file.statSync().size);
+    var entities = await dir.list(recursive: true).toList();
+    var sizeInBytes = entities.fold(0, (int sum, entity) {
+      if (entity is File) return sum + entity.statSync().size;
+      return sum;
+    });
     return (sizeInBytes / 1000).ceil(); // let's never round down
   }
 
