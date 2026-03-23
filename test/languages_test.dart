@@ -55,7 +55,7 @@ class FakeDownloadAssetsController extends Fake
       bool? checkSize,
       List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
       Function(double p1)? onProgress,
-      Function()? onStartUnzipping,
+      Function()? onStartUnziping,
       Function()? onCancel,
       Function()? onDone,
       Map<String, dynamic>? requestQueryParams,
@@ -73,7 +73,7 @@ class ThrowingDownloadAssetsController extends FakeDownloadAssetsController {
       bool? checkSize,
       List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
       Function(double p1)? onProgress,
-      Function()? onStartUnzipping,
+      Function()? onStartUnziping,
       Function()? onCancel,
       Function()? onDone,
       Map<String, dynamic>? requestQueryParams,
@@ -327,7 +327,7 @@ void main() {
             'Schritte der Vergebung',
             'MissingTest'
           ]));
-      expect(deTest.state.sizeInKB, 147);
+      expect(deTest.state.sizeInKB, 148);
       expect(deTest.state.path, equals('assets-de/html-de-main'));
 
       // Test some error handling
