@@ -44,7 +44,8 @@ void main() {
     // First there should be the loading animation
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Loading content...'), findsOneWidget);
-    await tester.pump();
+    // In Riverpod v3, FutureProvider needs additional frames to settle
+    await tester.pumpAndSettle();
 
     // Now our content should be shown
     expect(find.textContaining('TestContent'), findsOneWidget);
@@ -67,7 +68,7 @@ void main() {
           (ref, arg) async => throw LanguageNotDownloadedException('de')),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestViewPage()));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     // Now we should see a warning (in German)
     expect(find.byIcon(Icons.warning_amber), findsOneWidget);
@@ -89,7 +90,7 @@ void main() {
           (ref, page) async => throw PageNotFoundException('Healing', 'de')),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestViewPage()));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     // Now we should see a warning (in German)
     expect(find.byIcon(Icons.warning_amber), findsOneWidget);
@@ -112,7 +113,7 @@ void main() {
           throw LanguageCorruptedException('de', 'BadLuck')),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestViewPage()));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     // Now we should see an error message in German
     expect(find.byIcon(Icons.error), findsOneWidget);
@@ -132,7 +133,7 @@ void main() {
       pageContentProvider.overrideWith((ref, arg) async => throw TestFailure),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ], child: const TestViewPage()));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     // Now we should see an error (internalError in German)
     expect(find.byIcon(Icons.error), findsOneWidget);

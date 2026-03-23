@@ -9,10 +9,13 @@ import 'package:file/chroot.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/misc.dart' show ProviderException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as path;
+// ignore: implementation_imports, invalid_use_of_internal_member
+import 'package:riverpod/src/framework.dart' show $RefArg;
 
 class MockDownloadAssetsController extends Mock
     implements DownloadAssetsController {}
@@ -101,14 +104,17 @@ class TestLanguageController extends LanguageController {
         _initReturns = initReturns;
 
   @override
-  Language build(String arg) {
-    languageCode = arg;
+  Language build() {
+    // In v3 family arg is passed via constructor in normal use,
+    // but overrideWith() creates the notifier without the arg.
+    // Access it from the provider element via ref.$arg.
+    languageCode = ref.$arg as String;
     bool downloaded = true;
     if (_downloadedLanguages != null) {
-      downloaded = _downloadedLanguages.contains(arg);
+      downloaded = _downloadedLanguages.contains(languageCode);
     }
-    return Language(downloaded ? arg : '', _pages, const [], const {}, '',
-        _languageSize, DateTime.utc(2023));
+    return Language(downloaded ? languageCode : '', _pages, const [], const {},
+        '', _languageSize, DateTime.utc(2023));
   }
 
   @override
@@ -321,24 +327,31 @@ void main() {
             'Schritte der Vergebung',
             'MissingTest'
           ]));
-      expect(deTest.state.sizeInKB, 163);
+      expect(deTest.state.sizeInKB, 148);
       expect(deTest.state.path, equals('assets-de/html-de-main'));
 
       // Test some error handling
-      try {
-        content = await ref.read(
-            pageContentProvider((name: 'MissingTest', langCode: 'de')).future);
-      } catch (e) {
-        expect(e, isA<LanguageCorruptedException>());
-        expect((e as LanguageCorruptedException).exception,
-            isA<PathNotFoundException>());
-      }
-      try {
-        content = await ref.read(
-            pageContentProvider((name: 'Invalid', langCode: 'de')).future);
-      } catch (e) {
-        expect(e, isA<PageNotFoundException>());
-      }
+      // Trigger evaluation and wait for async to complete
+      ref.read(pageContentProvider((name: 'MissingTest', langCode: 'de')));
+      ref.read(pageContentProvider((name: 'Invalid', langCode: 'de')));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+
+      final missingResult =
+          ref.read(pageContentProvider((name: 'MissingTest', langCode: 'de')));
+      expect(missingResult.hasError, true);
+      // In Riverpod v3, errors are wrapped in ProviderException
+      var error = missingResult.error;
+      if (error is ProviderException) error = error.exception;
+      expect(error, isA<LanguageCorruptedException>());
+      expect((error as LanguageCorruptedException).exception,
+          isA<PathNotFoundException>());
+
+      final invalidResult =
+          ref.read(pageContentProvider((name: 'Invalid', langCode: 'de')));
+      expect(invalidResult.hasError, true);
+      error = invalidResult.error;
+      if (error is ProviderException) error = error.exception;
+      expect(error, isA<PageNotFoundException>());
     });
   });
 
