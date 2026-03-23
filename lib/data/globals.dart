@@ -11,6 +11,7 @@ final packageInfoProvider = MustOverrideProvider<PackageInfo>();
 Provider<T> MustOverrideProvider<T>() {
   return Provider<T>(
     (_) => throw ProviderNotOverriddenException(),
+    retry: (_, __) => null, // Disable v3 automatic retry - must fail fast
   );
 }
 
@@ -33,7 +34,7 @@ final scaffoldMessengerKeyProvider = Provider((ref) {
 /// as we don't need a BuildContext (which is not available in async callbacks)
 final scaffoldMessengerProvider = Provider((ref) {
   return ref.watch(scaffoldMessengerKeyProvider).currentState!;
-});
+}, retry: null);
 
 const int countAvailableLanguages = 34;
 

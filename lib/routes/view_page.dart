@@ -8,6 +8,7 @@ import 'package:app4training/widgets/html_view.dart';
 import 'package:app4training/features/share/share_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/misc.dart' show ProviderException;
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/widgets/loading_animation.dart';
 import 'package:app4training/widgets/main_drawer.dart';
@@ -61,7 +62,12 @@ class ViewPage extends ConsumerWidget {
                   debugPrint(
                       'Done, hasData: ${snapshot.hasData}, Error: ${snapshot.hasError}');
                   if (snapshot.hasError) {
-                    final e = snapshot.error;
+                    // In Riverpod v3, provider errors are wrapped in
+                    // ProviderException - unwrap to get the original error
+                    var e = snapshot.error;
+                    if (e is ProviderException) {
+                      e = e.exception;
+                    }
                     if (e is App4TrainingException) {
                       if ((e is PageNotFoundException) ||
                           (e is LanguageNotDownloadedException)) {

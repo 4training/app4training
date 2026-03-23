@@ -7,6 +7,8 @@ import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:http/http.dart' as http;
+// ignore: implementation_imports, invalid_use_of_internal_member
+import 'package:riverpod/src/framework.dart' show $RefArg;
 
 final httpClientProvider = Provider<http.Client>((ref) {
   return http.Client();
@@ -130,12 +132,15 @@ class LanguageStatus {
 ///
 /// In case the language is not downloaded updatesAvailable will always be false
 /// and the timestamps will be DateTime.utc(2023)
-class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
-  String _languageCode = '';
+class LanguageStatusNotifier extends Notifier<LanguageStatus> {
+  String _languageCode;
+  LanguageStatusNotifier({String languageCode = ''})
+      : _languageCode = languageCode;
+
   @override
-  LanguageStatus build(String arg) {
-    _languageCode = arg;
-    if (!ref.watch(languageProvider(arg)).downloaded) {
+  LanguageStatus build() {
+    _languageCode = ref.$arg as String;
+    if (!ref.watch(languageProvider(_languageCode)).downloaded) {
       // Remove all SharedPrefs if language is not even downloaded
       ref.read(sharedPrefsProvider).remove('updatesAvailable-$_languageCode');
       ref.read(sharedPrefsProvider).remove('lastChecked-$_languageCode');
@@ -143,7 +148,8 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
     }
 
     // download timestamp: When was the language downloaded to the device?
-    DateTime dlTimestamp = ref.watch(languageProvider(arg)).downloadTimestamp;
+    DateTime dlTimestamp =
+        ref.watch(languageProvider(_languageCode)).downloadTimestamp;
     assert(dlTimestamp.isUtc);
     bool updatesAvailable = false;
     DateTime? lcTimestamp;
@@ -181,7 +187,7 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
     }
 
     final status = LanguageStatus(updatesAvailable, dlTimestamp, lcTimestamp);
-    debugPrint('Language $arg: $status');
+    debugPrint('Language $_languageCode: $status');
     return status;
   }
 
@@ -236,12 +242,13 @@ class LanguageStatusNotifier extends FamilyNotifier<LanguageStatus, String> {
 /// Check for updates for English
 /// ref.watch(languageStatusProvider('en').notifier).check()
 final languageStatusProvider =
-    NotifierProvider.family<LanguageStatusNotifier, LanguageStatus, String>(() {
-  return LanguageStatusNotifier();
+    NotifierProvider.family<LanguageStatusNotifier, LanguageStatus, String>(
+        (arg) {
+  return LanguageStatusNotifier(languageCode: arg);
 });
 
 /// Are there updates available in any of our languages?
-final updatesAvailableProvider = StateProvider<bool>((ref) {
+final updatesAvailableProvider = Provider<bool>((ref) {
   bool updatesAvailable = false;
   for (String languageCode in ref.watch(availableLanguagesProvider)) {
     if (ref.watch(languageStatusProvider(languageCode)).updatesAvailable) {
@@ -260,7 +267,7 @@ final updatesAvailableProvider = StateProvider<bool>((ref) {
 /// because the former will get rebuilt if a language gets downloaded
 /// (and I'm not totally sure if there could be weird race conditions
 /// in case we're watching both...?)
-final lastCheckedProvider = StateProvider<DateTime>((ref) {
+final lastCheckedProvider = Provider<DateTime>((ref) {
   DateTime timestamp = DateTime.now().toUtc();
   bool downloadedSomeLanguage = false;
   for (String languageCode in ref.watch(availableLanguagesProvider)) {
