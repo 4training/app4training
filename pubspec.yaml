@@ -20,7 +20,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.8.7+10
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.7.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -41,19 +41,19 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
-  test: ^1.29.0
+  test: ^1.26.0
   mocktail: ^1.0.3
   file: ^7.0.0
   shared_preferences: ^2.2.0
-  flutter_riverpod: ^3.3.1
-  riverpod: ^3.2.1
+  flutter_riverpod: ^3.1.0
+  riverpod: ^3.1.0
   html: ^0.15.4
   flex_color_scheme: ^8.4.0
   url_launcher: ^6.3.2
   flutter_linkify: ^6.0.0
-  package_info_plus: ^10.0.0
-  workmanager: ^0.9.0+3
-  share_plus: ^13.0.0
+  package_info_plus: ^9.0.0
+  workmanager: ^0.7.0
+  share_plus: ^12.0.1
   open_filex: ^4.4.0
 
 
@@ -68,7 +68,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   full_coverage: ^1.0.0
-  riverpod_lint: ^3.1.3
+  custom_lint: ^0.8.1
+  riverpod_lint: ^3.1.0
   integration_test:
     sdk: flutter
 
