@@ -10,6 +10,8 @@ import 'package:app4training/data/updates.dart';
 import 'package:http/http.dart';
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// ignore: implementation_imports, invalid_use_of_internal_member
+import 'package:riverpod/src/framework.dart' show $RefArg;
 
 import 'languages_test.dart';
 
@@ -35,7 +37,8 @@ class TestLanguageStatus extends LanguageStatusNotifier {
         _langWithUpdates = langWithUpdates;
 
   @override
-  LanguageStatus build(String arg) {
+  LanguageStatus build() {
+    final arg = ref.$arg as String;
     return LanguageStatus(
         _langWithUpdates.contains(arg), DateTime.utc(2023), DateTime.utc(2023));
   }

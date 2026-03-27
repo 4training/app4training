@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart';
+// ignore: implementation_imports, invalid_use_of_internal_member
+import 'package:riverpod/src/framework.dart' show $RefArg;
 
 /// File system access as a provider to enable better testing
 final fileSystemProvider = Provider<FileSystem>((ref) {
@@ -79,18 +81,18 @@ final pageContentProvider =
     throw LanguageCorruptedException(
         page.langCode, 'Error while reading from local storage.', e);
   }
-});
+}, retry: null);
 
 /// Usage:
 /// ref.watch(languageProvider('de')) -> get German Language object
 /// ref.watch(languageProvider('en').notifier) -> get English LanguageController
 final languageProvider =
-    NotifierProvider.family<LanguageController, Language, String>(() {
-  return LanguageController();
+    NotifierProvider.family<LanguageController, Language, String>((arg) {
+  return LanguageController(languageCode: arg);
 });
 
 /// How many languages do we have available offline?
-final countDownloadedLanguagesProvider = StateProvider<int>((ref) {
+final countDownloadedLanguagesProvider = Provider<int>((ref) {
   int countDownloadedLanguages = 0;
   for (String languageCode in ref.watch(availableLanguagesProvider)) {
     if (ref.watch(languageProvider(languageCode)).downloaded) {
@@ -100,9 +102,9 @@ final countDownloadedLanguagesProvider = StateProvider<int>((ref) {
   return countDownloadedLanguages;
 });
 
-class LanguageController extends FamilyNotifier<Language, String> {
+class LanguageController extends Notifier<Language> {
   @protected
-  String languageCode = '';
+  String languageCode;
 
   /// You must call [await _initController()] before accessing [_controller]
   final DownloadAssetsController _controller;
@@ -110,7 +112,8 @@ class LanguageController extends FamilyNotifier<Language, String> {
 
   /// We use dependency injection (optional parameters [assetsController])
   /// so that we can test the class well
-  LanguageController({DownloadAssetsController? assetsController})
+  LanguageController(
+      {this.languageCode = '', DownloadAssetsController? assetsController})
       : _controller = assetsController ?? DownloadAssetsController();
 
   /// Make sure that our [_controller] is initialized
@@ -123,8 +126,11 @@ class LanguageController extends FamilyNotifier<Language, String> {
   }
 
   @override
-  Language build(String arg) {
-    languageCode = arg;
+  Language build() {
+    // In v3, the family arg is accessed via ref.$arg (set by the provider
+    // system). This is needed for overrideWith() where the arg isn't passed
+    // through the constructor.
+    languageCode = ref.$arg as String;
     return Language(
         '', const {}, const [], const {}, '', 0, DateTime.utc(2023));
   }
@@ -302,9 +308,11 @@ class LanguageController extends FamilyNotifier<Language, String> {
 
   /// Return the total size of all files in our directory in kB
   Future<int> _calculateMemoryUsage(Directory dir) async {
-    var files = await dir.list(recursive: true).toList();
-    var sizeInBytes =
-        files.fold(0, (int sum, file) => sum + file.statSync().size);
+    var entities = await dir.list(recursive: true).toList();
+    var sizeInBytes = entities.fold(0, (int sum, entity) {
+      if (entity is File) return sum + entity.statSync().size;
+      return sum;
+    });
     return (sizeInBytes / 1000).ceil(); // let's never round down
   }
 

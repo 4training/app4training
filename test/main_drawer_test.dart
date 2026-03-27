@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// ignore: implementation_imports, invalid_use_of_internal_member
+import 'package:riverpod/src/framework.dart' show $RefArg;
 
 import 'app_language_test.dart';
 import 'languages_test.dart';
@@ -17,7 +19,9 @@ import 'routes_test.dart';
 // French only has "Prayer" available.
 class CustomTestLanguageController extends LanguageController {
   @override
-  Language build(String arg) {
+  Language build() {
+    // ignore: invalid_use_of_internal_member
+    final arg = ref.$arg as String;
     Map<String, String> testPageList = {
       'Prayer': 'Gebet',
       'Forgiving_Step_by_Step': 'Schritte der Vergebung',
@@ -181,6 +185,7 @@ void main() {
       languageProvider.overrideWith(() => CustomTestLanguageController()),
       sharedPrefsProvider.overrideWithValue(prefs)
     ]);
+    addTearDown(ref.dispose);
     await tester.pumpWidget(UncontrolledProviderScope(
         container: ref,
         child: TestApp(
@@ -201,6 +206,8 @@ void main() {
     // Snackbar visible?
     expect(find.textContaining('Sprache zurückgesetzt auf Deutsch'),
         findsOneWidget);
+    // Let the SnackBar timer complete to avoid pending timer error in v3
+    await tester.pumpAndSettle(const Duration(seconds: 5));
   });
 
   testWidgets('Make sure drawer is closed after returning from settings',
