@@ -12,69 +12,139 @@ class HtmlView extends StatelessWidget {
 
   /// left-to-right or right-to-left (LTR / RTL)?
   final TextDirection direction;
+
   const HtmlView(this.content, this.direction, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.all(8),
-        child: SingleChildScrollView(
-            child: Column(
+      padding: const EdgeInsets.all(8),
+      child: SingleChildScrollView(
+        child: Column(
           children: [
             SelectionArea(
-                child: Directionality(
-                    textDirection: direction,
-//            child: Html(
-//                data: content,
-                    child: Html.fromDom(
-                        document: sanitize(
-                            content,
-                            MediaQuery.of(context).platformBrightness ==
-                                Brightness.dark),
-                        extensions: const [TableHtmlExtension()],
-                        style: {
-                          "body": Style(fontSize: FontSize(15)),
-                          "table": Style(
-                              // set table width, otherwise they're broken
-                              width: Width(
-                                  MediaQuery.of(context).size.width - 50)),
-                          "td": Style(
-                              padding: const EdgeInsets.fromLTRB(5, 3, 5, 3)
-                                  .htmlPadding),
-                          "th": Style(
-                              textAlign: TextAlign.center,
-                              verticalAlign: VerticalAlign.top),
-                          "h1": Style(
-                              margin:
-                                  Margins(top: Margin(0), bottom: Margin(0))),
-                          "h2": Style(
-                              margin:
-                                  Margins(top: Margin(12), bottom: Margin(5))),
-                          "h3": Style(
-                              margin:
-                                  Margins(top: Margin(10), bottom: Margin(3))),
-                          "li": Style(
-                              margin:
-                                  Margins(top: Margin(3), bottom: Margin(3))),
-                          "p": Style(
-                              margin:
-                                  Margins(top: Margin(3), bottom: Margin(3))),
-                          "ul": Style(
-                              margin:
-                                  Margins(top: Margin(0), bottom: Margin(0))),
-// TODO: reduce left padding/margin of <li> items
-// But this doesn't seem to work in flutter_html-3.0.0-beta2
-/*                      "li": Style(
-                          padding: HtmlPaddings.zero, margin: Margins.zero) */
-                        },
-                        onAnchorTap: (url, _, __) {
-                          debugPrint("Link tapped: $url");
-                          if (url != null) {
-                            Navigator.pushNamed(context, '/view$url');
-                          }
-                        })))
+              child: Directionality(
+                textDirection: direction,
+                //            child: Html(
+                //                data: content,
+                child: Html.fromDom(
+                  document: sanitize(
+                    content,
+                    MediaQuery.of(context).platformBrightness ==
+                        Brightness.dark,
+                  ),
+                  extensions: [
+                    // Order matters: TagWrapExtension must come BEFORE
+                    // TableHtmlExtension so it matches <table> first
+                    // during the preparing step. It then delegates the
+                    // inner build to TableHtmlExtension via
+                    // prepareFromExtension(extensionsToIgnore: {this})
+                    // and wraps the resulting table widget in a
+                    // horizontal scroll view. Without this ordering,
+                    // TableHtmlExtension wins the match and the wrap
+                    // is never applied — leaving wide tables to
+                    // overflow or hit "RenderBox was not laid out".
+                    //
+                    // Known remaining issue: on real devices the
+                    // semantics pass logs a non-fatal per-frame
+                    // "RenderBox was not laid out: RenderParagraph"
+                    // assertion during PipelineOwner.flushSemantics,
+                    // originating deep inside the
+                    // LayoutGrid/LayoutBuilder cell tree built by
+                    // TableHtmlExtension. Wrapping the table in
+                    // SelectionContainer.disabled was tried as a
+                    // workaround (mirroring raw_tooltip.dart:813-815)
+                    // but did NOT fix the assertion and broke text
+                    // selection across the whole page, so it was
+                    // reverted. Page still renders fine; the spam is
+                    // cosmetic in logs.
+                    TagWrapExtension(
+                      tagsToWrap: const {'table'},
+                      builder: (child) => _HorizontalTableScroll(child: child),
+                    ),
+                    const TableHtmlExtension(),
+                  ],
+                  style: {
+                    "body": Style(fontSize: FontSize(15)),
+                    "td": Style(
+                      padding:
+                          const EdgeInsets.fromLTRB(5, 3, 5, 3).htmlPadding,
+                    ),
+                    "th": Style(
+                      textAlign: TextAlign.center,
+                      verticalAlign: VerticalAlign.top,
+                    ),
+                    "h1": Style(
+                      margin: Margins(top: Margin(0), bottom: Margin(0)),
+                    ),
+                    "h2": Style(
+                      margin: Margins(top: Margin(12), bottom: Margin(5)),
+                    ),
+                    "h3": Style(
+                      margin: Margins(top: Margin(10), bottom: Margin(3)),
+                    ),
+                    "li": Style(
+                      margin: Margins(top: Margin(3), bottom: Margin(3)),
+                      padding: HtmlPaddings.zero,
+                    ),
+                    "p": Style(
+                      margin: Margins(top: Margin(3), bottom: Margin(3)),
+                    ),
+                    "ul": Style(
+                      margin: Margins(top: Margin(0), bottom: Margin(0)),
+                    ),
+                  },
+                  onAnchorTap: (url, _, __) {
+                    debugPrint("Link tapped: $url");
+                    if (url != null) {
+                      Navigator.pushNamed(context, '/view$url');
+                    }
+                  },
+                ),
+              ),
+            ),
           ],
-        )));
+        ),
+      ),
+    );
+  }
+}
+
+/// Wraps a rendered `<table>` in a horizontal scroll view with an
+/// always-visible scrollbar. An explicit [ScrollController] is needed
+/// because the scroll view sits inside a `WidgetSpan` (via
+/// [TagWrapExtension]) where [PrimaryScrollController] does not apply.
+/// [Scrollbar.thumbVisibility] is forced on so users can see at a glance
+/// when a table extends beyond the screen and needs to be scrolled.
+class _HorizontalTableScroll extends StatefulWidget {
+  const _HorizontalTableScroll({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_HorizontalTableScroll> createState() => _HorizontalTableScrollState();
+}
+
+class _HorizontalTableScrollState extends State<_HorizontalTableScroll> {
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scrollbar(
+      controller: _controller,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        controller: _controller,
+        scrollDirection: Axis.horizontal,
+        child: widget.child,
+      ),
+    );
   }
 }
 
@@ -142,6 +212,19 @@ htmldom.Document sanitize(String inputHtml, bool isDarkMode) {
   for (var element in dom.querySelectorAll('th')) {
     element.attributes.remove('style');
   }
+  // e.g. Time_with_God has <table style="width:100%">. flutter_html 3.0.0
+  // does NOT resolve percent widths against the containing block (see
+  // CssBoxWidget._computeSize and Normalize.normalize in
+  // flutter_html-3.0.0/lib/src/css_box_widget.dart): it uses the raw
+  // numeric value regardless of unit, so `width: 100%` is interpreted as
+  // literally 100 px and the table overflows by hundreds of pixels.
+  // Strip style and width attributes from <table> so it falls back to
+  // Width.auto() and our horizontal-scroll wrapper can size the table
+  // to its intrinsic content width.
+  for (var element in dom.querySelectorAll('table')) {
+    element.attributes.remove('style');
+    element.attributes.remove('width');
+  }
 
   // For all worksheets with subtitles (e.g. "Overcoming Colored Lenses"):
   // Replace <p><span style="font-size:125%"><i><b>...</b></i></span></p>
@@ -157,7 +240,7 @@ htmldom.Document sanitize(String inputHtml, bool isDarkMode) {
 
   // For God's Story (five fingers):
   // Remove <div style="margin-left:25px"
-/*  for (var element in dom.querySelectorAll('div')) {
+  /*  for (var element in dom.querySelectorAll('div')) {
     if (element.attributes['style'] == 'margin-left:25px') {
       element.attributes['style'] = '';
     }
