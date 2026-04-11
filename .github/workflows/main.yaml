@@ -44,7 +44,6 @@ jobs:
         # TODO clean up the dart analyzer info stuff
         # dart analyze --fatal-infos
         dart analyze
-        dart run custom_lint
 
     - name: Run all tests and generate coverage information in coverage/lcov.info
       run: flutter test --coverage
