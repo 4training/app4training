@@ -20,7 +20,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.8.7+10
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.7.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -31,17 +31,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_html: ^3.0.0-beta.2
-  flutter_html_table: ^3.0.0-beta.2
+  flutter_html: ^3.0.0
+  flutter_html_table: ^3.0.0
   path_provider: ^2.0.11
-  download_assets: ^4.0.0
+  download_assets: ^4.1.0
   path: ^1.8.2
   http: ^1.0.0
   dio: ^5.0.0
   flutter_localizations:
     sdk: flutter
   intl: any
-  test: ^1.29.0
+  test: ^1.29.0 # 1.30+ needs test_api >0.7.9, but flutter_test pins test_api 0.7.9
   mocktail: ^1.0.3
   file: ^7.0.0
   shared_preferences: ^2.2.0
@@ -68,6 +68,10 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   full_coverage: ^1.0.0
+  # custom_lint removed: custom_lint 0.8.1 requires analyzer ^8, but
+  # riverpod_lint >=3.1.1 requires analyzer ^9. riverpod_lint 3.1.3
+  # migrated from custom_lint to analysis_server_plugin, so custom_lint
+  # is no longer needed here.
   riverpod_lint: ^3.1.3
   integration_test:
     sdk: flutter
