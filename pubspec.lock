@@ -229,10 +229,10 @@ packages:
     dependency: "direct main"
     description:
       name: download_assets
-      sha256: ecc0e9f644f1c57e5ba8c723b05e69ace7fd6177f34eebcadc496b7d410e6c4d
+      sha256: ab479ef705819783af9c2a53de9c033ac7f621677f250ad0d63728f260d16585
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "4.1.0"
   fake_async:
     dependency: transitive
     description:
@@ -423,6 +423,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  idb_shim:
+    dependency: transitive
+    description:
+      name: idb_shim
+      sha256: "6cd94b71a33f1223b01ea2b359c3a6fde5980872b23b31d176a64c74d4dede57"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.8.5+2"
   integration_test:
     dependency: "direct dev"
     description: flutter
@@ -740,6 +748,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  sembast:
+    dependency: transitive
+    description:
+      name: sembast
+      sha256: "139cf71496105de32e7a08a4e3a1ead0f81c4a616ec9703ed07e8f0d10cdd505"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.8.6"
   share_plus:
     dependency: "direct main"
     description:
@@ -921,6 +937,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.1"
+  synchronized:
+    dependency: transitive
+    description:
+      name: synchronized
+      sha256: c254ade258ec8282947a0acbbc90b9575b4f19673533ee46f2f6e9b3aeefd7c0
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.4.0"
   term_glyph:
     dependency: transitive
     description:
@@ -1138,5 +1162,5 @@ packages:
     source: hosted
     version: "2.2.4"
 sdks:
-  dart: ">=3.9.0 <4.0.0"
+  dart: ">=3.10.0 <4.0.0"
   flutter: ">=3.38.0"

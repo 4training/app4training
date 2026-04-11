@@ -31,8 +31,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_html: ^3.0.0-beta.2
-  flutter_html_table: ^3.0.0-beta.2
+  flutter_html: ^3.0.0
+  flutter_html_table: ^3.0.0
   path_provider: ^2.0.11
   download_assets: ^4.0.0
   path: ^1.8.2
