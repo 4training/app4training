@@ -81,8 +81,9 @@ import 'design/theme.dart';
 /// [debugPrint] so developers inspecting logs can see that the filter
 /// is active. Subsequent suppressions are silent to avoid log spam.
 ///
-/// See also: `Task Progress.md` §5 for the full investigation history,
-/// including the diagnostic logging session that identified all four
+/// See also: `docs/in_progress_notes/flushSemantics_assertion.md`
+/// for the full investigation history.
+/// Including the diagnostic logging session that identified all four
 /// variants.
 void _installHtmlTableSemanticsFilter() {
   final FlutterExceptionHandler? previousHandler = FlutterError.onError;
