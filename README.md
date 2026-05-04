@@ -5,6 +5,10 @@ This app is an offline version of the website [4training.net](www.4training.net)
 
 Both, the app and the website are projects by [holydevelopers.net](https://holydevelopers.net/).
 
+## Onboarding
+
+For a detailed onboarding documentation go to [this file](/ONBOARDING.md)
+
 ## Architecture
 * For navigation we use the Navigator with named routes ("Navigator 1.0", no routing package). See the folder [lib/routes/](lib/routes), especially the [overview of the route names](lib/routes/routes.dart).
 * For viewing a page, we use route names that are the same as on the [4training.net](https://www.4training.net) website: `/view/PageName/languageCode`, e.g. `/view/Dealing_with_Money/de` for viewing https://www.4training.net/Dealing_with_Money/de
@@ -39,7 +43,6 @@ For formatting code, we follow the dart guidelines by using the standard [dart f
 Before committing, please run the following commands and make sure they don't show any issues so that our tests will pass:
 * `dart format .`
 * `dart analyze`
-* `dart run custom_lint`
 * `flutter test`
 
 ## Contributing
