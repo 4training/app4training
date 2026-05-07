@@ -37,7 +37,7 @@ class StartupPage extends ConsumerWidget {
       return '/onboarding/2'; // Go to DownloadLanguagesPage
     }
 
-/*  TODO for version 0.9
+    /*  TODO for version 0.9
     // Check whether user completed third onboarding step
     if (ref.read(sharedPrefsProvider).getString('checkFrequency') == null) {
       return '/onboarding/3';
@@ -64,8 +64,12 @@ class StartupPage extends ConsumerWidget {
     Future<String> initResult =
         ((initFunction != null) ? initFunction!() : init(ref));
     return FutureBuilder(
-      future: initResult.then((String navigateTo) =>
-          Navigator.pushReplacementNamed(context, navigateTo)),
+      future: initResult.then(
+        (String navigateTo) => {
+          if (context.mounted)
+            {Navigator.pushReplacementNamed(context, navigateTo)},
+        },
+      ),
       initialData: "Loading",
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         debugPrint(snapshot.connectionState.toString());
@@ -77,7 +81,8 @@ class StartupPage extends ConsumerWidget {
             return loadingAnimation('Loading');
           case ConnectionState.done:
             debugPrint(
-                'Done, hasData: ${snapshot.hasData}, Error: ${snapshot.hasError}');
+              'Done, hasData: ${snapshot.hasData}, Error: ${snapshot.hasError}',
+            );
             if (snapshot.hasError) {
               // TODO do something more helpful for the user ("try again...")
               return ErrorPage(snapshot.error.toString());
