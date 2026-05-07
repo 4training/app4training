@@ -36,6 +36,7 @@ class TestObserver extends NavigatorObserver {
 
 class TestApp extends StatelessWidget {
   final TestObserver observer;
+
   const TestApp(this.observer, {super.key});
 
   @override
@@ -55,9 +56,12 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final TestObserver observer = TestObserver();
-    await tester.pumpWidget(ProviderScope(
+    await tester.pumpWidget(
+      ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestApp(observer)));
+        child: TestApp(observer),
+      ),
+    );
 
     // Test that onboarding process get's started on first app usage
     expect(find.byType(TestApp), findsOneWidget);
@@ -66,18 +70,24 @@ void main() {
     expect(find.byType(WelcomePage), findsOneWidget);
 
     // Test second onboarding step
-    unawaited(Navigator.of(tester.element(find.byType(WelcomePage)))
-        .pushReplacementNamed('/onboarding/2'));
+    unawaited(
+      Navigator.of(
+        tester.element(find.byType(WelcomePage)),
+      ).pushReplacementNamed('/onboarding/2'),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(DownloadLanguagesPage), findsOneWidget);
 
     // Go back again
-    unawaited(Navigator.of(tester.element(find.byType(DownloadLanguagesPage)))
-        .pushReplacementNamed('/onboarding/1'));
+    unawaited(
+      Navigator.of(
+        tester.element(find.byType(DownloadLanguagesPage)),
+      ).pushReplacementNamed('/onboarding/1'),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(WelcomePage), findsOneWidget);
 
-/*  TODO for version 0.9
+    /*  TODO for version 0.9
     // Test third onboarding step
     unawaited(Navigator.of(tester.element(find.byType(WelcomePage)))
         .pushReplacementNamed('/onboarding/3'));
@@ -87,13 +97,14 @@ void main() {
 
     // Test that routes are handled
     expect(
-        observer.replacedRoutes,
-        orderedEquals([
-          '/onboarding/1',
-          '/onboarding/2',
-          '/onboarding/1',
-//          '/onboarding/3'
-        ]));
+      observer.replacedRoutes,
+      orderedEquals([
+        '/onboarding/1',
+        '/onboarding/2',
+        '/onboarding/1',
+        //          '/onboarding/3'
+      ]),
+    );
   });
 
   testWidgets('Test normal startup', (WidgetTester tester) async {
@@ -101,32 +112,45 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final TestObserver observer = TestObserver();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      languageProvider
-          .overrideWith(() => TestLanguageController(initReturns: true)),
-      sharedPrefsProvider.overrideWithValue(prefs)
-    ], child: TestApp(observer)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          languageProvider.overrideWith2(
+            (languageCode) => TestLanguageController(initReturns: true),
+          ),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+        child: TestApp(observer),
+      ),
+    );
 
     // Test initial route /
     expect(find.byType(TestApp), findsOneWidget);
     expect(find.byType(StartupPage), findsOneWidget);
 
     // Test home page
-    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
-        .pushNamed('/home'));
+    unawaited(
+      Navigator.of(tester.element(find.byType(StartupPage))).pushNamed('/home'),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
 
     // Test settings page
-    unawaited(Navigator.of(tester.element(find.byType(HomePage)))
-        .pushNamed('/settings'));
+    unawaited(
+      Navigator.of(
+        tester.element(find.byType(HomePage)),
+      ).pushNamed('/settings'),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(SettingsPage), findsOneWidget);
 
     // Test viewing the forgiveness page in English
     const String viewRoute = '/view/Forgiving_Step_by_Step/en';
-    unawaited(Navigator.of(tester.element(find.byType(SettingsPage)))
-        .pushNamed(viewRoute));
+    unawaited(
+      Navigator.of(
+        tester.element(find.byType(SettingsPage)),
+      ).pushNamed(viewRoute),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(ViewPage), findsOneWidget);
     ViewPage viewPage =
@@ -136,30 +160,40 @@ void main() {
 
     // Test that routes are handled
     expect(
-        observer.routes, orderedEquals(['/', '/home', '/settings', viewRoute]));
+      observer.routes,
+      orderedEquals(['/', '/home', '/settings', viewRoute]),
+    );
   });
 
   testWidgets('Test some edge cases', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
     final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(ProviderScope(
+    await tester.pumpWidget(
+      ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestApp(TestObserver())));
+        child: TestApp(TestObserver()),
+      ),
+    );
 
     // All of the following errorneous routes should result in showing /home
-    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
-        .pushNamed('/view'));
+    unawaited(
+      Navigator.of(tester.element(find.byType(StartupPage))).pushNamed('/view'),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
 
-    unawaited(Navigator.of(tester.element(find.byType(HomePage)))
-        .pushNamed('/view//'));
+    unawaited(
+      Navigator.of(tester.element(find.byType(HomePage))).pushNamed('/view//'),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
 
-    unawaited(Navigator.of(tester.element(find.byType(HomePage)))
-        .pushNamed('/view/Forgiving_Step_by_Step/'));
+    unawaited(
+      Navigator.of(
+        tester.element(find.byType(HomePage)),
+      ).pushNamed('/view/Forgiving_Step_by_Step/'),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
   });
@@ -167,12 +201,18 @@ void main() {
   testWidgets('Test unknown route', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(
+    await tester.pumpWidget(
+      ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestApp(TestObserver())));
+        child: TestApp(TestObserver()),
+      ),
+    );
 
-    unawaited(Navigator.of(tester.element(find.byType(StartupPage)))
-        .pushNamed('/unknown'));
+    unawaited(
+      Navigator.of(
+        tester.element(find.byType(StartupPage)),
+      ).pushNamed('/unknown'),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(ErrorPage), findsOneWidget);
     expect(find.textContaining('Unknown route /unknown'), findsOneWidget);

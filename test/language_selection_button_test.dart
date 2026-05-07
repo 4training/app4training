@@ -34,7 +34,7 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => TestLanguageController(
+      languageProvider.overrideWith2((languageCode) => TestLanguageController(
           downloadedLanguages: ['de'],
           pages: {'Healing': const Page('test', 'test', 'test', '1.0', null)}))
     ], child: const TestLanguagesButton()));
@@ -57,7 +57,7 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(ProviderScope(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController(
+      languageProvider.overrideWith2((languageCode) => TestLanguageController(
           downloadedLanguages: ['de', 'en', 'fr', 'es', 'ar'],
           pages: {'Healing': const Page('test', 'test', 'test', '1.0', null)}))
     ], child: const TestLanguagesButton()));
@@ -100,7 +100,7 @@ void main() {
         container: container,
         child: ProviderScope(overrides: [
           appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-          languageProvider.overrideWith(() => TestLanguageController(
+          languageProvider.overrideWith2((languageCode) => TestLanguageController(
                   downloadedLanguages: availableLanguages,
                   pages: {
                     'Healing': const Page('test', 'test', 'test', '1.0', null)

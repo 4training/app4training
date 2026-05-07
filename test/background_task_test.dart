@@ -19,9 +19,11 @@ void main() {
 
     final ref = ProviderContainer(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWith(
-          () => LanguageController(assetsController: fakeController)),
-      languageStatusProvider.overrideWith(() => TestLanguageStatus())
+      languageProvider.overrideWith2(
+          (languageCode) => LanguageController(
+            languageCode: languageCode,
+              assetsController: fakeController,),),
+      languageStatusProvider.overrideWith2((languageCode) => TestLanguageStatus())
     ]);
     await backgroundCheck(ref);
     expect(ref.read(updatesAvailableProvider), false);
@@ -37,8 +39,9 @@ void main() {
       sharedPrefsProvider.overrideWithValue(prefs),
       httpClientProvider.overrideWith((ref) => mockCheckResponse({'de': 2})),
       fileSystemProvider.overrideWith((ref) => fileSystem),
-      languageProvider.overrideWith(
-          () => LanguageController(assetsController: fakeController)),
+      languageProvider.overrideWith2(
+          (languageCode) => LanguageController(assetsController: fakeController),
+      ),
     ]);
 
     expect(ref.read(sharedPrefsProvider).getBool('updatesAvailable-de'), null);

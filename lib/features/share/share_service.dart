@@ -17,7 +17,7 @@ class ShareService {
 
   /// Wraps Share.shareXFiles() (package share_plus)
   ///
-  /// Not using the same argument List<XFile> because that would make it
+  /// Not using the same argument List`<XFile>` because that would make it
   /// harder to verify that the function gets called with correct arguments
   /// with mocktail
   Future<ShareResult> shareFile(String path) {

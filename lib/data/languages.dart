@@ -25,7 +25,8 @@ final imageContentProvider = Provider.family<String, Resource>((ref, res) {
   final String path = ref.watch(languageProvider(res.langCode)).path;
   if (path == '') {
     debugPrint(
-        "Error: Can't load image ${res.name} in language ${res.langCode}");
+      "Error: Can't load image ${res.name} in language ${res.langCode}",
+    );
     return '';
   }
   final fileSystem = ref.watch(fileSystemProvider);
@@ -44,8 +45,10 @@ final imageContentProvider = Provider.family<String, Resource>((ref, res) {
 /// throws [PageNotFoundException]: Hm, errorneous link?
 /// throws [LanguageCorruptedException]: oops,
 /// hope this goes away by deleting + re-downloading the language
-final pageContentProvider =
-    FutureProvider.family<String, Resource>((ref, page) async {
+final pageContentProvider = FutureProvider.family<String, Resource>((
+  ref,
+  page,
+) async {
   final fileSystem = ref.watch(fileSystemProvider);
   final lang = ref.watch(languageProvider(page.langCode));
   if (!lang.downloaded) {
@@ -61,25 +64,32 @@ final pageContentProvider =
 
   debugPrint("Fetching content of '${page.name}/${page.langCode}'...");
   try {
-    String content = await fileSystem
-        .file(join(lang.path, pageDetails.fileName))
-        .readAsString();
+    String content =
+        await fileSystem
+            .file(join(lang.path, pageDetails.fileName))
+            .readAsString();
     // Load images directly into the HTML:
     // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
-    return content.replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'),
-        (match) {
+    return content.replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'), (
+      match,
+    ) {
       if (!lang.images.containsKey(match.group(1))) {
         debugPrint(
-            'Warning: image ${match.group(1)} missing (in ${pageDetails.fileName})');
+          'Warning: image ${match.group(1)} missing (in ${pageDetails.fileName})',
+        );
         return match.group(0)!;
       }
-      String imageData = ref.watch(imageContentProvider(
-          (name: match.group(1)!, langCode: page.langCode)));
+      String imageData = ref.watch(
+        imageContentProvider((name: match.group(1)!, langCode: page.langCode)),
+      );
       return 'src="data:image/png;base64,$imageData"';
     });
   } on FileSystemException catch (e) {
     throw LanguageCorruptedException(
-        page.langCode, 'Error while reading from local storage.', e);
+      page.langCode,
+      'Error while reading from local storage.',
+      e,
+    );
   }
 }, retry: null);
 
@@ -88,8 +98,8 @@ final pageContentProvider =
 /// ref.watch(languageProvider('en').notifier) -> get English LanguageController
 final languageProvider =
     NotifierProvider.family<LanguageController, Language, String>((arg) {
-  return LanguageController(languageCode: arg);
-});
+      return LanguageController(languageCode: arg);
+    });
 
 /// How many languages do we have available offline?
 final countDownloadedLanguagesProvider = Provider<int>((ref) {
@@ -112,9 +122,10 @@ class LanguageController extends Notifier<Language> {
 
   /// We use dependency injection (optional parameters [assetsController])
   /// so that we can test the class well
-  LanguageController(
-      {this.languageCode = '', DownloadAssetsController? assetsController})
-      : _controller = assetsController ?? DownloadAssetsController();
+  LanguageController({
+    this.languageCode = '',
+    DownloadAssetsController? assetsController,
+  }) : _controller = assetsController ?? DownloadAssetsController();
 
   /// Make sure that our [_controller] is initialized
   Future<void> _initController() async {
@@ -132,7 +143,14 @@ class LanguageController extends Notifier<Language> {
     // through the constructor.
     languageCode = ref.$arg as String;
     return Language(
-        '', const {}, const [], const {}, '', 0, DateTime.utc(2023));
+      '',
+      const {},
+      const [],
+      const {},
+      '',
+      0,
+      DateTime.utc(2023),
+    );
   }
 
   /// Download this language and make it available.
@@ -160,19 +178,29 @@ class LanguageController extends Notifier<Language> {
   /// Returns true when the language is now available, false if not
   Future<bool> lazyInit() async {
     await _initController();
-    String path =
-        join(_controller.assetsDir!, Globals.getResourcesDir(languageCode));
+    String path = join(
+      _controller.assetsDir!,
+      Globals.getResourcesDir(languageCode),
+    );
     final stat = await ref
         .watch(fileSystemProvider)
         .stat(join(path, 'structure', 'contents.json'));
     bool downloaded = (stat.type != FileSystemEntityType.notFound);
     debugPrint(
-        "QuickInit trying to load '$languageCode', downloaded: $downloaded");
+      "QuickInit trying to load '$languageCode', downloaded: $downloaded",
+    );
     if (downloaded) {
       DateTime timestamp = stat.modified.toUtc(); // Always store UTC internally
 
       state = Language(
-          languageCode, const {}, const [], const {}, path, 0, timestamp);
+        languageCode,
+        const {},
+        const [],
+        const {},
+        path,
+        0,
+        timestamp,
+      );
       return true;
     }
     return false;
@@ -187,8 +215,10 @@ class LanguageController extends Notifier<Language> {
 
     try {
       // Now we store the full path to the language
-      String path =
-          join(_controller.assetsDir!, Globals.getResourcesDir(languageCode));
+      String path = join(
+        _controller.assetsDir!,
+        Globals.getResourcesDir(languageCode),
+      );
       debugPrint("Path: $path");
 
       bool downloaded = await _controller.assetsDirAlreadyExists();
@@ -197,18 +227,22 @@ class LanguageController extends Notifier<Language> {
 
       // Store the size of the downloaded files (HTML + PDF)
       int sizeInKB = await _calculateMemoryUsage(
-          fileSystem.directory(_controller.assetsDir!));
+        fileSystem.directory(_controller.assetsDir!),
+      );
 
       // Get the timestamp: When were our contents stored on the device?
-      FileStat stat =
-          await fileSystem.stat(join(path, 'structure', 'contents.json'));
+      FileStat stat = await fileSystem.stat(
+        join(path, 'structure', 'contents.json'),
+      );
       DateTime timestamp = stat.modified.toUtc(); // Always store UTC internally
 
       // Read structure/contents.json as our source of truth:
       // Which pages are available, what is the order in the menu
-      var structure = jsonDecode(fileSystem
-          .file(join(path, 'structure', 'contents.json'))
-          .readAsStringSync());
+      var structure = jsonDecode(
+        fileSystem
+            .file(join(path, 'structure', 'contents.json'))
+            .readAsStringSync(),
+      );
 
       final Map<String, Page> pages = {};
       final List<String> pageIndex = [];
@@ -216,12 +250,16 @@ class LanguageController extends Notifier<Language> {
       final Set<String> pdfFiles = {};
 
       // Go through existing PDF files
-      var pdfPath =
-          join(_controller.assetsDir!, Globals.getPdfDir(languageCode));
+      var pdfPath = join(
+        _controller.assetsDir!,
+        Globals.getPdfDir(languageCode),
+      );
       var pdfDir = fileSystem.directory(pdfPath);
       if (await pdfDir.exists()) {
-        await for (var file
-            in pdfDir.list(recursive: false, followLinks: false)) {
+        await for (var file in pdfDir.list(
+          recursive: false,
+          followLinks: false,
+        )) {
           if (file is File) {
             pdfFiles.add(file.basename);
           } else {
@@ -239,8 +277,13 @@ class LanguageController extends Notifier<Language> {
           pdfName = join(pdfPath, element['pdf']);
           pdfFiles.remove(element['pdf']);
         }
-        pages[element['page']] = Page(element['page'], element['title'],
-            element['filename'], element['version'], pdfName);
+        pages[element['page']] = Page(
+          element['page'],
+          element['title'],
+          element['filename'],
+          element['version'],
+          pdfName,
+        );
       }
 
       // Consistency checking...
@@ -252,8 +295,10 @@ class LanguageController extends Notifier<Language> {
       // Register available images
       var filesDir = fileSystem.directory(join(path, 'files'));
       if (await filesDir.exists()) {
-        await for (var file
-            in filesDir.list(recursive: false, followLinks: false)) {
+        await for (var file in filesDir.list(
+          recursive: false,
+          followLinks: false,
+        )) {
           if (file is File) {
             images[file.basename] = Image(file.basename);
           } else {
@@ -262,15 +307,29 @@ class LanguageController extends Notifier<Language> {
         }
       }
       state = Language(
-          languageCode, pages, pageIndex, images, path, sizeInKB, timestamp);
+        languageCode,
+        pages,
+        pageIndex,
+        images,
+        path,
+        sizeInKB,
+        timestamp,
+      );
       return true;
     } catch (e) {
       String msg = 'Error initializing data structure: $e';
       debugPrint(msg);
       // Delete the whole folder
       await _controller.clearAssets();
-      state =
-          Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
+      state = Language(
+        '',
+        const {},
+        const [],
+        const {},
+        '',
+        0,
+        DateTime.utc(2023),
+      );
       return false;
     }
   }
@@ -279,8 +338,15 @@ class LanguageController extends Notifier<Language> {
   Future<void> deleteResources() async {
     await _initController();
     await _controller.clearAssets();
-    state =
-        Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
+    state = Language(
+      '',
+      const {},
+      const [],
+      const {},
+      '',
+      0,
+      DateTime.utc(2023),
+    );
   }
 
   /// Download all files for one language via DownloadAssetsController
@@ -293,9 +359,11 @@ class LanguageController extends Notifier<Language> {
       // assetUrls takes an array, but we can't specify both URLs in one call:
       // DownloadAssets throws when both files have the same name (main.zip) :-/
       await _controller.startDownload(
-          assetsUrls: [AssetUrl(url: Globals.getRemoteUrlHtml(languageCode))]);
+        assetsUrls: [AssetUrl(url: Globals.getRemoteUrlHtml(languageCode))],
+      );
       await _controller.startDownload(
-          assetsUrls: [AssetUrl(url: Globals.getRemoteUrlPdf(languageCode))]);
+        assetsUrls: [AssetUrl(url: Globals.getRemoteUrlPdf(languageCode))],
+      );
     } catch (e) {
       debugPrint("Error while downloading language '$languageCode': $e");
       // delete the empty folder left behind by startDownload()
@@ -323,7 +391,9 @@ class LanguageController extends Notifier<Language> {
   /// error handling if a page we expect to be there can't be loaded because
   /// a HTML file is missing...
   Future<void> _checkConsistency(
-      Directory dir, final Map<String, Page> pages) async {
+    Directory dir,
+    final Map<String, Page> pages,
+  ) async {
     Set<String> files = {};
     await for (var file in dir.list(recursive: false, followLinks: false)) {
       if (file is File) {
@@ -333,7 +403,8 @@ class LanguageController extends Notifier<Language> {
     pages.forEach((key, page) {
       if (!files.remove(page.fileName)) {
         debugPrint(
-            "Warning: Structure mentions ${page.fileName} but the file is missing");
+          "Warning: Structure mentions ${page.fileName} but the file is missing",
+        );
       }
     });
     if (files.isNotEmpty) debugPrint("Warning: Found orphaned files $files");
@@ -396,8 +467,15 @@ class Language {
   /// When were the files downloaded on our device? file system attribute, UTC
   final DateTime downloadTimestamp;
 
-  const Language(this.languageCode, this.pages, this.pageIndex, this.images,
-      this.path, this.sizeInKB, this.downloadTimestamp);
+  const Language(
+    this.languageCode,
+    this.pages,
+    this.pageIndex,
+    this.images,
+    this.path,
+    this.sizeInKB,
+    this.downloadTimestamp,
+  );
 
   /// Returns an list with all the worksheet titles in the menu.
   /// The list is ordered as identifier -> translated title

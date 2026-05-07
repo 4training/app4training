@@ -28,9 +28,9 @@ class DownloadLanguagesPage extends ConsumerWidget {
         : ElevatedButton.styleFrom(
             // https://api.flutter.dev/flutter/material/ElevatedButton/defaultStyleOf.html
             backgroundColor:
-                Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
             foregroundColor:
-                Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38),
             elevation: 0,
             shape: const StadiumBorder(),
           );

@@ -22,17 +22,19 @@ import 'updates_test.dart';
 /// Test DownloadLanguagesPage
 class TestDownloadLanguagesPage extends ConsumerWidget {
   final TestObserver navigatorObserver;
+
   const TestDownloadLanguagesPage(this.navigatorObserver, {super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        onGenerateRoute: (settings) => generateRoutes(settings),
-        navigatorObservers: [navigatorObserver],
-        home: const DownloadLanguagesPage());
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      onGenerateRoute: (settings) => generateRoutes(settings),
+      navigatorObservers: [navigatorObserver],
+      home: const DownloadLanguagesPage(),
+    );
   }
 }
 
@@ -41,31 +43,42 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider
-          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ]);
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: TestDownloadLanguagesPage(testObserver)));
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(downloadedLanguages: []),
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: TestDownloadLanguagesPage(testObserver),
+      ),
+    );
 
     expect(find.text(AppLocalizationsEn().downloadLanguages), findsOneWidget);
-    expect(find.text(AppLocalizationsEn().downloadLanguagesExplanation),
-        findsOneWidget);
+    expect(
+      find.text(AppLocalizationsEn().downloadLanguagesExplanation),
+      findsOneWidget,
+    );
     expect(find.byType(LanguagesTable), findsOneWidget);
     expect(find.byType(ElevatedButton), findsNWidgets(2));
 
     // Press the continue button
     expect(testObserver.replacedRoutes, isEmpty);
     await tester.tap(
-        find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText));
+      find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText),
+    );
     await tester.pump();
 
     // Now we see the MissingAppLanguageDialog and close it
     expect(find.byType(MissingAppLanguageDialog), findsOneWidget);
-    await tester
-        .tap(find.widgetWithText(TextButton, AppLocalizationsEn().gotit));
+    await tester.tap(
+      find.widgetWithText(TextButton, AppLocalizationsEn().gotit),
+    );
     await tester.pump();
     expect(find.byType(MissingAppLanguageDialog), findsNothing);
 
@@ -75,59 +88,79 @@ void main() {
 
     // Now we press the continue button again - this time it should continue
     await tester.tap(
-        find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText));
+      find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText),
+    );
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/home']), isTrue);
-/*  TODO for version 0.9
+    /*  TODO for version 0.9
     expect(listEquals(testObserver.replacedRoutes, ['/onboarding/3']), isTrue);
 */
   });
 
-  testWidgets('Test DownloadLanguagesPage back button in German',
-      (WidgetTester tester) async {
+  testWidgets('Test DownloadLanguagesPage back button in German', (
+    WidgetTester tester,
+  ) async {
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageStatusProvider.overrideWith(() => TestLanguageStatus())
-    ], child: TestDownloadLanguagesPage(testObserver)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          languageStatusProvider.overrideWith2((languageCode) => TestLanguageStatus()),
+        ],
+        child: TestDownloadLanguagesPage(testObserver),
+      ),
+    );
 
     // Check that the page is translated
     expect(find.text(AppLocalizationsDe().downloadLanguages), findsOneWidget);
-    expect(find.text(AppLocalizationsDe().downloadLanguagesExplanation),
-        findsOneWidget);
+    expect(
+      find.text(AppLocalizationsDe().downloadLanguagesExplanation),
+      findsOneWidget,
+    );
 
     // Click the back button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsDe().back));
+    await tester.tap(
+      find.widgetWithText(ElevatedButton, AppLocalizationsDe().back),
+    );
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/onboarding/1']), isTrue);
   });
 
-  testWidgets('Test skipping third onboarding step',
-      (WidgetTester tester) async {
+  testWidgets('Test skipping third onboarding step', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({'checkFrequency': 'weekly'});
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider
-          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ]);
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: TestDownloadLanguagesPage(testObserver)));
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(downloadedLanguages: []),
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: TestDownloadLanguagesPage(testObserver),
+      ),
+    );
 
     await ref.read(languageProvider('en').notifier).download();
     await tester.pump();
     await tester.tap(
-        find.widgetWithText(ElevatedButton, AppLocalizationsDe().continueText));
+      find.widgetWithText(ElevatedButton, AppLocalizationsDe().continueText),
+    );
     await tester.pump();
 
     // We see MissingAppLanguageDialog and close it
     expect(find.byType(MissingAppLanguageDialog), findsOneWidget);
-    await tester
-        .tap(find.widgetWithText(TextButton, AppLocalizationsDe().gotit));
+    await tester.tap(
+      find.widgetWithText(TextButton, AppLocalizationsDe().gotit),
+    );
     await tester.pump();
     expect(find.byType(MissingAppLanguageDialog), findsNothing);
 
@@ -136,7 +169,8 @@ void main() {
     await tester.pump();
     expect(testObserver.replacedRoutes, isEmpty);
     await tester.tap(
-        find.widgetWithText(ElevatedButton, AppLocalizationsDe().continueText));
+      find.widgetWithText(ElevatedButton, AppLocalizationsDe().continueText),
+    );
     await tester.pump();
 
     // Testing getNextRoute()

@@ -30,7 +30,7 @@ void main() {
     final testLanguageController = TestLanguageController();
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => testLanguageController)
+      languageProvider.overrideWith2((languageCode) => testLanguageController)
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -56,7 +56,7 @@ void main() {
       (WidgetTester tester) async {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController())
+      languageProvider.overrideWith2((languageCode) => TestLanguageController())
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -90,7 +90,7 @@ void main() {
   testWidgets('Test DeleteAllLanguagesButton', (WidgetTester tester) async {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController())
+      languageProvider.overrideWith2((languageCode) => TestLanguageController())
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(

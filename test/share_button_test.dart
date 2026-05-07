@@ -21,33 +21,42 @@ class TestShareButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        // we need ViewPage here because ShareButton uses
-        // context.findAncestorWidgetOfExactType<ViewPage>() to get current page
-        home: const ViewPage('Healing', 'de'));
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      // we need ViewPage here because ShareButton uses
+      // context.findAncestorWidgetOfExactType<ViewPage>() to get current page
+      home: const ViewPage('Healing', 'de'),
+    );
   }
 }
 
 /// Find an ImageIcon with an AssetImage by the name of the asset
 /// (from our asset/ folder)
 Finder findAssetImageIcon(String assetName, [Color? color]) {
-  return find.byWidgetPredicate((Widget widget) =>
-      widget is ImageIcon &&
-      ((color == null) || (widget.color == color)) &&
-      widget.image is AssetImage &&
-      (widget.image as AssetImage).assetName == assetName);
+  return find.byWidgetPredicate(
+    (Widget widget) =>
+        widget is ImageIcon &&
+        ((color == null) || (widget.color == color)) &&
+        widget.image is AssetImage &&
+        (widget.image as AssetImage).assetName == assetName,
+  );
 }
 
 class MockShareService extends Mock implements ShareService {}
 
 void main() {
-  testWidgets('Smoke test: open and close the share menu (English locale)',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-    ], child: const TestShareButton()));
+  testWidgets('Smoke test: open and close the share menu (English locale)', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+        ],
+        child: const TestShareButton(),
+      ),
+    );
 
     expect(find.byIcon(Icons.share), findsOneWidget);
     expect(find.text('Open PDF'), findsNothing);
@@ -73,9 +82,14 @@ void main() {
   });
 
   testWidgets('Test when PDFs are not available', (WidgetTester tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de'))
-    ], child: const TestShareButton()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        ],
+        child: const TestShareButton(),
+      ),
+    );
 
     expect(find.byIcon(Icons.share), findsOneWidget);
     expect(find.text('PDF öffnen'), findsNothing);
@@ -117,29 +131,38 @@ void main() {
     const String testPath = '/path/to/Healing.pdf';
 
     final mockShareService = MockShareService();
-    when(() => mockShareService.share(any(that: isA<String>())))
-        .thenAnswer((_) async {});
-    when(() => mockShareService.launchUrl(Uri.parse(testUrl)))
-        .thenAnswer((_) async => true);
+    when(
+      () => mockShareService.share(any(that: isA<String>())),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockShareService.launchUrl(Uri.parse(testUrl)),
+    ).thenAnswer((_) async => true);
     when(() => mockShareService.shareFile(any())).thenAnswer((_) async {
       return const ShareResult('Success', ShareResultStatus.success);
     });
-    when(() => mockShareService.open(any(that: isA<String>())))
-        .thenAnswer((_) async {
+    when(() => mockShareService.open(any(that: isA<String>()))).thenAnswer((
+      _,
+    ) async {
       return OpenResult();
     });
 
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      shareProvider.overrideWithValue(mockShareService),
-      languageProvider.overrideWith(() => TestLanguageController(
-              downloadedLanguages: [
-                'de'
-              ],
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          shareProvider.overrideWithValue(mockShareService),
+          languageProvider.overrideWith2(
+            (languageCode) => TestLanguageController(
+              downloadedLanguages: ['de'],
               pages: {
-                'Healing': const Page('test', 'test', 'test', '1.0', testPath)
-              }))
-    ], child: const TestShareButton()));
+                'Healing': const Page('test', 'test', 'test', '1.0', testPath),
+              },
+            ),
+          ),
+        ],
+        child: const TestShareButton(),
+      ),
+    );
 
     await tester.tap(find.byType(ShareButton));
     await tester.pump();

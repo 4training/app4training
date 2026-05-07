@@ -92,7 +92,7 @@ testWidgets('...', (tester) async {
     overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
       packageInfoProvider.overrideWithValue(...),
-      languageProvider.overrideWith(() => TestLanguageController(initReturns: true)),
+      languageProvider.overrideWith2((languageCode) => TestLanguageController(initReturns: true)),
     ],
     child: const MaterialApp(
       locale: Locale('de'),

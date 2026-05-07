@@ -11,7 +11,7 @@ final packageInfoProvider = MustOverrideProvider<PackageInfo>();
 Provider<T> MustOverrideProvider<T>() {
   return Provider<T>(
     (_) => throw ProviderNotOverriddenException(),
-    retry: (_, __) => null, // Disable v3 automatic retry - must fail fast
+    retry: (_, _) => null, // Disable v3 automatic retry - must fail fast
   );
 }
 

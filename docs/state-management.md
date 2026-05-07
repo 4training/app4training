@@ -108,7 +108,7 @@ ProviderContainer(overrides: [
   packageInfoProvider.overrideWithValue(packageInfo),                // required if using App4Training
   fileSystemProvider.overrideWith((ref) => MemoryFileSystem()),      // optional
   httpClientProvider.overrideWith((ref) => mockClient),              // optional
-  languageProvider.overrideWith(() => TestLanguageController(...)),  // optional
+  languageProvider.overrideWith2((languageCode) => TestLanguageController(...)),  // optional
   languageStatusProvider.overrideWith(() => TestLanguageStatus()),   // optional
   backgroundSchedulerProvider.overrideWith(() => TestBackgroundScheduler()), // for /startup tests
 ])

@@ -31,14 +31,22 @@ void main() async {
       // Waiting for the background task to finish its work
       completer.complete(data);
     });
-    await Workmanager().initialize(backgroundTask, isInDebugMode: false);
-    await Workmanager().registerOneOffTask("task-identifier", "testTask",
-        initialDelay: const Duration(seconds: 2));
+    await Workmanager().initialize(backgroundTask);
+    await Workmanager().registerOneOffTask(
+      "task-identifier",
+      "testTask",
+      initialDelay: const Duration(seconds: 2),
+    );
 
-    await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      packageInfoProvider.overrideWithValue(packageInfo)
-    ], child: const App4Training()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPrefsProvider.overrideWithValue(prefs),
+          packageInfoProvider.overrideWithValue(packageInfo),
+        ],
+        child: const App4Training(),
+      ),
+    );
     expect(find.text('Loading'), findsOneWidget);
 
     // Wait for the background isolate to finish
@@ -62,15 +70,24 @@ void main() async {
     });
     var fileSystem = await createTestFileSystem();
 
-    await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      packageInfoProvider.overrideWithValue(packageInfo),
-      fileSystemProvider.overrideWith((ref) => fileSystem),
-      // We need to mock DownloadAssetsController because we can't use a memory
-      // file system to test it (it uses dart:io, not the file package)
-      languageProvider.overrideWith(() => LanguageController(
-          assetsController: createMockDownloadAssetsController())),
-    ], child: const App4Training()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPrefsProvider.overrideWithValue(prefs),
+          packageInfoProvider.overrideWithValue(packageInfo),
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+          // We need to mock DownloadAssetsController because we can't use a memory
+          // file system to test it (it uses dart:io, not the file package)
+          languageProvider.overrideWith2(
+            (languageCode) => LanguageController(
+              languageCode: languageCode,
+              assetsController: createMockDownloadAssetsController(),
+            ),
+          ),
+        ],
+        child: const App4Training(),
+      ),
+    );
     expect(find.text('Loading'), findsOneWidget);
     await tester.pumpAndSettle();
 
@@ -83,9 +100,12 @@ void main() async {
     Navigator.of(tester.element(find.byType(Scaffold))).pop();
     await tester.pumpAndSettle();
 
-    await Workmanager().initialize(backgroundTask, isInDebugMode: false);
-    await Workmanager().registerOneOffTask("task-identifier", "testTask",
-        initialDelay: const Duration(seconds: 2));
+    await Workmanager().initialize(backgroundTask);
+    await Workmanager().registerOneOffTask(
+      "task-identifier",
+      "testTask",
+      initialDelay: const Duration(seconds: 2),
+    );
 
     // Wait for the background isolate to finish
     final msg = await completer.future.timeout(const Duration(seconds: 10));

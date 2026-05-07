@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 // ignore: implementation_imports, invalid_use_of_internal_member
 import 'package:riverpod/src/framework.dart' show $RefArg;
 
@@ -27,7 +28,7 @@ class CustomTestLanguageController extends LanguageController {
       'Forgiving_Step_by_Step': 'Schritte der Vergebung',
       'Hearing_from_God': 'Gottes Reden wahrnehmen',
       'Training_Meeting_Outline': 'Ablauf der Trainings-Treffen',
-      'Overcoming_Fear_and_Anger': 'Angst und Wut überwinden'
+      'Overcoming_Fear_and_Anger': 'Angst und Wut überwinden',
     };
     Map<String, Page> pages = {};
     List<String> pageIndex = [];
@@ -49,29 +50,33 @@ class TestApp extends ConsumerWidget {
   final String pageName;
   final String pageLanguage;
   final TestObserver? _navigatorObserver;
+
   // for snackbar testing
   final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
-  const TestApp(
-      {this.pageName = 'Forgiving_Step_by_Step',
-      this.pageLanguage = 'en',
-      TestObserver? navigatorObserver,
-      this.scaffoldMessengerKey,
-      super.key})
-      : _navigatorObserver = navigatorObserver;
+
+  const TestApp({
+    this.pageName = 'Forgiving_Step_by_Step',
+    this.pageLanguage = 'en',
+    TestObserver? navigatorObserver,
+    this.scaffoldMessengerKey,
+    super.key,
+  }) : _navigatorObserver = navigatorObserver;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        onGenerateRoute: (settings) => generateRoutes(settings),
-        scaffoldMessengerKey: scaffoldMessengerKey,
-        navigatorObservers:
-            (_navigatorObserver != null) ? [_navigatorObserver] : [],
-        home: Scaffold(
-            appBar: AppBar(title: const Text('4training')),
-            drawer: MainDrawer(pageName, pageLanguage)));
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      onGenerateRoute: (settings) => generateRoutes(settings),
+      scaffoldMessengerKey: scaffoldMessengerKey,
+      navigatorObservers:
+          (_navigatorObserver != null) ? [_navigatorObserver] : [],
+      home: Scaffold(
+        appBar: AppBar(title: const Text('4training')),
+        drawer: MainDrawer(pageName, pageLanguage),
+      ),
+    );
   }
 }
 
@@ -80,11 +85,18 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => CustomTestLanguageController()),
-      sharedPrefsProvider.overrideWithValue(prefs)
-    ], child: TestApp(navigatorObserver: testObserver)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+          languageProvider.overrideWith2(
+            (languageCode) => CustomTestLanguageController(),
+          ),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+        child: TestApp(navigatorObserver: testObserver),
+      ),
+    );
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
     expect(find.text('Inner Healing'), findsNothing);
@@ -122,11 +134,18 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => CustomTestLanguageController()),
-      sharedPrefsProvider.overrideWithValue(prefs)
-    ], child: TestApp(pageLanguage: 'de', navigatorObserver: testObserver)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          languageProvider.overrideWith2(
+            (languageCode) => CustomTestLanguageController(),
+          ),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+        child: TestApp(pageLanguage: 'de', navigatorObserver: testObserver),
+      ),
+    );
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
     expect(find.text('Innere Heilung'), findsNothing);
@@ -153,16 +172,24 @@ void main() {
     expect(testObserver.routes.last, equals('/view/Hearing_from_God/de'));
   });
 
-  testWidgets('Test that we continue in selected different language',
-      (WidgetTester tester) async {
+  testWidgets('Test that we continue in selected different language', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => CustomTestLanguageController()),
-      sharedPrefsProvider.overrideWithValue(prefs)
-    ], child: TestApp(pageLanguage: 'en', navigatorObserver: testObserver)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          languageProvider.overrideWith2(
+            (languageCode) => CustomTestLanguageController(),
+          ),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+        child: TestApp(pageLanguage: 'en', navigatorObserver: testObserver),
+      ),
+    );
 
     final ScaffoldState state = tester.firstState(find.byType(Scaffold));
     state.openDrawer();
@@ -175,50 +202,70 @@ void main() {
     expect(testObserver.routes.last, equals('/view/Hearing_from_God/en'));
   });
 
-  testWidgets('Test fallback when worksheet is not available in other language',
-      (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final testObserver = TestObserver();
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => CustomTestLanguageController()),
-      sharedPrefsProvider.overrideWithValue(prefs)
-    ]);
-    addTearDown(ref.dispose);
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref,
-        child: TestApp(
+  testWidgets(
+    'Test fallback when worksheet is not available in other language',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final testObserver = TestObserver();
+      final ref = ProviderContainer(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          languageProvider.overrideWith2(
+            (languageCode) => CustomTestLanguageController(),
+          ),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+      );
+      addTearDown(ref.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: ref,
+          child: TestApp(
             pageName: 'Prayer',
             pageLanguage: 'fr',
             scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
-            navigatorObserver: testObserver)));
+            navigatorObserver: testObserver,
+          ),
+        ),
+      );
 
-    final ScaffoldState state = tester.firstState(find.byType(Scaffold));
-    state.openDrawer();
-    await tester.pumpAndSettle();
+      final ScaffoldState state = tester.firstState(find.byType(Scaffold));
+      state.openDrawer();
+      await tester.pumpAndSettle();
 
-    // Currently we have Prayer/fr open. Hearing from God is missing in French,
-    // so when clicking on it we should get redirected to its German version
-    await tester.tap(find.text('Gottes Reden wahrnehmen'));
-    await tester.pump();
-    expect(testObserver.routes.last, equals('/view/Hearing_from_God/de'));
-    // Snackbar visible?
-    expect(find.textContaining('Sprache zurückgesetzt auf Deutsch'),
-        findsOneWidget);
-    // Let the SnackBar timer complete to avoid pending timer error in v3
-    await tester.pumpAndSettle(const Duration(seconds: 5));
-  });
+      // Currently we have Prayer/fr open. Hearing from God is missing in French,
+      // so when clicking on it we should get redirected to its German version
+      await tester.tap(find.text('Gottes Reden wahrnehmen'));
+      await tester.pump();
+      expect(testObserver.routes.last, equals('/view/Hearing_from_God/de'));
+      // Snackbar visible?
+      expect(
+        find.textContaining('Sprache zurückgesetzt auf Deutsch'),
+        findsOneWidget,
+      );
+      // Let the SnackBar timer complete to avoid pending timer error in v3
+      await tester.pumpAndSettle(const Duration(seconds: 5));
+    },
+  );
 
-  testWidgets('Make sure drawer is closed after returning from settings',
-      (WidgetTester tester) async {
+  testWidgets('Make sure drawer is closed after returning from settings', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith(() => CustomTestLanguageController()),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ], child: const TestApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+          languageProvider.overrideWith2(
+            (languageCode) => CustomTestLanguageController(),
+          ),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: const TestApp(),
+      ),
+    );
 
     expect(find.byIcon(Icons.menu), findsOneWidget);
 
@@ -238,13 +285,20 @@ void main() {
     expect(find.text('Essentials'), findsNothing);
   });
 
-  testWidgets('Test error message when appLanguage is not downloaded',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider
-          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
-    ], child: const TestApp()));
+  testWidgets('Test error message when appLanguage is not downloaded', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          languageProvider.overrideWith2(
+            (languageCode) => TestLanguageController(downloadedLanguages: []),
+          ),
+        ],
+        child: const TestApp(),
+      ),
+    );
 
     expect(find.text('Einstellungen'), findsNothing);
     final ScaffoldState state = tester.firstState(find.byType(Scaffold));

@@ -21,11 +21,12 @@ class TestUpdateLanguageButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
-        home: Scaffold(body: UpdateLanguageButton(languageCode)));
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
+      home: Scaffold(body: UpdateLanguageButton(languageCode)),
+    );
   }
 }
 
@@ -35,11 +36,12 @@ class TestUpdateAllLanguagesButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.read(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
-        home: const Scaffold(body: UpdateAllLanguagesButton()));
+      locale: ref.read(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
+      home: const Scaffold(body: UpdateAllLanguagesButton()),
+    );
   }
 }
 
@@ -47,15 +49,23 @@ void main() {
   testWidgets('Test UpdateLanguageButton', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    final ref = ProviderContainer(overrides: [
-      languageProvider.overrideWith(() => TestLanguageController()),
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      sharedPrefsProvider.overrideWith((ref) => prefs),
-      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(),
+        ),
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+        httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
+      ],
+    );
 
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: const TestUpdateLanguageButton('en')));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: const TestUpdateLanguageButton('en'),
+      ),
+    );
 
     expect(find.byIcon(Icons.refresh), findsOneWidget);
     expect(ref.read(languageProvider('en')).downloaded, true);
@@ -76,24 +86,36 @@ void main() {
     expect(secondTimestamp.compareTo(firstTimestamp), greaterThan(0));
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
     // Snackbar visible?
-    expect(find.text('Englisch (en) ist nun auf dem aktuellsten Stand'),
-        findsOneWidget);
+    expect(
+      find.text('Englisch (en) ist nun auf dem aktuellsten Stand'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Test when download fails', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     var throwingController = ThrowingDownloadAssetsController();
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(
-          () => LanguageController(assetsController: throwingController)),
-      sharedPrefsProvider.overrideWith((ref) => prefs),
-      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (languageCode) => LanguageController(
+            languageCode: languageCode,
+            assetsController: throwingController,
+          ),
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+        httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
+      ],
+    );
 
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: const TestUpdateLanguageButton('en')));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: const TestUpdateLanguageButton('en'),
+      ),
+    );
 
     await ref.read(languageStatusProvider('en').notifier).check();
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, true);
@@ -104,32 +126,44 @@ void main() {
     expect(throwingController.clearAssetsCalled, true);
     // Snackbar visible?
     expect(
-        find.textContaining('Aktualisierung fehlgeschlagen.'), findsOneWidget);
+      find.textContaining('Aktualisierung fehlgeschlagen.'),
+      findsOneWidget,
+    );
     expect(ref.read(languageProvider('en')).downloaded, false);
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
   });
 
-  testWidgets('Test UpdateAllLanguagesButton: Updating 3 languages',
-      (WidgetTester tester) async {
+  testWidgets('Test UpdateAllLanguagesButton: Updating 3 languages', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
-      sharedPrefsProvider.overrideWith((ref) => prefs),
-      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(),
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+        httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
+      ],
+    );
 
     expect(ref.read(updatesAvailableProvider), false);
     // Simulate that there are updates for these three languages available
     for (String languageCode in ['de', 'en', 'fr']) {
       expect(
-          await ref.read(languageStatusProvider(languageCode).notifier).check(),
-          2);
+        await ref.read(languageStatusProvider(languageCode).notifier).check(),
+        2,
+      );
     }
     expect(ref.read(updatesAvailableProvider), true);
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: const TestUpdateAllLanguagesButton()));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: const TestUpdateAllLanguagesButton(),
+      ),
+    );
 
     expect(find.byIcon(Icons.refresh), findsOneWidget);
     await tester.tap(find.byType(UpdateAllLanguagesButton));
@@ -137,14 +171,17 @@ void main() {
 
     expect(ref.read(updatesAvailableProvider), false);
     expect(find.byIcon(Icons.refresh), findsNothing);
-    expect(ref.read(languageProvider('ar')).downloadTimestamp,
-        equals(DateTime.utc(2023)));
     expect(
-        ref
-            .read(languageProvider('de'))
-            .downloadTimestamp
-            .compareTo(DateTime.utc(2023)),
-        greaterThan(0));
+      ref.read(languageProvider('ar')).downloadTimestamp,
+      equals(DateTime.utc(2023)),
+    );
+    expect(
+      ref
+          .read(languageProvider('de'))
+          .downloadTimestamp
+          .compareTo(DateTime.utc(2023)),
+      greaterThan(0),
+    );
     expect(ref.read(languageStatusProvider('fr')).updatesAvailable, false);
 
     await tester.pumpAndSettle();
@@ -152,36 +189,50 @@ void main() {
     expect(find.text('3 Sprachen aktualisiert'), findsOneWidget);
   });
 
-  testWidgets('Test UpdateAllLanguagesButton: Updating one language',
-      (WidgetTester tester) async {
+  testWidgets('Test UpdateAllLanguagesButton: Updating one language', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
-      sharedPrefsProvider.overrideWith((ref) => prefs),
-      httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
-    ]);
-    expect(ref.read(languageProvider('de')).downloadTimestamp,
-        equals(DateTime.utc(2023)));
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(),
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+        httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
+      ],
+    );
+    expect(
+      ref.read(languageProvider('de')).downloadTimestamp,
+      equals(DateTime.utc(2023)),
+    );
     await ref.read(languageStatusProvider('de').notifier).check();
 
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: const TestUpdateAllLanguagesButton()));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: const TestUpdateAllLanguagesButton(),
+      ),
+    );
 
     expect(find.byIcon(Icons.refresh), findsOneWidget);
     await tester.tap(find.byType(UpdateAllLanguagesButton));
     await tester.pump();
 
     expect(
-        ref
-            .read(languageProvider('de'))
-            .downloadTimestamp
-            .compareTo(DateTime.utc(2023)),
-        greaterThan(0));
+      ref
+          .read(languageProvider('de'))
+          .downloadTimestamp
+          .compareTo(DateTime.utc(2023)),
+      greaterThan(0),
+    );
     // Snackbar visible?
-    expect(find.text('Deutsch (de) ist nun auf dem aktuellsten Stand'),
-        findsOneWidget);
+    expect(
+      find.text('Deutsch (de) ist nun auf dem aktuellsten Stand'),
+      findsOneWidget,
+    );
   });
 
   // TODO Test correct handling / snackbar message when updates fail
