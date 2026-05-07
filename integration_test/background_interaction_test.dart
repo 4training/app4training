@@ -31,9 +31,12 @@ void main() async {
       // Waiting for the background task to finish its work
       completer.complete(data);
     });
-    await Workmanager().initialize(backgroundTask, isInDebugMode: false);
-    await Workmanager().registerOneOffTask("task-identifier", "testTask",
-        initialDelay: const Duration(seconds: 2));
+    await Workmanager().initialize(backgroundTask);
+    await Workmanager().registerOneOffTask(
+      "task-identifier",
+      "testTask",
+      initialDelay: const Duration(seconds: 2),
+    );
 
     await tester.pumpWidget(ProviderScope(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
@@ -83,9 +86,12 @@ void main() async {
     Navigator.of(tester.element(find.byType(Scaffold))).pop();
     await tester.pumpAndSettle();
 
-    await Workmanager().initialize(backgroundTask, isInDebugMode: false);
-    await Workmanager().registerOneOffTask("task-identifier", "testTask",
-        initialDelay: const Duration(seconds: 2));
+    await Workmanager().initialize(backgroundTask);
+    await Workmanager().registerOneOffTask(
+      "task-identifier",
+      "testTask",
+      initialDelay: const Duration(seconds: 2),
+    );
 
     // Wait for the background isolate to finish
     final msg = await completer.future.timeout(const Duration(seconds: 10));
