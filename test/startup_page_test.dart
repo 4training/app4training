@@ -29,20 +29,32 @@ void main() {
   }
 
   testWidgets('Test normal behaviour', (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues(
-        {'appLanguage': 'de', 'checkFrequency': 'weekly'});
+    SharedPreferences.setMockInitialValues({
+      'appLanguage': 'de',
+      'checkFrequency': 'weekly',
+    });
     final prefs = await SharedPreferences.getInstance();
     expect(route, isNull);
-    final ref = ProviderContainer(overrides: [
-      languageProvider
-          .overrideWith(() => TestLanguageController(initReturns: true)),
-      backgroundSchedulerProvider.overrideWith(() => TestBackgroundScheduler()),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ]);
-    await tester.pumpWidget(UncontrolledProviderScope(
+    final ref = ProviderContainer(
+      overrides: [
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(initReturns: true),
+        ),
+        backgroundSchedulerProvider.overrideWith(
+          () => TestBackgroundScheduler(),
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: ref,
         child: MaterialApp(
-            home: const StartupPage(), onGenerateRoute: generateRoutes)));
+          home: const StartupPage(),
+          onGenerateRoute: generateRoutes,
+        ),
+      ),
+    );
     // First there should be the loading animation
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Loading'), findsOneWidget);
@@ -51,34 +63,46 @@ void main() {
     expect(ref.read(backgroundSchedulerProvider), true);
   });
 
-  testWidgets('Test different routing when no languages are downloaded',
-      (WidgetTester tester) async {
+  testWidgets('Test different routing when no languages are downloaded', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
     final prefs = await SharedPreferences.getInstance();
     route = null;
-    final ref = ProviderContainer(overrides: [
-      languageProvider
-          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
-      backgroundSchedulerProvider.overrideWith(() => TestBackgroundScheduler()),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ]);
-    await tester.pumpWidget(UncontrolledProviderScope(
+    final ref = ProviderContainer(
+      overrides: [
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(downloadedLanguages: []),
+        ),
+        backgroundSchedulerProvider.overrideWith(
+          () => TestBackgroundScheduler(),
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: ref,
         child: MaterialApp(
-            home: const StartupPage(), onGenerateRoute: generateRoutes)));
+          home: const StartupPage(),
+          onGenerateRoute: generateRoutes,
+        ),
+      ),
+    );
     expect(route, equals('/onboarding/2'));
     expect(ref.read(backgroundSchedulerProvider), false);
   });
 
-/* TODO for version 0.9
+  /* TODO for version 0.9
   testWidgets('Test continuing to third onboarding step',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
     final prefs = await SharedPreferences.getInstance();
     route = null;
     final ref = ProviderContainer(overrides: [
-      languageProvider
-          .overrideWith(() => TestLanguageController(initReturns: true)),
+      languageProvider.overrideWith2(
+        (languageCode) => TestLanguageController(initReturns: true),
+      ),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -96,7 +120,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     completer = Completer();
     route = null;
-    await tester.pumpWidget(ProviderScope(
+    await tester.pumpWidget(
+      ProviderScope(
         overrides: [sharedPrefsProvider.overrideWith((ref) => prefs)],
         child: MaterialApp(
           locale: const Locale('en'),
@@ -104,7 +129,9 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: StartupPage(initFunction: mockInitFunction),
           onGenerateRoute: generateRoutes,
-        )));
+        ),
+      ),
+    );
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Loading'), findsOneWidget);
     completer.completeError("Failed");
@@ -120,45 +147,67 @@ void main() {
         'appLanguage': 'en',
         'checkFrequency': 'weekly',
         'recentPage': 'Healing',
-        'recentLang': 'de'
+        'recentLang': 'de',
       });
     });
     testWidgets('Recent page should be loaded', (WidgetTester tester) async {
       final prefs = await SharedPreferences.getInstance();
       route = null;
-      final ref = ProviderContainer(overrides: [
-        languageProvider
-            .overrideWith(() => TestLanguageController(initReturns: true)),
-        backgroundSchedulerProvider
-            .overrideWith(() => TestBackgroundScheduler()),
-        sharedPrefsProvider.overrideWithValue(prefs)
-      ]);
+      final ref = ProviderContainer(
+        overrides: [
+          languageProvider.overrideWith2(
+            (languageCode) => TestLanguageController(initReturns: true),
+          ),
+          backgroundSchedulerProvider.overrideWith(
+            () => TestBackgroundScheduler(),
+          ),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+      );
       expect(ref.read(backgroundSchedulerProvider), false);
-      await tester.pumpWidget(UncontrolledProviderScope(
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
           container: ref,
           child: MaterialApp(
-              home: const StartupPage(), onGenerateRoute: generateRoutes)));
+            home: const StartupPage(),
+            onGenerateRoute: generateRoutes,
+          ),
+        ),
+      );
 
       await tester.pump();
       expect(route, equals('/view/Healing/de'));
       expect(ref.read(backgroundSchedulerProvider), true);
     });
-    testWidgets("Recent page should get ignored because German isn't loaded",
-        (WidgetTester tester) async {
+    testWidgets("Recent page should get ignored because German isn't loaded", (
+      WidgetTester tester,
+    ) async {
       final prefs = await SharedPreferences.getInstance();
       route = null;
-      final ref = ProviderContainer(overrides: [
-        languageProvider.overrideWith(() => TestLanguageController(
-            downloadedLanguages: ['en'], initReturns: true)),
-        backgroundSchedulerProvider
-            .overrideWith(() => TestBackgroundScheduler()),
-        sharedPrefsProvider.overrideWithValue(prefs)
-      ]);
+      final ref = ProviderContainer(
+        overrides: [
+          languageProvider.overrideWith2(
+            (languageCode) => TestLanguageController(
+              downloadedLanguages: ['en'],
+              initReturns: true,
+            ),
+          ),
+          backgroundSchedulerProvider.overrideWith(
+            () => TestBackgroundScheduler(),
+          ),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+      );
       expect(ref.read(backgroundSchedulerProvider), false);
-      await tester.pumpWidget(UncontrolledProviderScope(
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
           container: ref,
           child: MaterialApp(
-              home: const StartupPage(), onGenerateRoute: generateRoutes)));
+            home: const StartupPage(),
+            onGenerateRoute: generateRoutes,
+          ),
+        ),
+      );
 
       await tester.pump();
       expect(route, equals('/home'));

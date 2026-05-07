@@ -32,9 +32,9 @@ void main() {
       (WidgetTester tester) async {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith2((languageCode) => TestLanguageController()),
       languageStatusProvider
-          .overrideWith(() => TestLanguageStatus(checkReturnValue: 0))
+          .overrideWith2((languageCode) => TestLanguageStatus(checkReturnValue: 0))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -55,9 +55,9 @@ void main() {
     countCheckCalled = 0;
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith2((languageCode) => TestLanguageController()),
       languageStatusProvider
-          .overrideWith(() => TestLanguageStatus(checkReturnValue: 2))
+          .overrideWith2((languageCode) => TestLanguageStatus(checkReturnValue: 2))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -82,9 +82,9 @@ void main() {
     countCheckCalled = 0;
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
-      languageStatusProvider.overrideWith(
-          () => TestLanguageStatus(checkReturnValue: apiRateLimitExceeded))
+      languageProvider.overrideWith2((languageCode) => TestLanguageController()),
+      languageStatusProvider.overrideWith2(
+          (languageCode) => TestLanguageStatus(checkReturnValue: apiRateLimitExceeded))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -111,9 +111,9 @@ void main() {
     countCheckCalled = 0;
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith2((languageCode) => TestLanguageController()),
       languageStatusProvider
-          .overrideWith(() => TestLanguageStatus(checkReturnValue: -1))
+          .overrideWith2((languageCode) => TestLanguageStatus(checkReturnValue: -1))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(

@@ -20,10 +20,11 @@ class TestSettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const SettingsPage());
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const SettingsPage(),
+    );
   }
 }
 
@@ -32,13 +33,17 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-    ], child: const TestSettingsPage()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+        child: const TestSettingsPage(),
+      ),
+    );
 
     expect(find.byType(DropdownButtonAppLanguage), findsOneWidget);
-    BuildContext context =
-        tester.element(find.byType(DropdownButtonAppLanguage));
+    BuildContext context = tester.element(
+      find.byType(DropdownButtonAppLanguage),
+    );
     final providerContainer = ProviderScope.containerOf(context);
 
     // Test changing language through the appLanguageProvider
@@ -57,27 +62,38 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Deutsch (de)'));
     await tester.pump();
-    expect(AppLocalizations.of(context).appLanguage,
-        equals(AppLocalizationsDe().appLanguage));
+    expect(
+      AppLocalizations.of(context).appLanguage,
+      equals(AppLocalizationsDe().appLanguage),
+    );
     expect(find.text(AppLocalizationsDe().appLanguage), findsOneWidget);
     expect(find.text(AppLocalizationsEn().appLanguage), findsNothing);
     expect(prefs.getString('appLanguage'), equals('de'));
   });
 
-  testWidgets('Test displaying memory usage on settings page',
-      (WidgetTester tester) async {
+  testWidgets('Test displaying memory usage on settings page', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider
-          .overrideWith(() => TestLanguageController(languageSize: 42)),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ], child: const TestSettingsPage()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+          languageProvider.overrideWith2(
+            (languageCode) => TestLanguageController(languageSize: 42),
+          ),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: const TestSettingsPage(),
+      ),
+    );
     int expectedSize = 42 * countAvailableLanguages;
     expect(find.textContaining('$expectedSize kB'), findsOneWidget);
     // language counter visibility basic test
-    expect(find.textContaining('($countAvailableLanguages languages)'),
-        findsOneWidget);
+    expect(
+      find.textContaining('($countAvailableLanguages languages)'),
+      findsOneWidget,
+    );
   });
 }

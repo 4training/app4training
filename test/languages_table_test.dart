@@ -19,56 +19,82 @@ class TestLanguagesTable extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(body: LanguagesTable()));
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const Scaffold(body: LanguagesTable()),
+    );
   }
 }
 
 void main() {
-  testWidgets('Basic test with no language downloaded, English as appLanguage',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider
-          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
-      languageStatusProvider.overrideWith(() => TestLanguageStatus())
-    ], child: const TestLanguagesTable()));
+  testWidgets(
+    'Basic test with no language downloaded, English as appLanguage',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+            languageProvider.overrideWith2(
+              (languageCode) => TestLanguageController(downloadedLanguages: []),
+            ),
+            languageStatusProvider.overrideWith2(
+              (languageCode) => TestLanguageStatus(),
+            ),
+          ],
+          child: const TestLanguagesTable(),
+        ),
+      );
+
+      expect(
+        find.text('All languages ($countAvailableLanguages)'),
+        findsOneWidget,
+      );
+      expect(find.text('German (de)'), findsOneWidget);
+      expect(find.text('English (en)'), findsOneWidget);
+      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.byIcon(Icons.delete), findsOneWidget);
+      expect(
+        find.byIcon(Icons.download),
+        findsNWidgets(countAvailableLanguages + 1),
+      );
+      expect(find.byIcon(Icons.refresh), findsNothing);
+
+      // Check correct sorting
+      final germanPosition = tester.getTopLeft(find.text('German (de)'));
+      final englishPosition = tester.getTopLeft(find.text('English (en)'));
+      final frenchPosition = tester.getTopLeft(find.text('French (fr)'));
+      expect(englishPosition.dy < germanPosition.dy, isTrue);
+      expect(englishPosition.dy < frenchPosition.dy, isTrue);
+      expect(frenchPosition.dy < germanPosition.dy, isTrue);
+    },
+  );
+  testWidgets('Basic test with only German downloaded, German as appLanguage', (
+    WidgetTester tester,
+  ) async {
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        availableLanguagesProvider.overrideWithValue(['de', 'en', 'fr']),
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(downloadedLanguages: ['de']),
+        ),
+        languageStatusProvider.overrideWith2(
+          (languageCode) => TestLanguageStatus(langWithUpdates: ['de']),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: const TestLanguagesTable(),
+      ),
+    );
 
     expect(
-        find.text('All languages ($countAvailableLanguages)'), findsOneWidget);
-    expect(find.text('German (de)'), findsOneWidget);
-    expect(find.text('English (en)'), findsOneWidget);
-    expect(find.byIcon(Icons.check), findsNothing);
-    expect(find.byIcon(Icons.delete), findsOneWidget);
-    expect(find.byIcon(Icons.download),
-        findsNWidgets(countAvailableLanguages + 1));
-    expect(find.byIcon(Icons.refresh), findsNothing);
-
-    // Check correct sorting
-    final germanPosition = tester.getTopLeft(find.text('German (de)'));
-    final englishPosition = tester.getTopLeft(find.text('English (en)'));
-    final frenchPosition = tester.getTopLeft(find.text('French (fr)'));
-    expect(englishPosition.dy < germanPosition.dy, isTrue);
-    expect(englishPosition.dy < frenchPosition.dy, isTrue);
-    expect(frenchPosition.dy < germanPosition.dy, isTrue);
-  });
-  testWidgets('Basic test with only German downloaded, German as appLanguage',
-      (WidgetTester tester) async {
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      availableLanguagesProvider.overrideWithValue(['de', 'en', 'fr']),
-      languageProvider.overrideWith(
-          () => TestLanguageController(downloadedLanguages: ['de'])),
-      languageStatusProvider
-          .overrideWith(() => TestLanguageStatus(langWithUpdates: ['de']))
-    ]);
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: const TestLanguagesTable()));
-
-    expect(
-        find.text('Alle Sprachen ($countAvailableLanguages)'), findsOneWidget);
+      find.text('Alle Sprachen ($countAvailableLanguages)'),
+      findsOneWidget,
+    );
     expect(find.text('Deutsch (de)'), findsOneWidget);
     expect(find.text('Englisch (en)'), findsOneWidget);
     expect(find.byIcon(Icons.check), findsNWidgets(1));
