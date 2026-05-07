@@ -94,7 +94,7 @@ class HtmlView extends StatelessWidget {
                       margin: Margins(top: Margin(0), bottom: Margin(0)),
                     ),
                   },
-                  onAnchorTap: (url, _, __) {
+                  onAnchorTap: (url, _, _) {
                     debugPrint("Link tapped: $url");
                     if (url != null) {
                       Navigator.pushNamed(context, '/view$url');
