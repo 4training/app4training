@@ -19,8 +19,10 @@ Future<void> writeLog(String message) async {
     debugPrint(message);
     final path = await getApplicationDocumentsDirectory();
     final file = File('${path.path}/background.log');
-    await file.writeAsString('${DateTime.now().toIso8601String()}: $message\n',
-        mode: FileMode.append);
+    await file.writeAsString(
+      '${DateTime.now().toIso8601String()}: $message\n',
+      mode: FileMode.append,
+    );
   } catch (e) {
     debugPrint('Error writing message $message to file: $e');
   }
@@ -52,7 +54,8 @@ Future<void> backgroundMain() async {
   final prefs = await SharedPreferences.getInstance();
 
   final ref = ProviderContainer(
-      overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
+    overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+  );
   await backgroundCheck(ref);
 
   // TODO: check automatic updates setting; if necessary check connectivity
@@ -66,12 +69,18 @@ Future<void> backgroundTestMain() async {
   final prefs = await SharedPreferences.getInstance();
   var fileSystem = await createTestFileSystem();
 
-  final ref = ProviderContainer(overrides: [
-    sharedPrefsProvider.overrideWithValue(prefs),
-    fileSystemProvider.overrideWith((ref) => fileSystem),
-    languageProvider.overrideWith(() => LanguageController(
-        assetsController: createMockDownloadAssetsController()))
-  ]);
+  final ref = ProviderContainer(
+    overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      languageProvider.overrideWith2(
+        (languageCode) => LanguageController(
+          languageCode: languageCode,
+          assetsController: createMockDownloadAssetsController(),
+        ),
+      ),
+    ],
+  );
   await backgroundCheck(ref);
 }
 
