@@ -3,8 +3,11 @@ import 'dart:ui';
 
 import 'package:app4training/background/background_test.dart';
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/language_downloader.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/data/updates.dart';
+import 'package:dio/dio.dart';
+import 'package:file/local.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
@@ -52,9 +55,18 @@ void backgroundTask() {
 Future<void> backgroundMain() async {
   await writeLog("Background task is starting...");
   final prefs = await SharedPreferences.getInstance();
+  final appDocsDir = await getApplicationDocumentsDirectory();
+  final languageDownloader = LanguageDownloaderImpl(
+    root: appDocsDir.path,
+    dio: Dio(),
+    fileSystem: const LocalFileSystem(),
+  );
 
   final ref = ProviderContainer(
-    overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+    overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      languageDownloaderProvider.overrideWithValue(languageDownloader),
+    ],
   );
   await backgroundCheck(ref);
 
