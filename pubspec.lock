@@ -185,14 +185,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
-  download_assets:
-    dependency: "direct main"
-    description:
-      name: download_assets
-      sha256: ecc0e9f644f1c57e5ba8c723b05e69ace7fd6177f34eebcadc496b7d410e6c4d
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.0"
   fake_async:
     dependency: transitive
     description:
