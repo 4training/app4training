@@ -17,7 +17,7 @@ Uint8List createTestZip(Map<String, String> files) {
     final data = Uint8List.fromList(entry.value.codeUnits);
     archive.addFile(ArchiveFile(entry.key, data.length, data));
   }
-  return Uint8List.fromList(ZipEncoder().encode(archive)!);
+  return Uint8List.fromList(ZipEncoder().encode(archive));
 }
 
 /// Helper to set up a mock Dio response for a URL returning zip bytes.
