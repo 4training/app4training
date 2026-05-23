@@ -85,11 +85,8 @@ Future<void> backgroundTestMain() async {
     overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
       fileSystemProvider.overrideWith((ref) => fileSystem),
-      languageProvider.overrideWith2(
-        (languageCode) => LanguageController(
-          languageCode: languageCode,
-          assetsController: createMockDownloadAssetsController(),
-        ),
+      languageDownloaderProvider.overrideWithValue(
+        FakeLanguageDownloader(fileSystem: fileSystem),
       ),
     ],
   );
