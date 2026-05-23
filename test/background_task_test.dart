@@ -1,7 +1,9 @@
 import 'package:app4training/background/background_task.dart';
+import 'package:app4training/background/background_test.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/data/updates.dart';
+import 'package:file/memory.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,15 +17,14 @@ void main() {
   test('Test background check: no updates available', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    var fakeController = FakeDownloadAssetsController();
+    final fileSystem = MemoryFileSystem();
 
     final ref = ProviderContainer(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
-      languageProvider.overrideWith2(
-          (languageCode) => LanguageController(
-            languageCode: languageCode,
-              assetsController: fakeController,),),
-      languageStatusProvider.overrideWith2((languageCode) => TestLanguageStatus())
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      languageDownloaderProvider
+          .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
+      languageStatusProvider.overrideWith(() => TestLanguageStatus())
     ]);
     await backgroundCheck(ref);
     expect(ref.read(updatesAvailableProvider), false);
@@ -33,15 +34,13 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     var fileSystem = await createBasicFileSystem(['de', 'en']);
-    var fakeController = FakeDownloadAssetsController();
 
     final ref = ProviderContainer(overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
       httpClientProvider.overrideWith((ref) => mockCheckResponse({'de': 2})),
       fileSystemProvider.overrideWith((ref) => fileSystem),
-      languageProvider.overrideWith2(
-          (languageCode) => LanguageController(assetsController: fakeController),
-      ),
+      languageDownloaderProvider
+          .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
     ]);
 
     expect(ref.read(sharedPrefsProvider).getBool('updatesAvailable-de'), null);
