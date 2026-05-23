@@ -36,7 +36,7 @@ class _UpdateLanguageButtonState extends ConsumerState<UpdateLanguageButton> {
               // Get l10n now as we can't access context after async gap later
               AppLocalizations l10n = context.l10n;
 
-              bool success = await lang.download(force: true);
+              bool success = await lang.download();
 
               ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
                   content: Text(success
@@ -92,7 +92,7 @@ class _UpdateAllLanguagesButtonState
                     ref.read(languageProvider(languageCode)).downloaded) {
                   if (await ref
                       .read(languageProvider(languageCode).notifier)
-                      .download(force: true)) {
+                      .download()) {
                     countUpdates++;
                     lastLanguage = languageCode;
                   } else {
