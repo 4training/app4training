@@ -1,9 +1,13 @@
+import 'package:app4training/data/language_downloader.dart';
 import 'package:app4training/l10n/generated/app_localizations.dart';
+import 'package:dio/dio.dart';
+import 'package:file/local.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/routes/routes.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/app_language.dart';
 import 'data/globals.dart';
@@ -127,13 +131,20 @@ void main() async {
   _installHtmlTableSemanticsFilter();
   final prefs = await SharedPreferences.getInstance();
   final packageInfo = await PackageInfo.fromPlatform();
+  final appDocsDir = await getApplicationDocumentsDirectory();
+  final languageDownloader = LanguageDownloaderImpl(
+    root: appDocsDir.path,
+    dio: Dio(),
+    fileSystem: const LocalFileSystem(),
+  );
 
   // Run initialization for our background task TODO enable in version 0.9
   // await Workmanager().initialize(backgroundTask, isInDebugMode: false);
 
   runApp(ProviderScope(overrides: [
     sharedPrefsProvider.overrideWithValue(prefs),
-    packageInfoProvider.overrideWithValue(packageInfo)
+    packageInfoProvider.overrideWithValue(packageInfo),
+    languageDownloaderProvider.overrideWithValue(languageDownloader),
   ], child: const App4Training()));
 }
 
