@@ -128,7 +128,7 @@ void main() {
   test('Test TestLanguageStatusNotifier class', () async {
     var testLanguageStatus = TestLanguageStatus();
     var ref = ProviderContainer(overrides: [
-      languageStatusProvider.overrideWith(() => testLanguageStatus)
+      languageStatusProvider.overrideWith2((langCode) => testLanguageStatus)
     ]);
     var deStatus = ref.read(languageStatusProvider('de'));
     expect(deStatus.updatesAvailable, false);
@@ -176,7 +176,7 @@ void main() {
       () async {
     final ref = ProviderContainer(overrides: [
       languageStatusProvider
-          .overrideWith(() => TestLanguageStatus(checkReturnValue: 2))
+          .overrideWith2((langCode) => TestLanguageStatus(checkReturnValue: 2))
     ]);
     expect(ref.read(languageStatusProvider('de')).updatesAvailable, false);
     expect(await ref.read(languageStatusProvider('de').notifier).check(), 2);
@@ -187,7 +187,7 @@ void main() {
       () async {
     var ref = ProviderContainer(overrides: [
       languageStatusProvider
-          .overrideWith(() => TestLanguageStatus(langWithUpdates: ['de']))
+          .overrideWith2((langCode) => TestLanguageStatus(langWithUpdates: ['de']))
     ]);
     expect(ref.read(languageStatusProvider('de')).updatesAvailable, true);
     expect(ref.read(languageStatusProvider('en')).updatesAvailable, false);
@@ -201,8 +201,8 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       prefs = await SharedPreferences.getInstance();
       ref = ProviderContainer(overrides: [
-        languageProvider.overrideWith(
-            () => TestLanguageController(downloadedLanguages: ['de'])),
+        languageProvider.overrideWith2(
+            (langCode) => TestLanguageController(downloadedLanguages: ['de'])),
         sharedPrefsProvider.overrideWith((ref) => prefs)
       ]);
     });
@@ -273,8 +273,8 @@ void main() {
                 equals(Globals.getCommitsSince('de', DateTime.utc(2023))));
             return Response(json.encode([]), 200);
           })),
-      languageProvider.overrideWith(
-          () => TestLanguageController(downloadedLanguages: ['de'])),
+      languageProvider.overrideWith2(
+          (langCode) => TestLanguageController(downloadedLanguages: ['de'])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
     LanguageStatus deStatus = ref.read(languageStatusProvider('de'));
@@ -305,8 +305,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
-      languageProvider.overrideWith(
-          () => TestLanguageController(downloadedLanguages: ['de', 'en'])),
+      languageProvider.overrideWith2(
+          (langCode) => TestLanguageController(downloadedLanguages: ['de', 'en'])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
     final deStatusNotifier = ref.read(languageStatusProvider('de').notifier);
@@ -343,8 +343,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
-      languageProvider.overrideWith(
-          () => TestLanguageController(downloadedLanguages: ['de', 'en'])),
+      languageProvider.overrideWith2(
+          (langCode) => TestLanguageController(downloadedLanguages: ['de', 'en'])),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
 
@@ -391,7 +391,7 @@ void main() {
       httpClientProvider.overrideWith((ref) => MockClient((request) async {
             throw ClientException;
           })),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith2((langCode) => TestLanguageController()),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
 
@@ -419,7 +419,7 @@ void main() {
                 }),
                 403);
           })),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith2((langCode) => TestLanguageController()),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
     expect(await ref.read(languageStatusProvider('de').notifier).check(),
@@ -437,7 +437,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
       httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates()),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith2((langCode) => TestLanguageController()),
       sharedPrefsProvider.overrideWith((ref) => prefs)
     ]);
 

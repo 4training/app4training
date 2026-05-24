@@ -24,7 +24,7 @@ void main() {
       fileSystemProvider.overrideWith((ref) => fileSystem),
       languageDownloaderProvider
           .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
-      languageStatusProvider.overrideWith(() => TestLanguageStatus())
+      languageStatusProvider.overrideWith2((langCode) => TestLanguageStatus())
     ]);
     await backgroundCheck(ref);
     expect(ref.read(updatesAvailableProvider), false);

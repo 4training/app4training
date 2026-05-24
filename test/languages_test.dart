@@ -290,14 +290,14 @@ void main() {
   test('Test diskUsageProvider', () {
     final ref = ProviderContainer(overrides: [
       languageProvider
-          .overrideWith(() => TestLanguageController(languageSize: 42)),
+          .overrideWith2((langCode) => TestLanguageController(languageSize: 42)),
     ]);
     expect(ref.read(diskUsageProvider), countAvailableLanguages * 42);
   });
 
   test('Test countDownloadedLanguagesProvider', () {
     final ref = ProviderContainer(overrides: [
-      languageProvider.overrideWith(() =>
+      languageProvider.overrideWith2((langCode) =>
           TestLanguageController(downloadedLanguages: ['de', 'fr', 'en'])),
     ]);
     expect(ref.read(countDownloadedLanguagesProvider), 3);

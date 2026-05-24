@@ -50,7 +50,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith2((langCode) => TestLanguageController()),
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       sharedPrefsProvider.overrideWith((ref) => prefs),
       httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
@@ -120,7 +120,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith2((langCode) => TestLanguageController()),
       sharedPrefsProvider.overrideWith((ref) => prefs),
       httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
     ]);
@@ -163,7 +163,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith(() => TestLanguageController()),
+      languageProvider.overrideWith2((langCode) => TestLanguageController()),
       sharedPrefsProvider.overrideWith((ref) => prefs),
       httpClientProvider.overrideWith((ref) => mockReturnTwoUpdates())
     ]);

@@ -32,7 +32,7 @@ void main() async {
       // Waiting for the background task to finish its work
       completer.complete(data);
     });
-    await Workmanager().initialize(backgroundTask, isInDebugMode: false);
+    await Workmanager().initialize(backgroundTask);
     await Workmanager().registerOneOffTask("task-identifier", "testTask",
         initialDelay: const Duration(seconds: 2));
 
@@ -86,7 +86,7 @@ void main() async {
     Navigator.of(tester.element(find.byType(Scaffold))).pop();
     await tester.pumpAndSettle();
 
-    await Workmanager().initialize(backgroundTask, isInDebugMode: false);
+    await Workmanager().initialize(backgroundTask);
     await Workmanager().registerOneOffTask("task-identifier", "testTask",
         initialDelay: const Duration(seconds: 2));
 

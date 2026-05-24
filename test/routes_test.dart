@@ -105,7 +105,7 @@ void main() {
     final TestObserver observer = TestObserver();
     await tester.pumpWidget(ProviderScope(overrides: [
       languageProvider
-          .overrideWith(() => TestLanguageController(initReturns: true)),
+          .overrideWith2((langCode) => TestLanguageController(initReturns: true)),
       sharedPrefsProvider.overrideWithValue(prefs)
     ], child: TestApp(observer)));
 

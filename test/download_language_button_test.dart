@@ -35,7 +35,7 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider
-          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
+          .overrideWith2((langCode) => TestLanguageController(downloadedLanguages: [])),
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -56,7 +56,7 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider
-          .overrideWith(() => TestLanguageController(downloadedLanguages: []))
+          .overrideWith2((langCode) => TestLanguageController(downloadedLanguages: []))
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
@@ -86,7 +86,7 @@ void main() {
     final ref = ProviderContainer(overrides: [
       appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
       languageProvider
-          .overrideWith(() => TestLanguageController(downloadedLanguages: [])),
+          .overrideWith2((langCode) => TestLanguageController(downloadedLanguages: [])),
     ]);
 
     await tester.pumpWidget(UncontrolledProviderScope(
