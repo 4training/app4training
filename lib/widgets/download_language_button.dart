@@ -1,3 +1,4 @@
+import 'package:app4training/data/bulk_language_download.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/design/theme.dart';
 import 'package:app4training/l10n/generated/app_localizations.dart';
@@ -96,33 +97,28 @@ class _DownloadAllLanguagesButtonState
               });
               // Get l10n now as we can't access context after async gap later
               final l10n = context.l10n;
-              int countDownloads = 0;
-              int countErrors = 0;
-              String lastLanguage = '';
-              for (var languageCode in ref.read(availableLanguagesProvider)) {
-                if (!ref.watch(languageProvider(languageCode)).downloaded) {
-                  if (await ref
-                      .read(languageProvider(languageCode).notifier)
-                      .download()) {
-                    countDownloads++;
-                    lastLanguage = languageCode;
-                  } else {
-                    countErrors++;
-                  }
-                }
-              }
-              if (countDownloads > 0) {
+              final codesToDownload = [
+                for (final languageCode in ref.read(availableLanguagesProvider))
+                  if (!ref.read(languageProvider(languageCode)).downloaded)
+                    languageCode,
+              ];
+              final result = await downloadLanguagesInParallel(
+                codesToDownload,
+                download: (code) =>
+                    ref.read(languageProvider(code).notifier).download(),
+              );
+              if (result.successCount > 0) {
                 // Show info message in snackbar
-                String text = (countDownloads == 1)
-                    ? l10n
-                        .downloadedLanguage(l10n.getLanguageName(lastLanguage))
-                    : l10n.downloadedNLanguages(countDownloads);
+                String text = (result.successCount == 1)
+                    ? l10n.downloadedLanguage(
+                        l10n.getLanguageName(result.lastSuccessCode))
+                    : l10n.downloadedNLanguages(result.successCount);
                 final snackBar = SnackBar(
                     content: Text(text),
                     duration: snackBarQuickSuccessDuration);
                 ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
               }
-              if (countErrors > 0) {
+              if (result.errorCount > 0) {
                 ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
                     content: Text(l10n.downloadError),
                     duration: snackBarErrorDuration));

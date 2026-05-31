@@ -18,7 +18,7 @@ class LanguageDownloaderImpl implements LanguageDownloader {
   final String _root;
   final Dio _dio;
   final FileSystem _fileSystem;
-  Completer<void>? _inFlight;
+  final Map<String, Completer<void>> _inFlightByLang = {};
 
   LanguageDownloaderImpl({
     required String root,
@@ -38,12 +38,12 @@ class LanguageDownloaderImpl implements LanguageDownloader {
 
   @override
   Future<void> download(String langCode) async {
-    // Serialize: wait for any in-flight download to finish
-    while (_inFlight != null) {
-      await _inFlight!.future;
+    // Serialize per language; different languages may download in parallel
+    while (_inFlightByLang.containsKey(langCode)) {
+      await _inFlightByLang[langCode]!.future;
     }
     final completer = Completer<void>();
-    _inFlight = completer;
+    _inFlightByLang[langCode] = completer;
 
     final dest = pathFor(langCode);
     final staging = '$dest.staging';
@@ -107,7 +107,7 @@ class LanguageDownloaderImpl implements LanguageDownloader {
       }
       rethrow;
     } finally {
-      _inFlight = null;
+      _inFlightByLang.remove(langCode);
       completer.complete();
     }
   }
