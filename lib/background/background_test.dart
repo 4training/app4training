@@ -1,24 +1,54 @@
-import 'package:download_assets/download_assets.dart';
+import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/language_downloader.dart';
+import 'package:file/file.dart';
 import 'package:file/memory.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart' as p;
 
-/* This are utility functions for the integration test.
+/* These are utility functions for the integration test.
    Unfortunately it seems not be easily possible to move this into
    the test/ folder and include it from there in our background_task.dart,
    so that's why it is in our "normal" code directory */
 
-class MockDownloadAssetsController extends Mock
-    implements DownloadAssetsController {}
+/// A test double for [LanguageDownloader] backed by a [FileSystem].
+/// [download] records calls in [downloadCalls] but does not write files —
+/// pre-seed the file system if a test needs a language to appear downloaded.
+class FakeLanguageDownloader implements LanguageDownloader {
+  final FileSystem fileSystem;
+  final String root;
+  final bool throwOnDownload;
+  int downloadCalls = 0;
+  int deleteCalls = 0;
 
-// Simulate that German files are already downloaded
-MockDownloadAssetsController createMockDownloadAssetsController() {
-  final mock = MockDownloadAssetsController();
-  when(() => mock.init(assetDir: any(named: 'assetDir')))
-      .thenAnswer((_) async {});
-  when(mock.clearAssets).thenAnswer((_) async {});
-  when(() => mock.assetsDir).thenReturn('assets-de');
-  when(() => mock.assetsDirAlreadyExists()).thenAnswer((_) async => true);
-  return mock;
+  FakeLanguageDownloader({
+    required this.fileSystem,
+    this.root = '',
+    this.throwOnDownload = false,
+  });
+
+  @override
+  String pathFor(String langCode) =>
+      p.join(root, Globals.getAssetsDir(langCode));
+
+  @override
+  Future<bool> isDownloaded(String langCode) =>
+      fileSystem.directory(pathFor(langCode)).exists();
+
+  @override
+  Future<void> download(String langCode) async {
+    downloadCalls += 1;
+    if (throwOnDownload) {
+      throw Exception('Simulated download failure');
+    }
+  }
+
+  @override
+  Future<void> delete(String langCode) async {
+    deleteCalls += 1;
+    final dir = fileSystem.directory(pathFor(langCode));
+    if (await dir.exists()) {
+      await dir.delete(recursive: true);
+    }
+  }
 }
 
 // Simulate a file system where German is downloaded with one worksheet

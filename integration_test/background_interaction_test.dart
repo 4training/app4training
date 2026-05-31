@@ -9,6 +9,7 @@ import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/generated/app_localizations_de.dart';
 import 'package:app4training/main.dart';
 import 'package:app4training/routes/view_page.dart';
+import 'package:file/memory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,21 +33,17 @@ void main() async {
       completer.complete(data);
     });
     await Workmanager().initialize(backgroundTask);
-    await Workmanager().registerOneOffTask(
-      "task-identifier",
-      "testTask",
-      initialDelay: const Duration(seconds: 2),
-    );
+    await Workmanager().registerOneOffTask("task-identifier", "testTask",
+        initialDelay: const Duration(seconds: 2));
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          sharedPrefsProvider.overrideWithValue(prefs),
-          packageInfoProvider.overrideWithValue(packageInfo),
-        ],
-        child: const App4Training(),
-      ),
-    );
+    final fileSystem = MemoryFileSystem();
+    await tester.pumpWidget(ProviderScope(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      packageInfoProvider.overrideWithValue(packageInfo),
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      languageDownloaderProvider
+          .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
+    ], child: const App4Training()));
     expect(find.text('Loading'), findsOneWidget);
 
     // Wait for the background isolate to finish
@@ -70,24 +67,13 @@ void main() async {
     });
     var fileSystem = await createTestFileSystem();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          sharedPrefsProvider.overrideWithValue(prefs),
-          packageInfoProvider.overrideWithValue(packageInfo),
-          fileSystemProvider.overrideWith((ref) => fileSystem),
-          // We need to mock DownloadAssetsController because we can't use a memory
-          // file system to test it (it uses dart:io, not the file package)
-          languageProvider.overrideWith2(
-            (languageCode) => LanguageController(
-              languageCode: languageCode,
-              assetsController: createMockDownloadAssetsController(),
-            ),
-          ),
-        ],
-        child: const App4Training(),
-      ),
-    );
+    await tester.pumpWidget(ProviderScope(overrides: [
+      sharedPrefsProvider.overrideWithValue(prefs),
+      packageInfoProvider.overrideWithValue(packageInfo),
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      languageDownloaderProvider
+          .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
+    ], child: const App4Training()));
     expect(find.text('Loading'), findsOneWidget);
     await tester.pumpAndSettle();
 
@@ -101,11 +87,8 @@ void main() async {
     await tester.pumpAndSettle();
 
     await Workmanager().initialize(backgroundTask);
-    await Workmanager().registerOneOffTask(
-      "task-identifier",
-      "testTask",
-      initialDelay: const Duration(seconds: 2),
-    );
+    await Workmanager().registerOneOffTask("task-identifier", "testTask",
+        initialDelay: const Duration(seconds: 2));
 
     // Wait for the background isolate to finish
     final msg = await completer.future.timeout(const Duration(seconds: 10));
