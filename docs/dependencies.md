@@ -18,14 +18,14 @@ Snapshot of the dependency tree as of `pubspec.yaml`. Group-by-purpose, with not
 | `riverpod: ^3.2.1` | Core Riverpod. **Note**: a few places import `package:riverpod/src/framework.dart` for `$RefArg` to access the family argument inside a `Notifier.build()` — this is a known v3 internal escape hatch |
 
 ### Content download / file system
-| Package | Why | Notes |
-| --- | --- | --- |
-| `download_assets: 4.0.0` | Downloads + unzips the GitHub `archive/main.zip` per language | **Pinned to 4.0.0** — comment in `pubspec.yaml`: "the Content-Length check breaks GitHub archive URLs in 4.1.0" |
-| `path_provider: ^2.0.11` | Used in `background_task.dart` (`getApplicationDocumentsDirectory()`) for the debug log file |
+| Package | Why |
+| --- | --- |
+| `dio: ^5.0.0` | HTTP client used by `LanguageDownloaderImpl` to fetch each language's HTML + PDF zip from GitHub. Mocked in `language_downloader_test.dart` |
+| `archive: ^4.0.0` | `ZipDecoder` used by `LanguageDownloaderImpl` to unpack the zip bytes into the staging directory via the injected `FileSystem` |
+| `path_provider: ^2.0.11` | `getApplicationDocumentsDirectory()` resolved at startup (`main.dart`) and passed as the `root` for the real `LanguageDownloader`; also used by `background_task.dart` for the debug log file |
 | `path: ^1.8.2` | `join()` for cross-platform paths |
-| `file: ^7.0.0` | Abstract `FileSystem` API. Backs `fileSystemProvider`, lets tests inject `MemoryFileSystem` |
+| `file: ^7.0.0` | Abstract `FileSystem` API. Backs `fileSystemProvider`, lets tests (including `LanguageDownloader` tests) inject `MemoryFileSystem` |
 | `http: ^1.0.0` | The GitHub Commits API call (`Globals.getCommitsSince`). Backs `httpClientProvider` |
-| `dio: ^5.0.0` | Transitive dependency surfaced in `pubspec.yaml`; used inside `download_assets` and referenced from tests via the `Dio` type |
 
 ### Persistence
 | Package | Why |
@@ -60,7 +60,7 @@ These are listed under `dependencies:` rather than `dev_dependencies:` because s
 | Package | Why |
 | --- | --- |
 | `test: ^1.29.0` | **Pinned**: 1.30+ needs `test_api > 0.7.9` but `flutter_test` pins `test_api 0.7.9` |
-| `mocktail: ^1.0.3` | Used by `MockDownloadAssetsController` etc. |
+| `mocktail: ^1.0.3` | Used for `Dio` mocks in `language_downloader_test.dart` and ad-hoc mocks elsewhere |
 
 ## Dev dependencies
 

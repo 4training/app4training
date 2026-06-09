@@ -127,13 +127,13 @@ ______________________________________________________________________
 These are the load-bearing oddities — read these before changing code in their area.
 
 - **Riverpod v3 internal import.** A few places (`languages.dart`, `updates.dart`) import `package:riverpod/src/framework.dart` to access `$RefArg` for `family` providers when overriding in tests. This is intentional, suppressed via `// ignore` comments.
-- **`MustOverrideProvider`** in `globals.dart` is a custom helper that throws unless overridden in a `ProviderScope`. It is used for `sharedPrefsProvider` and `packageInfoProvider` so that test environments **must** provide explicit fakes.
+- **`MustOverrideProvider`** in `globals.dart` is a custom helper that throws unless overridden in a `ProviderScope`. It is used for `sharedPrefsProvider`, `packageInfoProvider`, and `languageDownloaderProvider` so that test environments **must** provide explicit fakes.
+- **`LanguageDownloader`** (`lib/data/language_downloader.dart`) is the in-house module that downloads + unzips a language's HTML + PDF into a staging directory and swaps it into place atomically. Failed downloads never destroy prior offline content, concurrent `download()` calls are serialized (peak memory bounded by two zips), and a `.staging` leftover from a crashed run is cleaned up on the next attempt. It replaced the third-party `download_assets` package and is wired up in `main.dart` and the background isolate via `languageDownloaderProvider.overrideWithValue(...)`.
 - **`flutter_html` error filter.** `main.dart` installs a `FlutterError.onError` shim that swallows four specific assertions thrown by `flutter_html_table` 3.0.0. Read the long docstring there before touching it — the four assertion variants are documented in detail.
 - **HTML pre-processing.** `widgets/html_view.dart` calls `sanitize()` to fix bugs in `flutter_html` (e.g. percent table widths, fuzzy translations, stylized subtitles). Some workarounds are also in the HTML generator (`pywikitools`) upstream.
 - **Background task is half-disabled.** Big chunks of `BackgroundScheduler.schedule()` and `Workmanager().initialize` in `main.dart` are commented out, gated on a "version 0.9" milestone. Don't delete them — they are the working scaffolding for the next release.
 - **No package on pub.dev.** `pubspec.yaml` has `publish_to: 'none'`.
 - **License is AGPL** with an Apple App Store exception. See `LICENSE` and `COPYING.iOS`.
-- **`download_assets` is pinned to 4.0.0** because 4.1.0 breaks GitHub archive URLs (Content-Length check).
 - **`test` is pinned to ^1.29.0** because 1.30+ needs a newer `test_api` than `flutter_test` allows.
 
 ______________________________________________________________________
