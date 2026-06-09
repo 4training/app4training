@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:app4training/background/background_test.dart';
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
-import 'package:dio/dio.dart';
-import 'package:download_assets/download_assets.dart';
 import 'package:file/chroot.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
@@ -12,81 +10,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/misc.dart' show ProviderException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/languages.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as path;
-
 // ignore: implementation_imports, invalid_use_of_internal_member
 import 'package:riverpod/src/framework.dart' show $RefArg;
-
-class MockDownloadAssetsController extends Mock
-    implements DownloadAssetsController {}
-
-class FakeDownloadAssetsController extends Fake
-    implements DownloadAssetsController {
-  late String _assetDir;
-  bool initCalled = false;
-  bool clearAssetsCalled = false;
-  int startDownloadCalls = 0;
-
-  // TODO use this class to test the startDownload() functionality
-  @override
-  Future init({
-    String assetDir = 'assets',
-    bool useFullDirectoryPath = false,
-  }) async {
-    _assetDir = assetDir;
-    initCalled = true;
-    return;
-  }
-
-  @override
-  String? get assetsDir => _assetDir;
-
-  @override
-  Future<bool> assetsDirAlreadyExists() async {
-    return false;
-  }
-
-  @override
-  Future clearAssets() async {
-    clearAssetsCalled = true;
-  }
-
-  @override
-  Future startDownload({
-    required List<AssetUrl> assetsUrls,
-    bool? checkSize,
-    List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
-    Function(double p1)? onProgress,
-    Function()? onStartUnziping,
-    Function()? onCancel,
-    Function()? onDone,
-    Map<String, dynamic>? requestQueryParams,
-    Map<String, String> requestExtraHeaders = const {},
-  }) async {
-    // TODO: implement startDownload
-    startDownloadCalls += 1;
-    return;
-  }
-}
-
-class ThrowingDownloadAssetsController extends FakeDownloadAssetsController {
-  @override
-  Future startDownload({
-    required List<AssetUrl> assetsUrls,
-    bool? checkSize,
-    List<UncompressDelegate> uncompressDelegates = const [UnzipDelegate()],
-    Function(double p1)? onProgress,
-    Function()? onStartUnziping,
-    Function()? onCancel,
-    Function()? onDone,
-    Map<String, dynamic>? requestQueryParams,
-    Map<String, String> requestExtraHeaders = const {},
-  }) async {
-    startDownloadCalls += 1;
-    throw DioException(requestOptions: RequestOptions());
-  }
-}
 
 /// For testing the LanguageController: Simulate essential behavior
 /// without needing access to device file system etc.
@@ -98,16 +24,15 @@ class TestLanguageController extends LanguageController {
   final int _languageSize; // size in KB
   final Map<String, Page> _pages; // map of pages that are available
   final bool _initReturns;
-
-  TestLanguageController({
-    List<String>? downloadedLanguages,
-    int languageSize = 0,
-    Map<String, Page> pages = const {},
-    initReturns = false,
-  }) : _downloadedLanguages = downloadedLanguages,
-       _languageSize = languageSize,
-       _pages = pages,
-       _initReturns = initReturns;
+  TestLanguageController(
+      {List<String>? downloadedLanguages,
+      int languageSize = 0,
+      Map<String, Page> pages = const {},
+      initReturns = false})
+      : _downloadedLanguages = downloadedLanguages,
+        _languageSize = languageSize,
+        _pages = pages,
+        _initReturns = initReturns;
 
   @override
   Language build() {
@@ -119,42 +44,21 @@ class TestLanguageController extends LanguageController {
     if (_downloadedLanguages != null) {
       downloaded = _downloadedLanguages.contains(languageCode);
     }
-    return Language(
-      downloaded ? languageCode : '',
-      _pages,
-      const [],
-      const {},
-      '',
-      _languageSize,
-      DateTime.utc(2023),
-    );
+    return Language(downloaded ? languageCode : '', _pages, const [], const {},
+        '', _languageSize, DateTime.utc(2023));
   }
 
   @override
-  Future<bool> download({bool force = false}) async {
-    state = Language(
-      languageCode,
-      _pages,
-      const [],
-      const {},
-      '',
-      _languageSize,
-      DateTime.now().toUtc(),
-    );
+  Future<bool> download() async {
+    state = Language(languageCode, _pages, const [], const {}, '',
+        _languageSize, DateTime.now().toUtc());
     return true;
   }
 
   @override
   Future<void> deleteResources() async {
-    state = Language(
-      '',
-      const {},
-      const [],
-      const {},
-      '',
-      0,
-      DateTime.utc(2023),
-    );
+    state =
+        Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
   }
 
   @override
@@ -168,8 +72,7 @@ class TestLanguageController extends LanguageController {
 /// Only structure/contents.json is existing (with dummy contents)
 /// But that's enough for Languages.lazyInit()
 Future<MemoryFileSystem> createBasicFileSystem(
-  List<String> downloadedLangs,
-) async {
+    List<String> downloadedLangs) async {
   var fileSystem = MemoryFileSystem();
   for (final lang in downloadedLangs) {
     await fileSystem
@@ -184,101 +87,71 @@ Future<MemoryFileSystem> createBasicFileSystem(
 
 void main() {
   test('Test init() when no files are there', () async {
-    var fakeController = FakeDownloadAssetsController();
-    final ref = ProviderContainer(
-      overrides: [
-        languageProvider.overrideWith2(
-          (languageCode) => LanguageController(
-            languageCode: languageCode,
-            assetsController: fakeController,
-          ),
-        ),
-        fileSystemProvider.overrideWith((ref) => MemoryFileSystem()),
-      ],
-    );
+    final fileSystem = MemoryFileSystem();
+    final fakeDownloader = FakeLanguageDownloader(fileSystem: fileSystem);
+    final ref = ProviderContainer(overrides: [
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      languageDownloaderProvider.overrideWithValue(fakeDownloader),
+    ]);
     final frTest = ref.read(languageProvider('fr').notifier);
     expect(await frTest.init(), false);
     expect(frTest.state.downloaded, false);
     // init() shouldn't start a download
-    expect(fakeController.startDownloadCalls, 0);
+    expect(fakeDownloader.downloadCalls, 0);
   });
 
   test('Test lazyInit() when no files are there', () async {
-    var fakeController = FakeDownloadAssetsController();
-    final ref = ProviderContainer(
-      overrides: [
-        languageProvider.overrideWith2(
-          (languageCode) => LanguageController(
-            languageCode: languageCode,
-            assetsController: fakeController,
-          ),
-        ),
-        fileSystemProvider.overrideWith((ref) => MemoryFileSystem()),
-      ],
-    );
+    final fileSystem = MemoryFileSystem();
+    final fakeDownloader = FakeLanguageDownloader(fileSystem: fileSystem);
+    final ref = ProviderContainer(overrides: [
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      languageDownloaderProvider.overrideWithValue(fakeDownloader),
+    ]);
     final frTest = ref.read(languageProvider('fr').notifier);
     expect(await frTest.lazyInit(), false);
     expect(frTest.state.downloaded, false);
   });
 
   test('Test that download() starts the download', () async {
-    var fakeController = FakeDownloadAssetsController();
-    final ref = ProviderContainer(
-      overrides: [
-        languageProvider.overrideWith2(
-          (languageCode) => LanguageController(
-            languageCode: languageCode,
-            assetsController: fakeController,
-          ),
-        ),
-        fileSystemProvider.overrideWith((ref) => MemoryFileSystem()),
-      ],
-    );
+    final fileSystem = MemoryFileSystem();
+    final fakeDownloader = FakeLanguageDownloader(fileSystem: fileSystem);
+    final ref = ProviderContainer(overrides: [
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      languageDownloaderProvider.overrideWithValue(fakeDownloader),
+    ]);
     final frTest = ref.read(languageProvider('fr').notifier);
 
-    // as we're mocking, the language won't be available
+    // as we're faking, the language won't be available after download
     expect(await frTest.download(), false);
     // Verify that download got started
-    expect(fakeController.initCalled, true);
-    expect(fakeController.startDownloadCalls, 2);
-    expect(fakeController.clearAssetsCalled, false);
+    expect(fakeDownloader.downloadCalls, 1);
+    expect(fakeDownloader.deleteCalls, 0);
   });
 
   test('Test failing download', () async {
-    var throwingController = ThrowingDownloadAssetsController();
-    final ref = ProviderContainer(
-      overrides: [
-        languageProvider.overrideWith2(
-          (languageCode) => LanguageController(
-            languageCode: languageCode,
-            assetsController: throwingController,
-          ),
-        ),
-        fileSystemProvider.overrideWith((ref) => MemoryFileSystem()),
-      ],
-    );
+    final fileSystem = MemoryFileSystem();
+    final fakeDownloader =
+        FakeLanguageDownloader(fileSystem: fileSystem, throwOnDownload: true);
+    final ref = ProviderContainer(overrides: [
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      languageDownloaderProvider.overrideWithValue(fakeDownloader),
+    ]);
     final frTest = ref.read(languageProvider('fr').notifier);
 
     expect(await frTest.download(), false);
     // download shouldn't throw (if it would the test would fail)
-    expect(throwingController.startDownloadCalls, 1);
-    expect(throwingController.clearAssetsCalled, true);
+    expect(fakeDownloader.downloadCalls, 1);
   });
 
   group('Test correct behavior after downloading', () {
     group('Test error handling of incorrect files / structure', () {
       test('Test error handling when no files can be found at all', () async {
-        final ref = ProviderContainer(
-          overrides: [
-            languageProvider.overrideWith2(
-              (languageCode) => LanguageController(
-                languageCode: languageCode,
-                assetsController: createMockDownloadAssetsController(),
-              ),
-            ),
-            fileSystemProvider.overrideWith((ref) => MemoryFileSystem()),
-          ],
-        );
+        final fileSystem = MemoryFileSystem();
+        final ref = ProviderContainer(overrides: [
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+          languageDownloaderProvider.overrideWithValue(
+              FakeLanguageDownloader(fileSystem: fileSystem)),
+        ]);
         final deTest = ref.read(languageProvider('de').notifier);
 
         expect(await deTest.init(), false);
@@ -290,22 +163,15 @@ void main() {
         await fileSystem
             .directory('assets-de/html-de-main/structure')
             .create(recursive: true);
-        var contentsJson = fileSystem.file(
-          'assets-de/html-de-main/structure/contents.json',
-        );
+        var contentsJson =
+            fileSystem.file('assets-de/html-de-main/structure/contents.json');
         await contentsJson.writeAsString('invalid');
 
-        final ref = ProviderContainer(
-          overrides: [
-            languageProvider.overrideWith2(
-              (languageCode) => LanguageController(
-                languageCode: languageCode,
-                assetsController: createMockDownloadAssetsController(),
-              ),
-            ),
-            fileSystemProvider.overrideWith((ref) => fileSystem),
-          ],
-        );
+        final ref = ProviderContainer(overrides: [
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+          languageDownloaderProvider.overrideWithValue(
+              FakeLanguageDownloader(fileSystem: fileSystem)),
+        ]);
         final deTest = ref.read(languageProvider('de').notifier);
         expect(await deTest.init(), false);
         expect(deTest.state.downloaded, false);
@@ -319,91 +185,59 @@ void main() {
             .directory('assets-de/html-de-main/structure')
             .create(recursive: true);
         var readFileSystem = ChrootFileSystem(
-          const LocalFileSystem(),
-          path.canonicalize('test/'),
-        );
+            const LocalFileSystem(), path.canonicalize('test/'));
         String jsonPath = 'assets-de/html-de-main/structure/contents.json';
         var contentsJson = fileSystem.file(jsonPath);
-        await contentsJson.writeAsString(
-          await readFileSystem.file(jsonPath).readAsString(),
-        );
+        await contentsJson
+            .writeAsString(await readFileSystem.file(jsonPath).readAsString());
 
-        final ref = ProviderContainer(
-          overrides: [
-            languageProvider.overrideWith2(
-              (languageCode) => LanguageController(
-                languageCode: languageCode,
-                assetsController: createMockDownloadAssetsController(),
-              ),
-            ),
-            fileSystemProvider.overrideWith((ref) => fileSystem),
-          ],
-        );
+        final ref = ProviderContainer(overrides: [
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+          languageDownloaderProvider.overrideWithValue(
+              FakeLanguageDownloader(fileSystem: fileSystem)),
+        ]);
 
         // init() should work (even if expected HTML files are missing)
         final deTest = ref.read(languageProvider('de').notifier);
         expect(await deTest.init(), true);
         expect(deTest.state.downloaded, true);
-        expect(
-          deTest.state.downloadTimestamp.compareTo(DateTime(2023)),
-          greaterThan(0),
-        );
+        expect(deTest.state.downloadTimestamp.compareTo(DateTime(2023)),
+            greaterThan(0));
       });
     });
 
     test('Test lazyInit() when language is available', () async {
       // We construct a file system in memory with structure/contents.json
       final fileSystem = await createBasicFileSystem(['de']);
-      final ref = ProviderContainer(
-        overrides: [
-          languageProvider.overrideWith2(
-            (languageCode) => LanguageController(
-              languageCode: languageCode,
-              assetsController: createMockDownloadAssetsController(),
-            ),
-          ),
-          fileSystemProvider.overrideWith((ref) => fileSystem),
-        ],
-      );
+      final ref = ProviderContainer(overrides: [
+        fileSystemProvider.overrideWith((ref) => fileSystem),
+        languageDownloaderProvider.overrideWithValue(
+            FakeLanguageDownloader(fileSystem: fileSystem)),
+      ]);
 
       expect(await ref.read(languageProvider('de').notifier).lazyInit(), true);
       final deStatus = ref.read(languageProvider('de'));
       expect(deStatus.downloaded, true);
       expect(deStatus.path, equals('assets-de/html-de-main'));
       expect(
-        deStatus.downloadTimestamp.compareTo(DateTime(2023)),
-        greaterThan(0),
-      );
+          deStatus.downloadTimestamp.compareTo(DateTime(2023)), greaterThan(0));
     });
 
     test('Test everything with real content from test/assets-de/', () async {
-      final ref = ProviderContainer(
-        overrides: [
-          languageProvider.overrideWith2(
-            (languageCode) => LanguageController(
-              languageCode: languageCode,
-              assetsController: createMockDownloadAssetsController(),
-            ),
-          ),
-          fileSystemProvider.overrideWith(
-            (ref) => ChrootFileSystem(
-              const LocalFileSystem(),
-              path.canonicalize('test/'),
-            ),
-          ),
-        ],
-      );
+      final fileSystem = ChrootFileSystem(
+          const LocalFileSystem(), path.canonicalize('test/'));
+      final ref = ProviderContainer(overrides: [
+        fileSystemProvider.overrideWith((ref) => fileSystem),
+        languageDownloaderProvider
+            .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
+      ]);
 
       final deTest = ref.read(languageProvider('de').notifier);
       expect(await deTest.init(), true);
 
       // Loads Gottes_Geschichte_(fünf_Finger).html
-      String content = await ref.read(
-        pageContentProvider((
-          name: "God's_Story_(five_fingers)",
-          langCode: 'de',
-        )).future,
-      );
+      String content = await ref.read(pageContentProvider(
+          (name: "God's_Story_(five_fingers)", langCode: 'de')).future);
 
       expect(content, startsWith('<h1>Gottes Geschichte'));
       // The link of this image should have been replaced with image content
@@ -412,22 +246,19 @@ void main() {
       // This should still be there as the image file is missing
       expect(content, contains('src="files/Hand_5.png"'));
       // PDF should be available
-      expect(
-        deTest.state.pages['Forgiving_Step_by_Step']?.pdfPath,
-        equals('assets-de/pdf-de-main/Schritte_der_Vergebung.pdf'),
-      );
+      expect(deTest.state.pages['Forgiving_Step_by_Step']?.pdfPath,
+          equals('assets-de/pdf-de-main/Schritte_der_Vergebung.pdf'));
       // This PDF is missing
       expect(deTest.state.pages['MissingTest']?.pdfPath, isNull);
 
       // Test Languages.getPageTitles()
       expect(
-        deTest.state.getPageTitles().values,
-        orderedEquals(const [
-          'Gottes Geschichte (fünf Finger)',
-          'Schritte der Vergebung',
-          'MissingTest',
-        ]),
-      );
+          deTest.state.getPageTitles().values,
+          orderedEquals(const [
+            'Gottes Geschichte (fünf Finger)',
+            'Schritte der Vergebung',
+            'MissingTest'
+          ]));
       expect(deTest.state.sizeInKB, 147);
       expect(deTest.state.path, equals('assets-de/html-de-main'));
 
@@ -437,22 +268,18 @@ void main() {
       ref.read(pageContentProvider((name: 'Invalid', langCode: 'de')));
       await Future<void>.delayed(const Duration(milliseconds: 500));
 
-      final missingResult = ref.read(
-        pageContentProvider((name: 'MissingTest', langCode: 'de')),
-      );
+      final missingResult =
+          ref.read(pageContentProvider((name: 'MissingTest', langCode: 'de')));
       expect(missingResult.hasError, true);
       // In Riverpod v3, errors are wrapped in ProviderException
       var error = missingResult.error;
       if (error is ProviderException) error = error.exception;
       expect(error, isA<LanguageCorruptedException>());
-      expect(
-        (error as LanguageCorruptedException).exception,
-        isA<PathNotFoundException>(),
-      );
+      expect((error as LanguageCorruptedException).exception,
+          isA<PathNotFoundException>());
 
-      final invalidResult = ref.read(
-        pageContentProvider((name: 'Invalid', langCode: 'de')),
-      );
+      final invalidResult =
+          ref.read(pageContentProvider((name: 'Invalid', langCode: 'de')));
       expect(invalidResult.hasError, true);
       error = invalidResult.error;
       if (error is ProviderException) error = error.exception;
@@ -461,24 +288,18 @@ void main() {
   });
 
   test('Test diskUsageProvider', () {
-    final ref = ProviderContainer(
-      overrides: [
-        languageProvider.overrideWith2(
-          (languageCode) => TestLanguageController(languageSize: 42),
-        ),
-      ],
-    );
+    final ref = ProviderContainer(overrides: [
+      languageProvider
+          .overrideWith2((langCode) => TestLanguageController(languageSize: 42)),
+    ]);
     expect(ref.read(diskUsageProvider), countAvailableLanguages * 42);
   });
 
   test('Test countDownloadedLanguagesProvider', () {
-    final ref = ProviderContainer(
-      overrides: [
-        languageProvider.overrideWith2(
-          (languageCode) => TestLanguageController(downloadedLanguages: ['de', 'fr', 'en']),
-        ),
-      ],
-    );
+    final ref = ProviderContainer(overrides: [
+      languageProvider.overrideWith2((langCode) =>
+          TestLanguageController(downloadedLanguages: ['de', 'fr', 'en'])),
+    ]);
     expect(ref.read(countDownloadedLanguagesProvider), 3);
   });
 }
