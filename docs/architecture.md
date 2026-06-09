@@ -51,10 +51,11 @@ There is no app-owned backend; all content comes from public GitHub repos and th
         ▼                ▼                     ▼
 ┌───────────────┐  ┌──────────────┐  ┌──────────────────────┐
 │ File system   │  │ SharedPrefs  │  │ Network              │
-│ (download_    │  │ user prefs + │  │ - download_assets    │
-│  assets)      │  │ last-checked │  │   (zip download)     │
-│ HTML + PDF    │  │ timestamps   │  │ - http (GitHub API)  │
-│ per language  │  │              │  │   commits since…     │
+│ LanguageDown- │  │ user prefs + │  │ - dio (zip download  │
+│ loader: stag- │  │ last-checked │  │   via Language-      │
+│ ing + atomic  │  │ timestamps   │  │   Downloader)        │
+│ swap of HTML  │  │              │  │ - http (GitHub API,  │
+│ + PDF per lang│  │              │  │   commits since…)    │
 └───────────────┘  └──────────────┘  └──────────────────────┘
 ```
 
@@ -116,10 +117,19 @@ ViewPage(page, langCode)
 
 ```
 DownloadLanguageButton(langCode).onPressed
-  → LanguageController(langCode).download(force?)
-       • _initController() → DownloadAssetsController.init(assetDir: 'assets-<lang>')
-       • startDownload([htmlZipUrl])  ← github.com/4training/html-<lang>/archive/main.zip
-       • startDownload([pdfZipUrl])   ← github.com/4training/pdf-<lang>/archive/main.zip
+  → LanguageController(langCode).download()
+       • ref.read(languageDownloaderProvider).download(langCode)
+           – serialize against any in-flight download (max one at a time)
+           – rm -rf assets-<lang>.staging        ← crash recovery
+           – Future.wait([
+               dio.get(htmlZipUrl, responseType: bytes),
+               dio.get(pdfZipUrl,  responseType: bytes),
+             ])                                  ← github.com/4training/{html,pdf}-<lang>/archive/main.zip
+           – ZipDecoder.decodeBytes(...) → write each entry into .staging via FileSystem
+           – on any failure: rm -rf .staging and rethrow (prior data untouched)
+           – rename assets-<lang> → assets-<lang>.old (if it existed)
+           – rename .staging      → assets-<lang>        (atomic swap)
+           – best-effort rm -rf .old
        • _load():
            – read structure/contents.json
            – build pages: Map<String,Page>, pageIndex: List<String>,
@@ -130,7 +140,7 @@ DownloadLanguageButton(langCode).onPressed
   → snackbar, button stops spinning
 ```
 
-The two zip downloads are issued sequentially because `download_assets` errors when both URLs share a filename (`main.zip`). See `LanguageController._download`.
+The HTML and PDF zips are fetched **concurrently**; the in-house `LanguageDownloader` owns staging directory naming, so there is no longer a same-filename collision to work around. See `lib/data/language_downloader.dart` and `LanguageController._download`.
 
 ## Data flow: checking for updates
 

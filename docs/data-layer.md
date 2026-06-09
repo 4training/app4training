@@ -4,7 +4,7 @@ Everything in `lib/data/` and the file-system / GitHub interactions it owns.
 
 ## On-device file system layout
 
-When a language is downloaded, `download_assets` creates a per-language assets directory (whose path is platform-defined; the Riverpod `LanguageController` doesn't care about the absolute path). Inside it:
+When a language is downloaded, `LanguageDownloaderImpl` creates a per-language assets directory at `<appDocsRoot>/assets-<lang>` (the root is resolved once at startup via `getApplicationDocumentsDirectory()` and passed into the downloader; the `LanguageController` itself reads the absolute path from `languageDownloaderProvider.pathFor(langCode)`). Inside it:
 
 ```
 assets-<lang>/
@@ -100,14 +100,12 @@ The branch name (`main`) is hardcoded; switching branches would require a code c
 
 ## Download flow
 
-`LanguageController.download({force=false})`:
+`LanguageController.download()`:
 
-1. (force) `deleteResources()` → `_controller.clearAssets()` and reset state to empty.
-2. `_download()`:
-   - `DownloadAssetsController.startDownload([htmlZipUrl])` — fetches and unzips into `assets-<lang>/`.
-   - Then `startDownload([pdfZipUrl])` — same. **Two separate calls** because `download_assets` errors when both URLs share the filename `main.zip`.
-   - On any throw, calls `_controller.clearAssets()` so the next attempt starts clean.
-3. `_load()`:
+1. `_download()`:
+   - `await ref.read(languageDownloaderProvider).download(languageCode)`. The downloader handles the full atomic flow internally (see below); on success the on-disk directory at `pathFor(langCode)` is the new content. On failure it throws and the prior on-disk directory (if any) is left untouched.
+   - The caller wraps in a `try/catch` to preserve the existing `Future<bool>` shape.
+2. `_load()`:
    - Recompute `assetsDirAlreadyExists()`.
    - Sum file sizes recursively → `sizeInKB`.
    - Read `contents.json` mtime → `downloadTimestamp` (UTC).
@@ -115,9 +113,33 @@ The branch name (`main`) is hardcoded; switching branches would require a code c
    - Scan `pdf-<lang>-main/` for `.pdf` files; match each `worksheet.pdf` → `Page.pdfPath`.
    - Scan `html-<lang>-main/files/` for images; build `Map<String, Image>`.
    - `_checkConsistency()` warns about HTML files referenced but missing, or HTML files present but unreferenced.
-   - On any throw: log, call `_controller.clearAssets()`, reset to empty `Language`, return `false`.
+   - On any throw: log, call `deleteResources()` (which delegates to `languageDownloader.delete(languageCode)`), reset to empty `Language`, return `false`.
 
-`init()` calls `_load()` only — no network. `lazyInit()` only checks for `contents.json` existence and returns a sparse `Language(languageCode, {}, [], {}, path, 0, timestamp)` without parsing — used by the background isolate which doesn't need page details.
+`init()` calls `_load()` only — no network. `lazyInit()` only checks for `contents.json` existence and returns a sparse `Language(languageCode, {}, [], {}, path, 0, timestamp)` without parsing — used by the background isolate which doesn't need page details. Both `lazyInit()` and `_load()` read the path from `ref.read(languageDownloaderProvider).pathFor(languageCode)`.
+
+### Inside `LanguageDownloaderImpl` (`lib/data/language_downloader.dart`)
+
+The downloader owns the atomicity, concurrency, and crash-recovery guarantees so callers don't need to reason about partial state. One `download(langCode)` call performs:
+
+1. **Serialize** against any in-flight download — at most one zip pair is held in memory at a time (concurrency cap; protects low-end devices from rapid taps on the per-language download buttons).
+2. **Crash recovery** — `rm -rf <pathFor(lang)>.staging` so a leftover from a prior crashed run never accumulates.
+3. **Fetch concurrently** — `Future.wait` over two `dio.get(..., responseType: bytes)` calls for the HTML and PDF zips.
+4. **Extract into staging** — `ZipDecoder().decodeBytes(...)` over each response, writing every `ArchiveFile` via the injected `FileSystem`. Not `extractArchiveToDisk` (it is tied to `dart:io` and not testable against `MemoryFileSystem`).
+5. **Atomic swap** — rename existing `assets-<lang>` → `assets-<lang>.old` (if any), rename `.staging` → `assets-<lang>` (rename is atomic on a single filesystem), then best-effort `rm -rf .old`.
+6. **On any throw mid-flight** — `rm -rf .staging` and `rethrow`. The prior on-disk directory (if any) is never touched until step 5, so a failed update never destroys offline content.
+
+The interface is intentionally small:
+
+```dart
+abstract interface class LanguageDownloader {
+  String pathFor(String langCode);            // synchronous; <root>/assets-<lang>
+  Future<bool> isDownloaded(String langCode); // cheap directory-exists check
+  Future<void> download(String langCode);     // throws on failure; cleans up partial state
+  Future<void> delete(String langCode);       // idempotent
+}
+```
+
+`dio` and `archive` exceptions bubble; the downloader does not introduce a custom exception type. There are no progress callbacks — the codebase has no callers for them.
 
 ## `pageContentProvider`
 

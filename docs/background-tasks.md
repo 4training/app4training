@@ -24,9 +24,10 @@ void backgroundTask() {
 
 ### `backgroundMain()`
 1. Gets a fresh `SharedPreferences` instance (the background isolate has its own memory).
-2. Builds a new `ProviderContainer` with `sharedPrefsProvider` overridden.
-3. Calls `backgroundCheck(ref)`.
-4. Currently, the task only checks for updates, never auto-downloads.
+2. Resolves `getApplicationDocumentsDirectory()` and builds a real `LanguageDownloaderImpl` with a fresh `Dio` and the local `FileSystem`.
+3. Builds a new `ProviderContainer` with `sharedPrefsProvider` **and** `languageDownloaderProvider` overridden — the background isolate has the same atomicity and concurrency guarantees as the foreground path.
+4. Calls `backgroundCheck(ref)`.
+5. Currently, the task only checks for updates, never auto-downloads.
 
 ### `backgroundCheck(ProviderContainer ref)`
 For each language code in `availableLanguagesProvider`:
@@ -97,8 +98,8 @@ Two tests, both running on a real Android emulator (CI uses `reactivecircus/andr
 
 2. **"Test synchronization with main isolate"** — full happy-path: mount `App4Training` with `appLanguage='de'`, open settings to warm `languageStatusProvider`, fire the background task, then open a worksheet and verify the `foundBgActivity` snackbar appears.
 
-The fixtures use `MemoryFileSystem` and `MockDownloadAssetsController` from `lib/background/background_test.dart`.
+The fixtures use `MemoryFileSystem` and `FakeLanguageDownloader` from `lib/background/background_test.dart`.
 
 ## Why the test fixtures live in `lib/`
 
-`background_test.dart` lives in `lib/background/` rather than `test/` because the integration test imports it through the production `background_task.dart` path (`backgroundTestMain` calls `createTestFileSystem()` and `createMockDownloadAssetsController()` from inside the isolate). Test code under `test/` can't be imported by code under `lib/`, so the helpers have to be co-located with production. There's a comment to that effect at the top of the file.
+`background_test.dart` lives in `lib/background/` rather than `test/` because the integration test imports it through the production `background_task.dart` path (`backgroundTestMain` calls `createTestFileSystem()` and constructs a `FakeLanguageDownloader` from inside the isolate). Test code under `test/` can't be imported by code under `lib/`, so the helpers have to be co-located with production. There's a comment to that effect at the top of the file.
