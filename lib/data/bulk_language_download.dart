@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 const kMaxParallelLanguageDownloads = 4;
 
 typedef LanguageDownloadFn = Future<bool> Function(String languageCode);
@@ -14,26 +16,32 @@ class BulkDownloadResult {
   });
 }
 
-/// Download or update [languageCodes] with at most [maxConcurrent] in flight.
+/// Download or update [languageCodes] keeping at most [maxConcurrent] in
+/// flight at any time. Uses a worker pool: as soon as one download finishes a
+/// new one is started, so a slow language never blocks idle slots.
 Future<BulkDownloadResult> downloadLanguagesInParallel(
   Iterable<String> languageCodes, {
   required LanguageDownloadFn download,
   int maxConcurrent = kMaxParallelLanguageDownloads,
 }) async {
-  final codes = languageCodes.toList();
+  assert(maxConcurrent > 0);
+  final queue = Queue<String>.of(languageCodes);
   var successCount = 0;
   var errorCount = 0;
   var lastSuccessCode = '';
 
-  for (var i = 0; i < codes.length; i += maxConcurrent) {
-    final batch = codes.skip(i).take(maxConcurrent).toList();
-    final results = await Future.wait(
-      batch.map((code) async {
-        final success = await download(code);
-        return (code, success);
-      }),
-    );
-    for (final (code, success) in results) {
+  // Each worker pulls the next code until the queue is empty. Safe without
+  // locking: there's no await between isNotEmpty and removeFirst, and Dart is
+  // single-threaded.
+  Future<void> worker() async {
+    while (queue.isNotEmpty) {
+      final code = queue.removeFirst();
+      bool success;
+      try {
+        success = await download(code);
+      } catch (_) {
+        success = false;
+      }
       if (success) {
         successCount++;
         lastSuccessCode = code;
@@ -42,6 +50,10 @@ Future<BulkDownloadResult> downloadLanguagesInParallel(
       }
     }
   }
+
+  await Future.wait([
+    for (var i = 0; i < maxConcurrent; i++) worker(),
+  ]);
 
   return BulkDownloadResult(
     successCount: successCount,
