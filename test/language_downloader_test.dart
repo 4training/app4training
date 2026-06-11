@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/language_downloader.dart';
@@ -146,8 +147,11 @@ void main() {
         'precious');
   });
 
-  test('Concurrent calls are serialized', () async {
-    final callOrder = <String>[];
+  test('Different languages download in parallel', () async {
+    final deHtmlGate = Completer<void>();
+    final frHtmlGate = Completer<void>();
+    var deHtmlInFlight = false;
+    var frHtmlInFlight = false;
 
     final htmlZip1 = createTestZip({
       '${Globals.getResourcesDir('de')}/file.txt': 'de-content',
@@ -162,12 +166,12 @@ void main() {
       '${Globals.getPdfDir('fr')}/file.pdf': 'fr-pdf',
     });
 
-    // Track call ordering via dio mocks
     when(() => dio.get<List<int>>(
           Globals.getRemoteUrlHtml('de'),
           options: any(named: 'options'),
         )).thenAnswer((_) async {
-      callOrder.add('de-html-start');
+      deHtmlInFlight = true;
+      await deHtmlGate.future;
       return Response(
         data: htmlZip1.toList(),
         statusCode: 200,
@@ -177,19 +181,17 @@ void main() {
     when(() => dio.get<List<int>>(
           Globals.getRemoteUrlPdf('de'),
           options: any(named: 'options'),
-        )).thenAnswer((_) async {
-      callOrder.add('de-pdf-start');
-      return Response(
-        data: pdfZip1.toList(),
-        statusCode: 200,
-        requestOptions: RequestOptions(),
-      );
-    });
+        )).thenAnswer((_) async => Response(
+          data: pdfZip1.toList(),
+          statusCode: 200,
+          requestOptions: RequestOptions(),
+        ));
     when(() => dio.get<List<int>>(
           Globals.getRemoteUrlHtml('fr'),
           options: any(named: 'options'),
         )).thenAnswer((_) async {
-      callOrder.add('fr-html-start');
+      frHtmlInFlight = true;
+      await frHtmlGate.future;
       return Response(
         data: htmlZip2.toList(),
         statusCode: 200,
@@ -199,24 +201,66 @@ void main() {
     when(() => dio.get<List<int>>(
           Globals.getRemoteUrlPdf('fr'),
           options: any(named: 'options'),
+        )).thenAnswer((_) async => Response(
+          data: pdfZip2.toList(),
+          statusCode: 200,
+          requestOptions: RequestOptions(),
+        ));
+
+    final f1 = downloader.download('de');
+    await Future<void>.delayed(Duration.zero);
+    final f2 = downloader.download('fr');
+    await Future<void>.delayed(Duration.zero);
+
+    expect(deHtmlInFlight, isTrue);
+    expect(frHtmlInFlight, isTrue);
+
+    deHtmlGate.complete();
+    frHtmlGate.complete();
+    await Future.wait([f1, f2]);
+  });
+
+  test('Same language downloads are serialized', () async {
+    var htmlCallCount = 0;
+    final gate = Completer<void>();
+
+    final htmlZip = createTestZip({
+      '${Globals.getResourcesDir('de')}/file.txt': 'de-content',
+    });
+    final pdfZip = createTestZip({
+      '${Globals.getPdfDir('de')}/file.pdf': 'de-pdf',
+    });
+
+    when(() => dio.get<List<int>>(
+          Globals.getRemoteUrlHtml('de'),
+          options: any(named: 'options'),
         )).thenAnswer((_) async {
-      callOrder.add('fr-pdf-start');
+      htmlCallCount++;
+      await gate.future;
       return Response(
-        data: pdfZip2.toList(),
+        data: htmlZip.toList(),
         statusCode: 200,
         requestOptions: RequestOptions(),
       );
     });
+    when(() => dio.get<List<int>>(
+          Globals.getRemoteUrlPdf('de'),
+          options: any(named: 'options'),
+        )).thenAnswer((_) async => Response(
+          data: pdfZip.toList(),
+          statusCode: 200,
+          requestOptions: RequestOptions(),
+        ));
 
-    // Fire both without awaiting
     final f1 = downloader.download('de');
-    final f2 = downloader.download('fr');
-    await Future.wait([f1, f2]);
+    await Future<void>.delayed(Duration.zero);
+    final f2 = downloader.download('de');
+    await Future<void>.delayed(Duration.zero);
+    expect(htmlCallCount, 1);
 
-    // de downloads must all complete before fr starts
-    final deLastIndex = callOrder.lastIndexOf('de-pdf-start');
-    final frFirstIndex = callOrder.indexOf('fr-html-start');
-    expect(deLastIndex, lessThan(frFirstIndex));
+    gate.complete();
+    await Future.wait([f1, f2]);
+    expect(htmlCallCount, 2);
   });
 
   test('Crash recovery: pre-seeded staging dir is wiped by next download',
