@@ -509,7 +509,7 @@ packages:
     source: hosted
     version: "2.0.0"
   mocktail:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: mocktail
       sha256: "890df3f9688106f25755f26b1c60589a92b3ab91a22b8b224947ad041bf172d8"
@@ -890,7 +890,7 @@ packages:
     source: hosted
     version: "1.2.2"
   test:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: test
       sha256: "280d6d890011ca966ad08df7e8a4ddfab0fb3aa49f96ed6de56e3521347a9ae7"
