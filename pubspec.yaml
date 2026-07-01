@@ -17,7 +17,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.8.7+10
+version: 0.8.7+11
 
 environment:
   sdk: ^3.7.0
@@ -41,8 +41,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
-  test: ^1.29.0 # 1.30+ needs test_api >0.7.9, but flutter_test pins test_api 0.7.9
-  mocktail: ^1.0.3
   file: ^7.0.0
   shared_preferences: ^2.2.0
   flutter_riverpod: ^3.3.1
@@ -75,6 +73,8 @@ dev_dependencies:
   riverpod_lint: ^3.1.3
   integration_test:
     sdk: flutter
+  test: ^1.29.0 # 1.30+ needs test_api >0.7.9, but flutter_test pins test_api 0.7.9
+  mocktail: ^1.0.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
