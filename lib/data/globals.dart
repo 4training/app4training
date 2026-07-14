@@ -1,3 +1,4 @@
+import 'package:app4training/data/connectivity_service.dart';
 import 'package:app4training/data/language_downloader.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 final sharedPrefsProvider = MustOverrideProvider<SharedPreferences>();
 final packageInfoProvider = MustOverrideProvider<PackageInfo>();
 final languageDownloaderProvider = MustOverrideProvider<LanguageDownloader>();
+final connectivityServiceProvider = MustOverrideProvider<ConnectivityService>();
 
 /// ignore: non_constant_identifier_names
 Provider<T> MustOverrideProvider<T>() {
