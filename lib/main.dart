@@ -1,3 +1,4 @@
+import 'package:app4training/data/connectivity_service.dart';
 import 'dart:async';
 
 import 'package:app4training/data/language_downloader.dart';
@@ -13,6 +14,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:workmanager/workmanager.dart';
+import 'background/background_task.dart';
 import 'data/app_language.dart';
 import 'data/globals.dart';
 import 'design/theme.dart';
@@ -161,13 +164,16 @@ void main() async {
     fileSystem: const LocalFileSystem(),
   );
 
-  // Run initialization for our background task TODO enable in version 0.9
-  // await Workmanager().initialize(backgroundTask, isInDebugMode: false);
+  // Register the isolate entry point for our background task. Periodic
+  // scheduling itself is owned by BackgroundScheduler.schedule(), triggered by
+  // startup / onboarding / the check-frequency setting.
+  await Workmanager().initialize(backgroundTask);
 
   runApp(ProviderScope(overrides: [
     sharedPrefsProvider.overrideWithValue(prefs),
     packageInfoProvider.overrideWithValue(packageInfo),
     languageDownloaderProvider.overrideWithValue(languageDownloader),
+    connectivityServiceProvider.overrideWithValue(ConnectivityServiceImpl()),
   ], child: const App4Training()));
   PerfLogger.attachToApp();
 }
