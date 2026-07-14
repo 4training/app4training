@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:app4training/background/background_test.dart';
+import 'package:app4training/data/connectivity_service.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/language_downloader.dart';
 import 'package:app4training/data/languages.dart';
@@ -66,12 +67,65 @@ Future<void> backgroundMain() async {
     overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
       languageDownloaderProvider.overrideWithValue(languageDownloader),
+      connectivityServiceProvider.overrideWithValue(ConnectivityServiceImpl()),
     ],
   );
+
+  // Phase 1: check every downloaded language for updates
   await backgroundCheck(ref);
 
-  // TODO: check automatic updates setting; if necessary check connectivity
-  // TODO: if all is fine: download languages with updates
+  // Phase 2: download the languages that have updates, gated by the user's
+  // AutomaticUpdates setting and (for onlyOnWifi) the current connection type
+  await backgroundDownload(ref);
+}
+
+/// Download the languages that have updates available, honoring the user's
+/// [AutomaticUpdates] setting and connectivity. Assumes [backgroundCheck] has
+/// already run so that `updatesAvailable` reflects the remote state.
+///
+/// | AutomaticUpdates    | metered      | unmetered (WiFi/ethernet) |
+/// | ------------------- | ------------ | ------------------------- |
+/// | never               | no download  | no download               |
+/// | requireConfirmation | no download  | no download               |
+/// | onlyOnWifi          | no download  | download                  |
+/// | yesAlways           | download     | download                  |
+Future<void> backgroundDownload(ProviderContainer ref) async {
+  // Read the setting from the isolate's own SharedPreferences instance
+  final automaticUpdates = ref.read(automaticUpdatesProvider);
+  await writeLog('AutomaticUpdates setting: ${automaticUpdates.name}');
+
+  switch (automaticUpdates) {
+    case AutomaticUpdates.never:
+    case AutomaticUpdates.requireConfirmation:
+      // Never auto-download. requireConfirmation leaves updatesAvailable set
+      // so the foreground can surface it and let the user confirm.
+      return;
+    case AutomaticUpdates.onlyOnWifi:
+      if (!await ref.read(connectivityServiceProvider).isUnmetered()) {
+        await writeLog('onlyOnWifi but connection is metered: skipping');
+        return;
+      }
+    case AutomaticUpdates.yesAlways:
+      // The periodic task's NetworkType.connected constraint already
+      // guarantees some connection, so download regardless of its type.
+      break;
+  }
+
+  for (String languageCode in ref.read(availableLanguagesProvider)) {
+    if (!ref.read(languageStatusProvider(languageCode)).updatesAvailable) {
+      continue;
+    }
+    try {
+      await writeLog('Downloading update for $languageCode in background');
+      await ref.read(languageDownloaderProvider).download(languageCode);
+      // Re-downloading refreshes the download timestamp; re-reading the status
+      // lets LanguageStatusNotifier.build() reset updatesAvailable to false.
+      ref.invalidate(languageStatusProvider(languageCode));
+    } catch (e) {
+      // Don't let one language's failure abort the whole run
+      await writeLog('Error downloading $languageCode in background: $e');
+    }
+  }
 }
 
 /// For the integration test: Simulates that we have
@@ -88,9 +142,16 @@ Future<void> backgroundTestMain() async {
       languageDownloaderProvider.overrideWithValue(
         FakeLanguageDownloader(fileSystem: fileSystem),
       ),
+      // Fake connectivity so the download decision is deterministic in the
+      // integration test (no real platform channel in the isolate).
+      connectivityServiceProvider.overrideWithValue(
+        FakeConnectivityService(unmetered: true),
+      ),
     ],
   );
+  // Same two-phase flow as backgroundMain(): check, then settings-gated download
   await backgroundCheck(ref);
+  await backgroundDownload(ref);
 }
 
 /// Check for updates for all downloaded languages

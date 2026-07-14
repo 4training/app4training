@@ -1,3 +1,4 @@
+import 'package:app4training/data/connectivity_service.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/language_downloader.dart';
 import 'package:file/file.dart';
@@ -19,6 +20,9 @@ class FakeLanguageDownloader implements LanguageDownloader {
   int downloadCalls = 0;
   int deleteCalls = 0;
 
+  /// The language codes passed to [download], in call order.
+  final List<String> downloadedLangs = [];
+
   FakeLanguageDownloader({
     required this.fileSystem,
     this.root = '',
@@ -36,6 +40,7 @@ class FakeLanguageDownloader implements LanguageDownloader {
   @override
   Future<void> download(String langCode) async {
     downloadCalls += 1;
+    downloadedLangs.add(langCode);
     if (throwOnDownload) {
       throw Exception('Simulated download failure');
     }
@@ -48,6 +53,23 @@ class FakeLanguageDownloader implements LanguageDownloader {
     if (await dir.exists()) {
       await dir.delete(recursive: true);
     }
+  }
+}
+
+/// A test double for [ConnectivityService] with a controllable result.
+/// Set [unmetered] to simulate being on WiFi/ethernet (true) or mobile (false).
+/// Lives in `lib/` so the background isolate's integration test can import it
+/// too (same rationale as [FakeLanguageDownloader]).
+class FakeConnectivityService implements ConnectivityService {
+  bool unmetered;
+  int isUnmeteredCalls = 0;
+
+  FakeConnectivityService({this.unmetered = false});
+
+  @override
+  Future<bool> isUnmetered() async {
+    isUnmeteredCalls += 1;
+    return unmetered;
   }
 }
 
