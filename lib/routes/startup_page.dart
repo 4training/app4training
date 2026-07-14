@@ -88,11 +88,10 @@ class _StartupPageState extends ConsumerState<StartupPage> {
       return '/onboarding/2'; // Go to DownloadLanguagesPage
     }
 
-    /*  TODO for version 0.9
     // Check whether user completed third onboarding step
     if (ref.read(sharedPrefsProvider).getString('checkFrequency') == null) {
       return '/onboarding/3';
-    }*/
+    }
 
     // Go to recently opened page or to /home
     String navigateTo = '/home';

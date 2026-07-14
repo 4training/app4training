@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app4training/data/app_language.dart';
+import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/languages_table.dart';
@@ -88,19 +89,13 @@ class DownloadLanguagesPage extends ConsumerWidget {
   }
 
   /// Which route should we continue with after this?
-  /// Currently (version 0.8) this is the last onboarding step and we proceed
-  /// to the home screen.
-  /// TODO for version 0.9:
-  /// During onboarding (no automatic updates settings saved): go to third step,
-  /// otherwise (user deleted all languages and ends up here): go to /home
+  /// During onboarding (no automatic-updates settings saved yet): go to the
+  /// third step to configure update preferences.
+  /// Otherwise (user deleted all languages and ended up here again): go to /home
   String getNextRoute(WidgetRef ref) {
-    return '/home';
-/*
-    // TODO for version 0.9
     return ref.read(sharedPrefsProvider).getString('checkFrequency') == null
         ? '/onboarding/3'
         : '/home';
-*/
   }
 }
 

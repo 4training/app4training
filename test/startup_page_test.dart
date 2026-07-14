@@ -128,7 +128,6 @@ void main() {
     expect(ref.read(backgroundSchedulerProvider), false);
   });
 
-  /* TODO for version 0.9
   testWidgets('Test continuing to third onboarding step',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
@@ -148,7 +147,6 @@ void main() {
     expect(route, equals('/onboarding/3'));
     expect(ref.read(backgroundSchedulerProvider), false);
   });
-*/
 
   testWidgets('Only the languages of the first screen delay the navigation', (
     WidgetTester tester,
