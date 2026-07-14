@@ -335,6 +335,14 @@
     "letsGo": "Let's go!",
     "homeExplanation": "God is building His kingdom all around the world. He wants us to join in His work and make disciples!\nThis app wants to serve you and make your job easier: We equip you with good training worksheets. The best thing is: You can access the same worksheet in different languages so that you always know what it means, even if you don't understand the language.\n\nAll this content is now available offline, always ready on your phone:",
     "foundBgActivity": "Searched for updates in the background",
+    "updatesReadyToDownload": "Updates are available for your languages.",
+    "@updatesReadyToDownload": {
+        "description": "Prompt shown on the settings page when automatic updates require confirmation and updates were found"
+    },
+    "downloadUpdatesNow": "Download now",
+    "@downloadUpdatesNow": {
+        "description": "Button to download the available updates after the user confirms"
+    },
     "sharePdf": "Share PDF",
     "openPdf": "Open PDF",
     "openInBrowser": "Open in browser",

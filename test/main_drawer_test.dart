@@ -12,9 +12,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 // ignore: implementation_imports, invalid_use_of_internal_member
 import 'package:riverpod/src/framework.dart' show $RefArg;
 
+import 'package:app4training/data/updates.dart';
+
 import 'app_language_test.dart';
 import 'languages_test.dart';
 import 'routes_test.dart';
+import 'updates_test.dart';
 
 // Simulate that five pages are downloaded in most languages.
 // French only has "Prayer" available.
@@ -288,6 +291,8 @@ void main() {
   testWidgets('Test error message when appLanguage is not downloaded', (
     WidgetTester tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -295,6 +300,7 @@ void main() {
           languageProvider.overrideWith2(
             (languageCode) => TestLanguageController(downloadedLanguages: []),
           ),
+          sharedPrefsProvider.overrideWithValue(prefs),
         ],
         child: const TestApp(),
       ),
@@ -309,6 +315,63 @@ void main() {
     // Error message visible?
     expect(find.textContaining('Sprache ist nicht verfügbar'), findsOneWidget);
     expect(find.textContaining('lade Deutsch (de) herunter'), findsOneWidget);
+  });
+
+  testWidgets('Settings entry shows an indicator dot under requireConfirmation '
+      'when updates are available', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({
+      'automaticUpdates': 'requireConfirmation',
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          languageProvider.overrideWith2(
+            (lang) => CustomTestLanguageController(),
+          ),
+          sharedPrefsProvider.overrideWithValue(prefs),
+          languageStatusProvider.overrideWith2(
+            (lang) => TestLanguageStatus(langWithUpdates: ['de']),
+          ),
+        ],
+        child: const TestApp(),
+      ),
+    );
+    final ScaffoldState state = tester.firstState(find.byType(Scaffold));
+    state.openDrawer();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Einstellungen'), findsOneWidget);
+    expect(find.byIcon(Icons.circle), findsOneWidget);
+  });
+
+  testWidgets('No indicator dot under yesAlways even with updates', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'automaticUpdates': 'yesAlways'});
+    final prefs = await SharedPreferences.getInstance();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          languageProvider.overrideWith2(
+            (lang) => CustomTestLanguageController(),
+          ),
+          sharedPrefsProvider.overrideWithValue(prefs),
+          languageStatusProvider.overrideWith2(
+            (lang) => TestLanguageStatus(langWithUpdates: ['de']),
+          ),
+        ],
+        child: const TestApp(),
+      ),
+    );
+    final ScaffoldState state = tester.firstState(find.byType(Scaffold));
+    state.openDrawer();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Einstellungen'), findsOneWidget);
+    expect(find.byIcon(Icons.circle), findsNothing);
   });
 
   // TODO: test that currently opened page is highlighted in menu

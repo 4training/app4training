@@ -248,6 +248,16 @@ final languageStatusProvider =
   return LanguageStatusNotifier(languageCode: arg);
 });
 
+/// Whether updates are waiting for the user's explicit confirmation:
+/// the user chose [AutomaticUpdates.requireConfirmation] and the background
+/// task has found updates it did not auto-download. Drives the persistent
+/// "updates available" indicator and the confirm-to-download prompt.
+final updatesNeedConfirmationProvider = Provider<bool>((ref) {
+  return ref.watch(automaticUpdatesProvider) ==
+          AutomaticUpdates.requireConfirmation &&
+      ref.watch(updatesAvailableProvider);
+});
+
 /// Are there updates available in any of our languages?
 final updatesAvailableProvider = Provider<bool>((ref) {
   bool updatesAvailable = false;

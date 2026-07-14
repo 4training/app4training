@@ -495,6 +495,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get foundBgActivity => 'Im Hintergrund wurde nach Updates gesucht';
 
   @override
+  String get updatesReadyToDownload =>
+      'Für deine Sprachen sind Updates verfügbar.';
+
+  @override
+  String get downloadUpdatesNow => 'Jetzt herunterladen';
+
+  @override
   String get sharePdf => 'PDF teilen';
 
   @override

@@ -5,6 +5,7 @@ import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/categories.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
+import 'package:app4training/data/updates.dart';
 import 'package:app4training/design/theme.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:flutter/material.dart';
@@ -90,6 +91,12 @@ class TableOfContent extends ConsumerWidget {
       ListTile(
         title: Text(context.l10n.settings),
         leading: const Icon(Icons.settings),
+        // Persistent indicator: a dot when updates found in the background
+        // are waiting for the user to confirm the download (requireConfirmation)
+        trailing: ref.watch(updatesNeedConfirmationProvider)
+            ? Icon(Icons.circle,
+                size: 12, color: Theme.of(context).colorScheme.error)
+            : null,
         onTap: () {
           // Drawer should be closed when user leaves the settings page
           context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
