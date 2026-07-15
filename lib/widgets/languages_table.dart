@@ -67,16 +67,69 @@ class LanguagesTable extends ConsumerWidget {
       ]));
     }
 
-    return Column(
+    // Header row with the all-languages buttons (pinned at the top)
+    final Widget header = Table(
+      columnWidths: const {
+        0: IntrinsicColumnWidth(),
+        1: FlexColumnWidth(),
+        2: IntrinsicColumnWidth(),
+        3: IntrinsicColumnWidth(),
+        4: IntrinsicColumnWidth(),
+      },
       children: [
-        Table(
-          columnWidths: const {
-            0: IntrinsicColumnWidth(),
-            1: FlexColumnWidth(),
-            2: IntrinsicColumnWidth(),
-            3: IntrinsicColumnWidth(),
-            4: IntrinsicColumnWidth(),
-          },
+        // header with all-languages-buttons
+        TableRow(
+            decoration: const BoxDecoration(
+                border:
+                    Border(bottom: BorderSide(width: 3, color: Colors.grey))),
+            children: [
+              SizedBox(
+                  height: 32, width: 32, child: IsDownloaded(allDownloaded)),
+              Container(
+                  height: 32,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                      '${context.l10n.allLanguages} ($countAvailableLanguages)',
+                      style: const TextStyle(fontWeight: FontWeight.bold))),
+              const SizedBox(
+                  height: 32, width: 32, child: UpdateAllLanguagesButton()),
+              const SizedBox(
+                  height: 32, width: 32, child: DownloadAllLanguagesButton()),
+              const SizedBox(
+                  height: 32, width: 32, child: DeleteAllLanguagesButton()),
+            ])
+      ],
+    );
+
+    // The scrollable list of languages
+    final Widget languageList = Table(
+      //border: TableBorder.all(color: Colors.black26),
+      columnWidths: const {
+        0: IntrinsicColumnWidth(),
+        1: FlexColumnWidth(),
+        2: IntrinsicColumnWidth(),
+        3: IntrinsicColumnWidth(),
+      },
+      children: rows,
+    );
+
+    // Disk usage summary (pinned at the bottom)
+    final Widget diskUsage = Text(
+      '${context.l10n.diskUsage}: $sizeInKB kB $countLanguages',
+      style: Theme.of(context).textTheme.bodyMedium,
+    );
+
+    return LayoutBuilder(builder: (context, constraints) {
+      // Normally there is plenty of vertical room, so we pin the header and the
+      // disk-usage summary and let only the language list scroll.
+      // When the available height is too small for that fixed chrome - e.g.
+      // transient frames while a route transition tears this page down, or a
+      // very short viewport - fall back to scrolling the whole table so the
+      // fixed header/footer can never overflow.
+      const double minHeightForPinnedLayout = 120;
+      if (constraints.maxHeight.isFinite &&
+          constraints.maxHeight >= minHeightForPinnedLayout) {
+        return Column(
           children: [
             // header with all-languages-buttons
             TableRow(
@@ -103,6 +156,17 @@ class LanguagesTable extends ConsumerWidget {
                   const SizedBox(
                       height: 32, width: 32, child: DeleteAllLanguagesButton()),
                 ])
+          ],
+        );
+      }
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            header,
+            const SizedBox(height: 5),
+            languageList,
+            const SizedBox(height: 5),
+            diskUsage,
           ],
         ),
         const SizedBox(height: 5),
