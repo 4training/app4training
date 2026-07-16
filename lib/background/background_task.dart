@@ -147,6 +147,10 @@ Future<void> backgroundTestMain() async {
       connectivityServiceProvider.overrideWithValue(
         FakeConnectivityService(unmetered: true),
       ),
+      // Fake the update check so it doesn't hit the live (rate-limited) GitHub
+      // API - check() still persists a fresh lastChecked timestamp, which is
+      // what the foreground isolate uses to detect background activity.
+      httpClientProvider.overrideWithValue(fakeNoUpdatesClient()),
     ],
   );
   // Same two-phase flow as backgroundMain(): check, then settings-gated download

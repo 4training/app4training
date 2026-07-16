@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:app4training/data/connectivity_service.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/language_downloader.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
+import 'package:http/http.dart';
+import 'package:http/testing.dart';
 import 'package:path/path.dart' as p;
 
 /* These are utility functions for the integration test.
@@ -71,6 +75,16 @@ class FakeConnectivityService implements ConnectivityService {
     isUnmeteredCalls += 1;
     return unmetered;
   }
+}
+
+/// A fake HTTP client for the background isolate's integration test.
+/// Always returns an empty commit list (HTTP 200), so
+/// [LanguageStatusNotifier.check] persists a fresh lastChecked timestamp
+/// without hitting the live GitHub API (which is rate-limited and makes the
+/// test flaky). An empty list keeps updatesAvailable false, so the background
+/// download phase stays a no-op.
+Client fakeNoUpdatesClient() {
+  return MockClient((request) async => Response(json.encode([]), 200));
 }
 
 // Simulate a file system where German is downloaded with one worksheet
