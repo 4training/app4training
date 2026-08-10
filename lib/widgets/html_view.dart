@@ -1,3 +1,4 @@
+import 'package:app4training/widgets/invertible_image_builtin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html_table/flutter_html_table.dart';
@@ -17,6 +18,7 @@ class HtmlView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.all(8),
       child: SingleChildScrollView(
@@ -28,11 +30,11 @@ class HtmlView extends StatelessWidget {
                 //            child: Html(
                 //                data: content,
                 child: Html.fromDom(
-                  document: sanitize(
-                    content,
-                    MediaQuery.of(context).platformBrightness ==
-                        Brightness.dark,
-                  ),
+                  // The theme's brightness (not the platform brightness)
+                  // is the canonical dark-mode source for this widget:
+                  // the sanitize pass and the image inversion must flip
+                  // together with the widget colors.
+                  document: sanitize(content, isDarkMode),
                   extensions: [
                     // Order matters: TagWrapExtension must come BEFORE
                     // TableHtmlExtension so it matches <table> first
@@ -63,6 +65,15 @@ class HtmlView extends StatelessWidget {
                       builder: (child) => _HorizontalTableScroll(child: child),
                     ),
                     const TableHtmlExtension(),
+                    // Renders images like the built-in renderer, but
+                    // inverts their colors (keeping hue) in dark mode so
+                    // black-on-transparent drawings stay visible.
+                    // Deliberately a subclass of the built-in image
+                    // renderer and not a TagWrapExtension: at build time
+                    // TagWrapExtension matches any wrapper element,
+                    // which would collide with the table wrapper above
+                    // under first-match-wins dispatch.
+                    InvertibleImageBuiltIn(invert: isDarkMode),
                   ],
                   style: {
                     "body": Style(fontSize: FontSize(15)),
