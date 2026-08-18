@@ -72,7 +72,7 @@ Header row has the four "all-languages" buttons:
 - `DownloadAllLanguagesButton`
 - `DeleteAllLanguagesButton`
 
-Below the table: `diskUsage` total and a "X of Y languages" counter.
+Below the table: `diskUsage` total (calculated asynchronously — a `…` placeholder is shown until it resolves) and a "X of Y languages" counter.
 
 ### Language buttons
 - **`DownloadLanguageButton`** (`ConsumerStatefulWidget`): icon with internal `_isLoading` flag — swaps to `CircularProgressIndicator` during `LanguageController.download()`. Optional `highlight` flag wraps it in a tinted rounded box (used during onboarding).

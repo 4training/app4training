@@ -73,7 +73,7 @@ generates `test/full_coverage_test.dart` that imports every file under `lib/`. T
 - **`FakeLanguageDownloader`** — the single fake for the new `LanguageDownloader` interface. Implements `pathFor`, `isDownloaded`, `download`, `delete` against a configurable backing store, and exposes counters (e.g. `downloadCalls`) so tests can assert on call shape. Lives under `lib/` rather than `test/` because the integration test imports it via the production `background_task.dart` path — see [background-tasks.md](background-tasks.md). All download-related tests (`languages_test.dart`, `update_language_button_test.dart`, `download_language_button_test.dart`, `background_task_test.dart`, and the integration test) inject this fake via `languageDownloaderProvider.overrideWithValue(...)`.
 
 ### `test/languages_test.dart`
-- **`TestLanguageController`** — overrides `LanguageController` to short-circuit `init`/`download` to a configured boolean. Used pervasively by widget tests that don't care about disk state.
+- **`TestLanguageController`** — overrides `LanguageController` to short-circuit `init`/`lazyInit`/`download` to a configured boolean. Used pervasively by widget tests that don't care about disk state.
 - **Helper functions** to build `MemoryFileSystem` instances pre-populated with the German/English fixtures from `test/assets-de/`, `test/assets-en/`.
 
 ### `test/language_downloader_test.dart`
@@ -83,7 +83,10 @@ Exercises `LanguageDownloaderImpl` directly against `MemoryFileSystem` + a mocke
 - **Corrupted-zip failure** — bytes fail to decode; same cleanup invariant. (Note: `archive`'s `ZipDecoder` silently returns an empty archive for pure garbage — to force a real decode error the test feeds bytes with a `PK` header followed by garbage.)
 - **Atomic update preserves prior data** — `pathFor(langCode)` is seeded with files; a failing download leaves the seed intact and readable.
 - **Concurrent calls serialized** — two `download()` calls fired without awaiting; the second only starts after the first completes (observable via dio mock ordering).
+- **Zip decoding is capped** — three languages download at once, but a gated `zipDecoder` shows that never more than `kMaxParallelZipDecodes` archives decode simultaneously.
 - **Crash recovery** — a pre-seeded `.staging` directory is wiped by the next successful `download()`.
+
+The production `zipDecoder` runs `Isolate.run` — the tests use it unchanged (isolates work fine in `flutter test`), and only the concurrency test injects its own to control timing.
 
 ### `test/updates_test.dart`
 - **`TestLanguageStatus`** — overrides `LanguageStatusNotifier` for tests that don't want to mock HTTP.
@@ -124,6 +127,8 @@ Almost every test:
 ## `routes_test.dart` — routing
 
 Uses a `TestObserver extends NavigatorObserver` to record `didPush` and `didReplace` calls. The asserts then check that, given a starting state, the right `pushReplacementNamed` was invoked. This is the cleanest way to verify `StartupPage`'s decision matrix end-to-end.
+
+`startup_page_test.dart` additionally pins the staged loading described in [routing.md](routing.md): a `GatedLanguageController` holds each `init()` open until the test releases it, so the test can assert that navigation happens once the app language and the recent page's language are loaded — while another downloaded language is still loading in the background.
 
 ## Integration test
 

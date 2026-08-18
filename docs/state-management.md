@@ -47,21 +47,24 @@ This page is the index of every provider in the app — what it holds, what it d
 | Provider | Type | Purpose |
 | --- | --- | --- |
 | `fileSystemProvider` | `Provider<FileSystem>` | `LocalFileSystem()` by default; overridden with `MemoryFileSystem` in tests |
-| `imageContentProvider` | `Provider.family<String, Resource>` | Returns base64-encoded PNG bytes for a given image. Used by `pageContentProvider` |
+| `imageContentProvider` | `FutureProvider.family<String, Resource>` | Returns base64-encoded PNG bytes for a given image. Used by `pageContentProvider` |
 | `pageContentProvider` | `FutureProvider.family<String, Resource>` | The HTML body of a worksheet, with images inlined as base64. Throws `LanguageNotDownloadedException` / `PageNotFoundException` / `LanguageCorruptedException`. `retry: null` |
-| `languageProvider` | `NotifierProvider.family<LanguageController, Language, String>` | Per-language state: pages, images, PDFs, disk path, size, download timestamp |
+| `languageProvider` | `NotifierProvider.family<LanguageController, Language, String>` | Per-language state: pages, images, PDFs, disk path, download timestamp |
 | `countDownloadedLanguagesProvider` | `Provider<int>` | Derived count for the settings page |
-| `diskUsageProvider` | `Provider<int>` | Sum of all `Language.sizeInKB` |
+| `languageSizeProvider` | `FutureProvider.family<int, String>` | Disk usage of one language in kB, walked on demand |
+| `diskUsageProvider` | `FutureProvider<int>` | Sum of all `languageSizeProvider`s |
+
+Disk usage is deliberately **not** part of `Language`: computing it means listing a language directory recursively and statting every file, which is far too expensive to do for every language at every cold start. Only the settings page asks for it, so it is its own provider and the `LanguagesTable` shows a placeholder while it resolves.
 
 `LanguageController` is the heart of the app. Methods:
-- `init()`: idempotent load from disk. Call once per language at startup.
-- `lazyInit()`: like `init()` but cheap — only sets `downloaded` + `path` + timestamp without parsing JSON. Used in the background isolate.
+- `init()`: idempotent load from disk. Everything it does is asynchronous — it runs on the UI isolate, once per language.
+- `lazyInit()`: like `init()` but cheap — a single `stat()` that sets `downloaded` + `path` + timestamp without parsing JSON. Used by the background isolate and by `StartupPage` for every language before the first frame (see [routing.md](routing.md)).
 - `download({force=false})`: clears (if forcing), downloads HTML+PDF zips, parses structure.
 - `deleteResources()`: clears assets dir, resets state.
 - `_load()`: the parser. Reads `structure/contents.json`, scans `pdf-<lang>-main/` for PDF files, registers images in `files/`. Catches all errors and clears the assets dir on failure.
 
 `Language` (immutable data class):
-- `languageCode`, `pages: Map<String,Page>`, `pageIndex: List<String>` (menu order), `images`, `path`, `sizeInKB`, `downloadTimestamp` (always UTC).
+- `languageCode`, `pages: Map<String,Page>`, `pageIndex: List<String>` (menu order), `images`, `path`, `downloadTimestamp` (always UTC).
 - `downloaded` getter is `languageCode != ''`.
 - `getPageTitles()` returns the menu in order: English-name → translated-title.
 

@@ -31,22 +31,39 @@ StartupPage.init():
   if SharedPreferences['appLanguage'] is null:
       return '/onboarding/1'                 # first time
 
-  for each available language:
-      ref.read(languageProvider(code).notifier).init()   # load disk state
+  # step 1: which languages are on the device? one stat() each, in parallel
+  await Future.wait(languageProvider(code).notifier.lazyInit() for all codes)
 
   if app language is not yet downloaded:
       return '/onboarding/2'                 # resume onboarding
 
   # (commented out for v0.9: third onboarding step on missing checkFrequency)
 
-  ref.read(backgroundSchedulerProvider.notifier).schedule()
-
   if SharedPreferences['recentPage'] && 'recentLang' && language is downloaded:
-      return '/view/<recentPage>/<recentLang>'   # resume last worksheet
-  return '/home'
+      navigateTo = '/view/<recentPage>/<recentLang>'   # resume last worksheet
+  else:
+      navigateTo = '/home'
+
+  # step 2: fully load only what the first screen renders
+  await Future.wait(languageProvider(code).notifier.init()
+                    for code in {appLanguage, recentLang?})
+
+  # step 3: the remaining downloaded languages, unawaited, 3 at a time
+  unawaited(_loadRemainingLanguages(...))
+  unawaited(backgroundSchedulerProvider.notifier.schedule())
+
+  return navigateTo
 ```
 
 The first `await` in `init()` is what makes the loading spinner appear; once `init()` resolves, `Navigator.pushReplacementNamed` jumps to the chosen route, so the user never sees the home screen flash.
+
+### Why the loading is staged
+
+Fully loading all 34 languages before the first frame is what made cold start feel broken on slow Android devices (see [in_progress_notes/investigation_cold_start.md](in_progress_notes/investigation_cold_start.md)): the cost grew linearly with the number of downloaded languages while the spinner sat frozen.
+
+Only the app language (for the menu) and the language of the resumed worksheet are needed before navigating; `lazyInit()` gives the *downloaded* flag for all the others, which is all the routing decision needs. Everything else is loaded afterwards — the widgets that use it (language selection menu, the drawer's translate icons) are driven by `languageProvider` and rebuild by themselves as languages arrive.
+
+Step 3 gets the `LanguageController`s handed to it rather than the `WidgetRef`: `StartupPage` is disposed by `pushReplacementNamed` while that work is still running, and a disposed `WidgetRef` must not be used.
 
 ## Navigation primitives
 
