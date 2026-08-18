@@ -22,7 +22,9 @@ class LanguagesTable extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    int sizeInKB = ref.watch(diskUsageProvider);
+    // Disk usage is calculated on demand (it walks all language directories),
+    // so it may still be pending on the first build of this page
+    final AsyncValue<int> diskUsage = ref.watch(diskUsageProvider);
     String countLanguages = context.l10n
         .countLanguages(ref.watch(countDownloadedLanguagesProvider));
 
@@ -118,7 +120,8 @@ class LanguagesTable extends ConsumerWidget {
         ))),
         const SizedBox(height: 5),
         Text(
-          '${context.l10n.diskUsage}: $sizeInKB kB $countLanguages',
+          '${context.l10n.diskUsage}: ${diskUsage.value ?? '…'} kB'
+          ' $countLanguages',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ],

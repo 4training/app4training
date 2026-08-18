@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app4training/data/language_downloader.dart';
 import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:dio/dio.dart';
@@ -93,20 +95,7 @@ void _installHtmlTableSemanticsFilter() {
   final FlutterExceptionHandler? previousHandler = FlutterError.onError;
   var suppressedBreadcrumbEmitted = false;
   FlutterError.onError = (FlutterErrorDetails details) {
-    final String exceptionText = details.exception.toString();
-    final String stackText = details.stack?.toString() ?? '';
-    final bool exceptionMatchesKnownSignature =
-        exceptionText.contains('RenderBox was not laid out') ||
-            exceptionText.contains('computeDryBaseline') ||
-            exceptionText.contains('renderBoxDoingDryBaseline') ||
-            exceptionText.contains("'child!.hasSize'");
-    final bool stackMatchesHtmlOrSemanticsPath =
-        stackText.contains('flutter_html/') ||
-            stackText.contains('flutter_layout_grid/') ||
-            stackText.contains('flushSemantics');
-    final bool isKnownHtmlTableAssertion =
-        exceptionMatchesKnownSignature && stackMatchesHtmlOrSemanticsPath;
-    if (isKnownHtmlTableAssertion) {
+    if (_isKnownHtmlTableAssertion(details)) {
       if (!suppressedBreadcrumbEmitted) {
         suppressedBreadcrumbEmitted = true;
         debugPrint(
@@ -126,12 +115,37 @@ void _installHtmlTableSemanticsFilter() {
   };
 }
 
+/// Does [details] match one of the four known, non-fatal
+/// `flutter_html_table` assertions? See [_installHtmlTableSemanticsFilter]
+/// for the matching strategy.
+bool _isKnownHtmlTableAssertion(FlutterErrorDetails details) {
+  final String exceptionText = details.exception.toString();
+  final bool exceptionMatchesKnownSignature =
+      exceptionText.contains('RenderBox was not laid out') ||
+          exceptionText.contains('computeDryBaseline') ||
+          exceptionText.contains('renderBoxDoingDryBaseline') ||
+          exceptionText.contains("'child!.hasSize'");
+  // Stringifying the stack is by far the expensive half of this check, and
+  // these assertions fire hundreds of times per page load in debug/profile
+  // builds - so only pay for it once the cheap message check has matched.
+  if (!exceptionMatchesKnownSignature) return false;
+  final String stackText = details.stack?.toString() ?? '';
+  return stackText.contains('flutter_html/') ||
+      stackText.contains('flutter_layout_grid/') ||
+      stackText.contains('flushSemantics');
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   _installHtmlTableSemanticsFilter();
-  final prefs = await SharedPreferences.getInstance();
-  final packageInfo = await PackageInfo.fromPlatform();
-  final appDocsDir = await getApplicationDocumentsDirectory();
+  // None of these three depend on each other, so don't pay for three
+  // sequential platform channel round trips - the native splash screen is up
+  // for all of it, without a single Flutter frame rendered yet.
+  final (prefs, packageInfo, appDocsDir) = await (
+    SharedPreferences.getInstance(),
+    PackageInfo.fromPlatform(),
+    getApplicationDocumentsDirectory(),
+  ).wait;
   final languageDownloader = LanguageDownloaderImpl(
     root: appDocsDir.path,
     dio: Dio(),
