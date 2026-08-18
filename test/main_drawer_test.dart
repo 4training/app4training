@@ -40,7 +40,7 @@ class CustomTestLanguageController extends LanguageController {
       pages[page] = Page(page, title, 'test', '1.0', null);
       pageIndex.add(page);
     }
-    return Language(arg, pages, pageIndex, const {}, '', 0, DateTime.utc(2023));
+    return Language(arg, pages, pageIndex, const {}, '', DateTime.utc(2023));
   }
 }
 

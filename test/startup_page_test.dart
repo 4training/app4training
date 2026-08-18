@@ -13,6 +13,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'background_scheduler_test.dart';
 import 'languages_test.dart';
 
+/// Records which languages a full init() was requested for and lets the
+/// test decide when each of them finishes loading
+class GatedLanguageController extends TestLanguageController {
+  GatedLanguageController(this.initCalls, this.gates,
+      {super.downloadedLanguages})
+      : super(initReturns: true);
+
+  final List<String> initCalls;
+  final Map<String, Completer<void>> gates;
+
+  @override
+  Future<bool> init() async {
+    initCalls.add(languageCode);
+    await gates[languageCode]!.future;
+    return super.init();
+  }
+}
+
 void main() {
   // Mocking the globalInit() function:
   // We want to be able to test all the different outcomes of the future
@@ -114,6 +132,67 @@ void main() {
     expect(ref.read(backgroundSchedulerProvider), false);
   });
 */
+
+  testWidgets('Only the languages of the first screen delay the navigation', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'appLanguage': 'en',
+      'checkFrequency': 'weekly',
+      'recentPage': 'Healing',
+      'recentLang': 'de',
+    });
+    final prefs = await SharedPreferences.getInstance();
+    route = null;
+    final initCalls = <String>[];
+    final gates = {
+      for (final languageCode in ['en', 'de', 'fr'])
+        languageCode: Completer<void>()
+    };
+    final ref = ProviderContainer(
+      overrides: [
+        languageProvider.overrideWith2(
+          (languageCode) => GatedLanguageController(
+            initCalls,
+            gates,
+            downloadedLanguages: ['en', 'de', 'fr'],
+          ),
+        ),
+        backgroundSchedulerProvider.overrideWith(
+          () => TestBackgroundScheduler(),
+        ),
+        sharedPrefsProvider.overrideWithValue(prefs),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: MaterialApp(
+          home: const StartupPage(),
+          onGenerateRoute: generateRoutes,
+        ),
+      ),
+    );
+
+    // Only the app language and the language of the recent page are loaded
+    // before we can leave the loading screen - not all 34 languages
+    await tester.pump();
+    expect(initCalls.toSet(), equals({'en', 'de'}));
+    expect(route, isNull);
+
+    // As soon as those two are there we navigate - even though the other
+    // downloaded language is still being loaded in the background
+    gates['en']!.complete();
+    gates['de']!.complete();
+    await tester.pump();
+    expect(route, equals('/view/Healing/de'));
+    expect(initCalls.toSet(), equals({'en', 'de', 'fr'}));
+
+    // Languages that aren't on the device are never fully loaded
+    gates['fr']!.complete();
+    await tester.pumpAndSettle();
+    expect(initCalls.length, 3);
+  });
 
   testWidgets('Test failing initFunction', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'de'});

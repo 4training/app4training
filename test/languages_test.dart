@@ -21,16 +21,13 @@ import 'package:riverpod/src/framework.dart' show $RefArg;
 /// For other behavior set downloadedLanguages to [] or a set of languages.
 class TestLanguageController extends LanguageController {
   final List<String>? _downloadedLanguages;
-  final int _languageSize; // size in KB
   final Map<String, Page> _pages; // map of pages that are available
   final bool _initReturns;
   TestLanguageController(
       {List<String>? downloadedLanguages,
-      int languageSize = 0,
       Map<String, Page> pages = const {},
       initReturns = false})
       : _downloadedLanguages = downloadedLanguages,
-        _languageSize = languageSize,
         _pages = pages,
         _initReturns = initReturns;
 
@@ -45,25 +42,31 @@ class TestLanguageController extends LanguageController {
       downloaded = _downloadedLanguages.contains(languageCode);
     }
     return Language(downloaded ? languageCode : '', _pages, const [], const {},
-        '', _languageSize, DateTime.utc(2023));
+        '', DateTime.utc(2023));
   }
 
   @override
   Future<bool> download() async {
     state = Language(languageCode, _pages, const [], const {}, '',
-        _languageSize, DateTime.now().toUtc());
+        DateTime.now().toUtc());
     return true;
   }
 
   @override
   Future<void> deleteResources() async {
-    state =
-        Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
+    state = Language('', const {}, const [], const {}, '', DateTime.utc(2023));
   }
 
   @override
   Future<bool> init() async {
     return _initReturns;
+  }
+
+  /// The state built in [build] already says whether we're downloaded,
+  /// so there is nothing to look up on a (non-existing) file system.
+  @override
+  Future<bool> lazyInit() async {
+    return state.downloaded;
   }
 }
 
@@ -259,7 +262,6 @@ void main() {
             'Schritte der Vergebung',
             'MissingTest'
           ]));
-      expect(deTest.state.sizeInKB, 147);
       expect(deTest.state.path, equals('assets-de/html-de-main'));
 
       // Test some error handling
@@ -287,12 +289,27 @@ void main() {
     });
   });
 
-  test('Test diskUsageProvider', () {
+  test('Test languageSizeProvider and diskUsageProvider', () async {
+    final fileSystem =
+        ChrootFileSystem(const LocalFileSystem(), path.canonicalize('test/'));
     final ref = ProviderContainer(overrides: [
-      languageProvider
-          .overrideWith2((langCode) => TestLanguageController(languageSize: 42)),
+      fileSystemProvider.overrideWith((ref) => fileSystem),
+      languageDownloaderProvider
+          .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
     ]);
-    expect(ref.read(diskUsageProvider), countAvailableLanguages * 42);
+
+    // Sizes are only calculated for languages that are actually loaded
+    expect(await ref.read(languageSizeProvider('de').future), 0);
+    expect(await ref.read(languageProvider('de').notifier).init(), true);
+    expect(await ref.read(languageSizeProvider('de').future), 147);
+
+    // German is the only language in test/, so it makes up the whole usage
+    expect(await ref.read(diskUsageProvider.future), 147);
+  });
+
+  test('Test calculateMemoryUsage on a missing directory', () async {
+    final fileSystem = MemoryFileSystem();
+    expect(await calculateMemoryUsage(fileSystem.directory('nothing-here')), 0);
   });
 
   test('Test countDownloadedLanguagesProvider', () {

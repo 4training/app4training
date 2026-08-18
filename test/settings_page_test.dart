@@ -81,13 +81,15 @@ void main() {
         overrides: [
           appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
           languageProvider.overrideWith2(
-            (languageCode) => TestLanguageController(languageSize: 42),
+            (languageCode) => TestLanguageController(),
           ),
+          languageSizeProvider.overrideWith((ref, languageCode) => 42),
           sharedPrefsProvider.overrideWith((ref) => prefs),
         ],
         child: const TestSettingsPage(),
       ),
     );
+    await tester.pump(); // disk usage is calculated asynchronously
     int expectedSize = 42 * countAvailableLanguages;
     expect(find.textContaining('$expectedSize kB'), findsOneWidget);
     // language counter visibility basic test
