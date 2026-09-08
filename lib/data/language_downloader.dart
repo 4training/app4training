@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/features/perf/perf_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:file/file.dart';
 import 'package:path/path.dart' as p;
@@ -101,16 +102,18 @@ class LanguageDownloaderImpl implements LanguageDownloader {
       }
 
       // Download both zips concurrently
-      final results = await Future.wait([
-        _dio.get<List<int>>(
-          Globals.getRemoteUrlHtml(langCode),
-          options: Options(responseType: ResponseType.bytes),
-        ),
-        _dio.get<List<int>>(
-          Globals.getRemoteUrlPdf(langCode),
-          options: Options(responseType: ResponseType.bytes),
-        ),
-      ]);
+      final results = await PerfLogger.span(
+          'download.fetchZips',
+          () => Future.wait([
+                _dio.get<List<int>>(
+                  Globals.getRemoteUrlHtml(langCode),
+                  options: Options(responseType: ResponseType.bytes),
+                ),
+                _dio.get<List<int>>(
+                  Globals.getRemoteUrlPdf(langCode),
+                  options: Options(responseType: ResponseType.bytes),
+                ),
+              ]));
 
       // Extract both zips into staging
       for (final response in results) {
@@ -150,26 +153,32 @@ class LanguageDownloaderImpl implements LanguageDownloader {
     // dio hands us a Uint8List already - don't pay for a second copy of a
     // multi-megabyte buffer just to satisfy the type
     final bytes = zipData is Uint8List ? zipData : Uint8List.fromList(zipData);
-    final entries = await _zipDecodeLimit.run(() => _decodeZip(bytes));
+    // The span includes time spent queueing for a decode slot - on a slow
+    // device that wait is part of what the user experiences
+    final entries = await PerfLogger.span('download.decodeZip',
+        () => _zipDecodeLimit.run(() => _decodeZip(bytes)),
+        data: () => {'zipBytes': bytes.length});
 
-    // An archive holds hundreds of files in a handful of directories, so
-    // remember which ones we created instead of asking for each file again
-    final createdDirs = <String>{};
-    for (final entry in entries) {
-      final entryPath = p.join(staging, entry.path);
-      final bytes = entry.bytes;
-      if (bytes == null) {
-        if (createdDirs.add(entryPath)) {
-          await _fileSystem.directory(entryPath).create(recursive: true);
+    await PerfLogger.span('download.writeFiles', () async {
+      // An archive holds hundreds of files in a handful of directories, so
+      // remember which ones we created instead of asking for each file again
+      final createdDirs = <String>{};
+      for (final entry in entries) {
+        final entryPath = p.join(staging, entry.path);
+        final bytes = entry.bytes;
+        if (bytes == null) {
+          if (createdDirs.add(entryPath)) {
+            await _fileSystem.directory(entryPath).create(recursive: true);
+          }
+          continue;
         }
-        continue;
+        final outFile = _fileSystem.file(entryPath);
+        if (createdDirs.add(outFile.parent.path)) {
+          await outFile.parent.create(recursive: true);
+        }
+        await outFile.writeAsBytes(bytes);
       }
-      final outFile = _fileSystem.file(entryPath);
-      if (createdDirs.add(outFile.parent.path)) {
-        await outFile.parent.create(recursive: true);
-      }
-      await outFile.writeAsBytes(bytes);
-    }
+    }, data: () => {'files': entries.length});
   }
 
   @override
