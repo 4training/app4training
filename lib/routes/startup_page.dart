@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:app4training/background/background_scheduler.dart';
 import 'package:app4training/data/app_language.dart';
+import 'package:app4training/features/perf/perf_logger.dart';
 import 'package:app4training/routes/error_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -46,10 +47,13 @@ class StartupPage extends ConsumerWidget {
     // Step 1: Which languages are on the device?
     final List<String> availableLanguages =
         ref.read(availableLanguagesProvider);
-    await Future.wait([
-      for (String languageCode in availableLanguages)
-        ref.read(languageProvider(languageCode).notifier).lazyInit()
-    ]);
+    await PerfLogger.span(
+        'startup.lazyInitAll',
+        () => Future.wait([
+              for (String languageCode in availableLanguages)
+                ref.read(languageProvider(languageCode).notifier).lazyInit()
+            ]),
+        data: () => {'languages': availableLanguages.length});
 
     // Check whether app language is downloaded
     final String appLangCode = ref.read(appLanguageProvider).languageCode;
@@ -75,11 +79,14 @@ class StartupPage extends ConsumerWidget {
     // Step 2: Load what the first screen needs - the app language for the menu
     // and, if we resume a recent page, the language that page is written in.
     final Set<String> neededNow = {appLangCode, if (resumeRecentPage) lang};
-    await Future.wait([
-      for (String languageCode in neededNow)
-        ref.read(languageProvider(languageCode).notifier).init()
-      // TODO: look at return value and show snackBar when there was an error
-    ]);
+    await PerfLogger.span(
+        'startup.initNeededNow',
+        () => Future.wait([
+              for (String languageCode in neededNow)
+                ref.read(languageProvider(languageCode).notifier).init()
+              // TODO: look at return value and show snackBar on error
+            ]),
+        data: () => {'languages': neededNow.length});
 
     // Step 3: Everything else may take its time. We hand over the controllers
     // rather than the WidgetRef: this page is disposed as soon as we navigate
@@ -94,6 +101,9 @@ class StartupPage extends ConsumerWidget {
     // Start the periodic background task
     unawaited(ref.read(backgroundSchedulerProvider.notifier).schedule());
 
+    // Only the kind of destination - never which page/language (no PII)
+    PerfLogger.event('startup.navigate',
+        data: {'destination': resumeRecentPage ? 'view' : 'home'});
     return navigateTo;
   }
 
@@ -112,9 +122,11 @@ class StartupPage extends ConsumerWidget {
       }
     }
 
-    await Future.wait([
-      for (var i = 0; i < _maxParallelLanguageLoads; i++) worker()
-    ]);
+    await PerfLogger.span(
+        'startup.loadRemaining',
+        () => Future.wait(
+            [for (var i = 0; i < _maxParallelLanguageLoads; i++) worker()]),
+        data: () => {'languages': controllers.length});
   }
 
   @override
