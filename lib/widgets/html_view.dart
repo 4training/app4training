@@ -1,3 +1,4 @@
+import 'package:app4training/features/perf/perf_logger.dart';
 import 'package:app4training/widgets/invertible_image_builtin.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,11 @@ class _HtmlViewState extends State<HtmlView> {
 
   htmldom.Document _sanitizedDocument(bool isDarkMode) {
     if (_document == null || _documentIsDarkMode != isDarkMode) {
-      _document = sanitize(widget.content, isDarkMode);
+      // Synchronous CPU work on the UI isolate right before a page appears -
+      // one of the render-time suspects, so worth a span of its own
+      _document = PerfLogger.spanSync(
+          'page.sanitize', () => sanitize(widget.content, isDarkMode),
+          data: () => {'htmlBytes': widget.content.length});
       _documentIsDarkMode = isDarkMode;
     }
     return _document!;
