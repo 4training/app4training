@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app4training/data/language_downloader.dart';
+import 'package:app4training/features/perf/perf_logger.dart';
 import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:file/local.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/routes/routes.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/app_language.dart';
@@ -136,16 +138,23 @@ bool _isKnownHtmlTableAssertion(FlutterErrorDetails details) {
 }
 
 void main() async {
+  PerfLogger.markAppStart();
   WidgetsFlutterBinding.ensureInitialized();
   _installHtmlTableSemanticsFilter();
   // None of these three depend on each other, so don't pay for three
   // sequential platform channel round trips - the native splash screen is up
   // for all of it, without a single Flutter frame rendered yet.
-  final (prefs, packageInfo, appDocsDir) = await (
-    SharedPreferences.getInstance(),
-    PackageInfo.fromPlatform(),
-    getApplicationDocumentsDirectory(),
-  ).wait;
+  final (prefs, packageInfo, appDocsDir) = await PerfLogger.span(
+      'main.platformChannels',
+      () => (
+            SharedPreferences.getInstance(),
+            PackageInfo.fromPlatform(),
+            getApplicationDocumentsDirectory(),
+          ).wait);
+  PerfLogger.start(
+      fileSystem: const LocalFileSystem(),
+      directory: p.join(appDocsDir.path, 'perf_sessions'));
+  unawaited(PerfLogger.logDeviceAndApp(packageInfo));
   final languageDownloader = LanguageDownloaderImpl(
     root: appDocsDir.path,
     dio: Dio(),
@@ -160,6 +169,7 @@ void main() async {
     packageInfoProvider.overrideWithValue(packageInfo),
     languageDownloaderProvider.overrideWithValue(languageDownloader),
   ], child: const App4Training()));
+  PerfLogger.attachToApp();
 }
 
 class App4Training extends ConsumerWidget {
