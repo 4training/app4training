@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'package:app4training/data/exceptions.dart';
+import 'package:app4training/features/perf/perf_logger.dart';
 import 'package:file/local.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,40 +64,46 @@ final pageContentProvider =
   }
 
   debugPrint("Fetching content of '${page.name}/${page.langCode}'...");
-  try {
-    String content = await fileSystem
-        .file(join(lang.path, pageDetails.fileName))
-        .readAsString();
+  int htmlBytes = 0, imageCount = 0;
+  return PerfLogger.span('page.loadContent', () async {
+    try {
+      String content = await fileSystem
+          .file(join(lang.path, pageDetails.fileName))
+          .readAsString();
+      htmlBytes = content.length;
 
-    // Read and encode all images of this page at once: doing that one by one
-    // while building the HTML string meant a series of blocking disk reads
-    // right before the first frame of a page could be painted.
-    final Map<String, String> imageData = {};
-    await Future.wait(_imageReference
-        .allMatches(content)
-        .map((match) => match.group(1)!)
-        .where(lang.images.containsKey)
-        .toSet()
-        .map((name) async {
-      imageData[name] = await ref.watch(
-          imageContentProvider((name: name, langCode: page.langCode)).future);
-    }));
+      // Read and encode all images of this page at once: doing that one by
+      // one while building the HTML string meant a series of blocking disk
+      // reads right before the first frame of a page could be painted.
+      final Map<String, String> imageData = {};
+      await Future.wait(_imageReference
+          .allMatches(content)
+          .map((match) => match.group(1)!)
+          .where(lang.images.containsKey)
+          .toSet()
+          .map((name) async {
+        imageData[name] = await ref.watch(
+            imageContentProvider((name: name, langCode: page.langCode))
+                .future);
+      }));
+      imageCount = imageData.length;
 
-    // Load images directly into the HTML:
-    // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
-    return content.replaceAllMapped(_imageReference, (match) {
-      final String name = match.group(1)!;
-      if (!imageData.containsKey(name)) {
-        debugPrint(
-            'Warning: image $name missing (in ${pageDetails.fileName})');
-        return match.group(0)!;
-      }
-      return 'src="data:image/png;base64,${imageData[name]}"';
-    });
-  } on FileSystemException catch (e) {
-    throw LanguageCorruptedException(
-        page.langCode, 'Error while reading from local storage.', e);
-  }
+      // Load images directly into the HTML:
+      // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
+      return content.replaceAllMapped(_imageReference, (match) {
+        final String name = match.group(1)!;
+        if (!imageData.containsKey(name)) {
+          debugPrint(
+              'Warning: image $name missing (in ${pageDetails.fileName})');
+          return match.group(0)!;
+        }
+        return 'src="data:image/png;base64,${imageData[name]}"';
+      });
+    } on FileSystemException catch (e) {
+      throw LanguageCorruptedException(
+          page.langCode, 'Error while reading from local storage.', e);
+    }
+  }, data: () => {'htmlBytes': htmlBytes, 'images': imageCount});
 }, retry: null);
 
 /// Usage:
@@ -143,7 +150,10 @@ class LanguageController extends Notifier<Language> {
   /// Is this language downloaded to the device? If yes, load it into memory.
   /// Returns true when the language is now available, false if not
   Future<bool> init() async {
-    return await _load();
+    // The span records how big the language is, but not which one (no PII)
+    return await PerfLogger.span('language.load', _load,
+        data: () =>
+            {'pages': state.pages.length, 'images': state.images.length});
   }
 
   /// Checks whether the language is downloaded to device but doesn't
