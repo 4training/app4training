@@ -66,7 +66,9 @@ android {
    }
    buildTypes {
        release {
-           signingConfig signingConfigs.release
+           // Sign with the release key when key.properties is present, otherwise fall
+           // back to the debug key so a test APK can be built without a keystore.
+           signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
        }
    }
 }
