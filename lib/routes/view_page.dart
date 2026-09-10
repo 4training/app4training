@@ -5,7 +5,9 @@ import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/error_message.dart';
 import 'package:app4training/widgets/html_view.dart';
+import 'package:app4training/features/perf/perf_logger.dart';
 import 'package:app4training/features/share/share_button.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/misc.dart' show ProviderException;
@@ -25,19 +27,21 @@ class ViewPage extends ConsumerWidget {
   /// First check whether the background process did something since
   /// the last time we checked.
   /// Then load the pageContent
-  Future<String> checkAndLoad(BuildContext context, WidgetRef ref) async {
-    // Get l10n now as we can't access context after async gap later
-    AppLocalizations l10n = context.l10n;
-    final foundActivity =
-        await ref.read(backgroundResultProvider.notifier).checkForActivity();
-    debugPrint("backgroundActivity: $foundActivity");
-    if (foundActivity) {
-      ref
-          .watch(scaffoldMessengerProvider)
-          .showSnackBar(SnackBar(content: Text(l10n.foundBgActivity)));
-    }
-    return ref
-        .watch(pageContentProvider((name: page, langCode: langCode)).future);
+  Future<String> checkAndLoad(BuildContext context, WidgetRef ref) {
+    return PerfLogger.span('page.checkAndLoad', () async {
+      // Get l10n now as we can't access context after async gap later
+      AppLocalizations l10n = context.l10n;
+      final foundActivity =
+          await ref.read(backgroundResultProvider.notifier).checkForActivity();
+      if (kDebugMode) debugPrint("backgroundActivity: $foundActivity");
+      if (foundActivity) {
+        ref
+            .watch(scaffoldMessengerProvider)
+            .showSnackBar(SnackBar(content: Text(l10n.foundBgActivity)));
+      }
+      return ref
+          .watch(pageContentProvider((name: page, langCode: langCode)).future);
+    });
   }
 
   @override
@@ -51,7 +55,7 @@ class ViewPage extends ConsumerWidget {
         body: FutureBuilder(
             future: checkAndLoad(context, ref),
             builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              debugPrint(snapshot.connectionState.toString());
+              if (kDebugMode) debugPrint(snapshot.connectionState.toString());
 
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
@@ -59,8 +63,10 @@ class ViewPage extends ConsumerWidget {
                 case ConnectionState.active:
                   return loadingAnimation("Loading content...");
                 case ConnectionState.done:
-                  debugPrint(
-                      'Done, hasData: ${snapshot.hasData}, Error: ${snapshot.hasError}');
+                  if (kDebugMode) {
+                    debugPrint('Done, hasData: ${snapshot.hasData},'
+                        ' Error: ${snapshot.hasError}');
+                  }
                   if (snapshot.hasError) {
                     // In Riverpod v3, provider errors are wrapped in
                     // ProviderException - unwrap to get the original error

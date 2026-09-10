@@ -1,8 +1,9 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'package:app4training/data/exceptions.dart';
+import 'package:app4training/features/perf/perf_logger.dart';
 import 'package:file/local.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:file/file.dart';
@@ -18,9 +19,13 @@ final fileSystemProvider = Provider<FileSystem>((ref) {
 /// Unique identifier of an image or a page
 typedef Resource = ({String name, String langCode});
 
+/// Which images does a page reference? <img src="files/xyz.png">
+final _imageReference = RegExp(r'src="files/([^.]+.png)"');
+
 /// Provide image data (base64-encoded)
 /// Returns empty string in case something went wrong
-final imageContentProvider = Provider.family<String, Resource>((ref, res) {
+final imageContentProvider =
+    FutureProvider.family<String, Resource>((ref, res) async {
   final String path = ref.watch(languageProvider(res.langCode)).path;
   if (path == '') {
     debugPrint(
@@ -30,13 +35,13 @@ final imageContentProvider = Provider.family<String, Resource>((ref, res) {
   final fileSystem = ref.watch(fileSystemProvider);
   try {
     File image = fileSystem.file(join(path, 'files', res.name));
-    debugPrint('Successfully loaded ${res.name}');
-    return base64Encode(image.readAsBytesSync());
+    if (kDebugMode) debugPrint('Successfully loaded ${res.name}');
+    return base64Encode(await image.readAsBytes());
   } on FileSystemException catch (e) {
     debugPrint("Couldn't load ${res.name}: $e");
     return '';
   }
-});
+}, retry: null);
 
 /// Provide HTML content of a specific page in a specific language
 /// throws [LanguageNotDownloadedException]: just download the language again
@@ -59,27 +64,46 @@ final pageContentProvider =
   }
 
   debugPrint("Fetching content of '${page.name}/${page.langCode}'...");
-  try {
-    String content = await fileSystem
-        .file(join(lang.path, pageDetails.fileName))
-        .readAsString();
-    // Load images directly into the HTML:
-    // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
-    return content.replaceAllMapped(RegExp(r'src="files/([^.]+.png)"'),
-        (match) {
-      if (!lang.images.containsKey(match.group(1))) {
-        debugPrint(
-            'Warning: image ${match.group(1)} missing (in ${pageDetails.fileName})');
-        return match.group(0)!;
-      }
-      String imageData = ref.watch(imageContentProvider(
-          (name: match.group(1)!, langCode: page.langCode)));
-      return 'src="data:image/png;base64,$imageData"';
-    });
-  } on FileSystemException catch (e) {
-    throw LanguageCorruptedException(
-        page.langCode, 'Error while reading from local storage.', e);
-  }
+  int htmlBytes = 0, imageCount = 0;
+  return PerfLogger.span('page.loadContent', () async {
+    try {
+      String content = await fileSystem
+          .file(join(lang.path, pageDetails.fileName))
+          .readAsString();
+      htmlBytes = content.length;
+
+      // Read and encode all images of this page at once: doing that one by
+      // one while building the HTML string meant a series of blocking disk
+      // reads right before the first frame of a page could be painted.
+      final Map<String, String> imageData = {};
+      await Future.wait(_imageReference
+          .allMatches(content)
+          .map((match) => match.group(1)!)
+          .where(lang.images.containsKey)
+          .toSet()
+          .map((name) async {
+        imageData[name] = await ref.watch(
+            imageContentProvider((name: name, langCode: page.langCode))
+                .future);
+      }));
+      imageCount = imageData.length;
+
+      // Load images directly into the HTML:
+      // Replace <img src="xyz.png"> with <img src="base64-encoded image data">
+      return content.replaceAllMapped(_imageReference, (match) {
+        final String name = match.group(1)!;
+        if (!imageData.containsKey(name)) {
+          debugPrint(
+              'Warning: image $name missing (in ${pageDetails.fileName})');
+          return match.group(0)!;
+        }
+        return 'src="data:image/png;base64,${imageData[name]}"';
+      });
+    } on FileSystemException catch (e) {
+      throw LanguageCorruptedException(
+          page.langCode, 'Error while reading from local storage.', e);
+    }
+  }, data: () => {'htmlBytes': htmlBytes, 'images': imageCount});
 }, retry: null);
 
 /// Usage:
@@ -113,8 +137,7 @@ class LanguageController extends Notifier<Language> {
     // system). This is needed for overrideWith() where the arg isn't passed
     // through the constructor.
     languageCode = ref.$arg as String;
-    return Language(
-        '', const {}, const [], const {}, '', 0, DateTime.utc(2023));
+    return Language('', const {}, const [], const {}, '', DateTime.utc(2023));
   }
 
   /// Download this language and make it available.
@@ -127,7 +150,10 @@ class LanguageController extends Notifier<Language> {
   /// Is this language downloaded to the device? If yes, load it into memory.
   /// Returns true when the language is now available, false if not
   Future<bool> init() async {
-    return await _load();
+    // The span records how big the language is, but not which one (no PII)
+    return await PerfLogger.span('language.load', _load,
+        data: () =>
+            {'pages': state.pages.length, 'images': state.images.length});
   }
 
   /// Checks whether the language is downloaded to device but doesn't
@@ -141,13 +167,15 @@ class LanguageController extends Notifier<Language> {
         .watch(fileSystemProvider)
         .stat(join(path, 'structure', 'contents.json'));
     bool downloaded = (stat.type != FileSystemEntityType.notFound);
-    debugPrint(
-        "QuickInit trying to load '$languageCode', downloaded: $downloaded");
+    if (kDebugMode) {
+      debugPrint(
+          "QuickInit trying to load '$languageCode', downloaded: $downloaded");
+    }
     if (downloaded) {
       DateTime timestamp = stat.modified.toUtc(); // Always store UTC internally
 
-      state = Language(
-          languageCode, const {}, const [], const {}, path, 0, timestamp);
+      state =
+          Language(languageCode, const {}, const [], const {}, path, timestamp);
       return true;
     }
     return false;
@@ -156,34 +184,37 @@ class LanguageController extends Notifier<Language> {
   /// Load our Language structure from the file system resources.
   /// Returns whether everything went well and the language is available now.
   /// This method shouldn't throw
+  ///
+  /// Everything in here must stay asynchronous and cheap: this runs for every
+  /// language at every cold start, on the UI isolate. Deliberately *not* done
+  /// here: computing the disk usage (see [languageSizeProvider]) and, outside
+  /// of debug builds, the consistency check.
   Future<bool> _load() async {
     final downloader = ref.read(languageDownloaderProvider);
     final fileSystem = ref.watch(fileSystemProvider);
 
     try {
       // Now we store the full path to the language
-      String path = join(
-          downloader.pathFor(languageCode), Globals.getResourcesDir(languageCode));
-      debugPrint("Path: $path");
+      String path = join(downloader.pathFor(languageCode),
+          Globals.getResourcesDir(languageCode));
 
-      bool downloaded = await downloader.isDownloaded(languageCode);
-      debugPrint("Trying to load '$languageCode', downloaded: $downloaded");
-      if (!downloaded) return false;
-
-      // Store the size of the downloaded files (HTML + PDF)
-      int sizeInKB = await _calculateMemoryUsage(
-          fileSystem.directory(downloader.pathFor(languageCode)));
-
-      // Get the timestamp: When were our contents stored on the device?
+      // One stat() answers both questions we have about contents.json:
+      // is the language on the device at all, and when was it stored there?
       FileStat stat =
           await fileSystem.stat(join(path, 'structure', 'contents.json'));
+      bool downloaded = (stat.type != FileSystemEntityType.notFound);
+      if (kDebugMode) {
+        debugPrint("Trying to load '$languageCode' from $path,"
+            " downloaded: $downloaded");
+      }
+      if (!downloaded) return false;
       DateTime timestamp = stat.modified.toUtc(); // Always store UTC internally
 
       // Read structure/contents.json as our source of truth:
       // Which pages are available, what is the order in the menu
-      var structure = jsonDecode(fileSystem
+      var structure = jsonDecode(await fileSystem
           .file(join(path, 'structure', 'contents.json'))
-          .readAsStringSync());
+          .readAsString());
 
       final Map<String, Page> pages = {};
       final List<String> pageIndex = [];
@@ -222,7 +253,9 @@ class LanguageController extends Notifier<Language> {
       if (pdfFiles.isNotEmpty) {
         debugPrint('Found unexpected PDF file(s): $pdfFiles');
       }
-      await _checkConsistency(fileSystem.directory(path), pages);
+      if (kDebugMode) {
+        await _checkConsistency(fileSystem.directory(path), pages);
+      }
 
       // Register available images
       var filesDir = fileSystem.directory(join(path, 'files'));
@@ -236,8 +269,8 @@ class LanguageController extends Notifier<Language> {
           }
         }
       }
-      state = Language(
-          languageCode, pages, pageIndex, images, path, sizeInKB, timestamp);
+      state =
+          Language(languageCode, pages, pageIndex, images, path, timestamp);
       return true;
     } catch (e) {
       String msg = 'Error initializing data structure: $e';
@@ -245,7 +278,7 @@ class LanguageController extends Notifier<Language> {
       // Delete the whole folder
       await downloader.delete(languageCode);
       state =
-          Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
+          Language('', const {}, const [], const {}, '', DateTime.utc(2023));
       return false;
     }
   }
@@ -254,7 +287,7 @@ class LanguageController extends Notifier<Language> {
   Future<void> deleteResources() async {
     await ref.read(languageDownloaderProvider).delete(languageCode);
     state =
-        Language('', const {}, const [], const {}, '', 0, DateTime.utc(2023));
+        Language('', const {}, const [], const {}, '', DateTime.utc(2023));
   }
 
   /// Download all files for one language via [LanguageDownloader]
@@ -269,16 +302,6 @@ class LanguageController extends Notifier<Language> {
     }
     debugPrint("Downloading language '$languageCode' finished.");
     return true;
-  }
-
-  /// Return the total size of all files in our directory in kB
-  Future<int> _calculateMemoryUsage(Directory dir) async {
-    var entities = await dir.list(recursive: true).toList();
-    var sizeInBytes = entities.fold(0, (int sum, entity) {
-      if (entity is File) return sum + entity.statSync().size;
-      return sum;
-    });
-    return (sizeInBytes / 1000).ceil(); // let's never round down
   }
 
   /// Check whether all files mentioned in structure/contents.json are present
@@ -355,14 +378,11 @@ class Language {
   /// local path to the directory holding all content
   final String path;
 
-  /// The size of the downloaded directory (kB = kilobytes)
-  final int sizeInKB;
-
   /// When were the files downloaded on our device? file system attribute, UTC
   final DateTime downloadTimestamp;
 
   const Language(this.languageCode, this.pages, this.pageIndex, this.images,
-      this.path, this.sizeInKB, this.downloadTimestamp);
+      this.path, this.downloadTimestamp);
 
   /// Returns an list with all the worksheet titles in the menu.
   /// The list is ordered as identifier -> translated title
@@ -377,18 +397,44 @@ class Language {
   @override
   String toString() {
     return 'Language $languageCode. Downloaded: $downloaded'
-        ' ($downloadTimestamp), size: $sizeInKB, local path: $path,'
+        ' ($downloadTimestamp), local path: $path,'
         ' #pages: ${pages.length}, #images: ${images.length}';
   }
 }
 
-/// Provide combined disk usage of all languages (in KB)
-final diskUsageProvider = Provider<int>((ref) {
-  int sizeInKB = 0;
-  for (String langCode in ref.watch(availableLanguagesProvider)) {
-    Language lang = ref.watch(languageProvider(langCode));
-    assert(lang.downloaded || (lang.sizeInKB == 0));
-    sizeInKB += lang.sizeInKB;
-  }
-  return sizeInKB;
+/// Provide the disk usage of one language (in kB)
+///
+/// This is computed on demand and not while loading a language: it means
+/// walking the whole language directory and statting every single file
+/// (HTML worksheets, images and PDFs alike), which is far too expensive to
+/// do for every language at every cold start. Only the settings page needs it.
+final languageSizeProvider =
+    FutureProvider.family<int, String>((ref, langCode) async {
+  if (!ref.watch(languageProvider(langCode)).downloaded) return 0;
+  final downloader = ref.watch(languageDownloaderProvider);
+  final dir =
+      ref.watch(fileSystemProvider).directory(downloader.pathFor(langCode));
+  return calculateMemoryUsage(dir);
 });
+
+/// Provide combined disk usage of all languages (in kB)
+final diskUsageProvider = FutureProvider<int>((ref) async {
+  final List<int> sizes = await Future.wait(<Future<int>>[
+    for (String langCode in ref.watch(availableLanguagesProvider))
+      ref.watch(languageSizeProvider(langCode).future)
+  ]);
+  return sizes.fold<int>(0, (int sum, int size) => sum + size);
+});
+
+/// Return the total size of all files below [dir] in kB
+///
+/// Uses the asynchronous stat() so the hundreds of syscalls this needs are
+/// handled by the IO thread pool instead of blocking the UI isolate.
+Future<int> calculateMemoryUsage(Directory dir) async {
+  if (!await dir.exists()) return 0;
+  final entities = await dir.list(recursive: true, followLinks: false).toList();
+  final stats =
+      await Future.wait(entities.whereType<File>().map((file) => file.stat()));
+  final sizeInBytes = stats.fold(0, (int sum, FileStat s) => sum + s.size);
+  return (sizeInBytes / 1000).ceil(); // let's never round down
+}

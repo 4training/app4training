@@ -1,4 +1,5 @@
 //import 'package:app4training/widgets/dropdownbutton_automatic_updates.dart';
+import 'package:app4training/features/perf/perf_export_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/updates.dart';
@@ -31,7 +32,9 @@ class SettingsPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Expanded(child: LanguageSettings()),
-            const UpdateSettings()
+            const UpdateSettings(),
+            // Only visible in instrumented tester builds
+            const PerfExportSection()
             // const SizedBox(height: 10),
             // const DesignSettings()
           ]),

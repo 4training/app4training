@@ -83,6 +83,7 @@ which is mitigated by overriding `fileSystemProvider` and `httpClientProvider` i
 1. **`StartupPage`** (`/`)
 
    - Decides where to navigate based on persisted state in `SharedPreferences`. See [onboarding-flow.md](onboarding-flow.md).
+   - Loads languages in stages so the spinner isn't blocked by all 34 of them: a cheap `lazyInit()` for every language, a full `init()` for the one or two the first screen renders, the rest in the background. See [routing.md](routing.md).
 
 1. **`/view/<page>/<lang>`**
 
@@ -101,13 +102,14 @@ ViewPage(page, langCode)
        └─ ref.watch(pageContentProvider((name, langCode))).future
               • watches Language(langCode) for the on-disk path
               • reads <path>/<page.fileName> from FileSystem
-              • inlines images by replacing <img src="files/x.png">
-                with <img src="data:image/png;base64,…">
+              • loads all referenced images in parallel and inlines them:
+                <img src="files/x.png"> → <img src="data:image/png;base64,…">
               • throws LanguageNotDownloadedException / PageNotFoundException /
                 LanguageCorruptedException for the matching cases
 
 → HtmlView(content, direction)
        • sanitize(content, isDarkMode)  ← workarounds for flutter_html bugs
+         (cached per content + brightness, so a rebuild doesn't redo it)
        • Html.fromDom(...) with TagWrapExtension({'table'}) +
          TableHtmlExtension; tables get wrapped in a horizontal scroll view
        • onAnchorTap pushes /view<href> so internal worksheet links navigate
@@ -125,18 +127,19 @@ DownloadLanguageButton(langCode).onPressed
                dio.get(htmlZipUrl, responseType: bytes),
                dio.get(pdfZipUrl,  responseType: bytes),
              ])                                  ← github.com/4training/{html,pdf}-<lang>/archive/main.zip
-           – ZipDecoder.decodeBytes(...) → write each entry into .staging via FileSystem
+           – decode each zip in a worker isolate (max 2 at a time process-wide)
+             → write each entry into .staging via FileSystem
            – on any failure: rm -rf .staging and rethrow (prior data untouched)
            – rename assets-<lang> → assets-<lang>.old (if it existed)
            – rename .staging      → assets-<lang>        (atomic swap)
            – best-effort rm -rf .old
        • _load():
+           – stat structure/contents.json → downloadTimestamp (UTC)
            – read structure/contents.json
            – build pages: Map<String,Page>, pageIndex: List<String>,
              images: Map<String,Image>, pdf paths
-           – compute disk usage
-           – read modified timestamp of contents.json (UTC) → downloadTimestamp
            – emit new Language state
+             (disk usage is not part of it — see languageSizeProvider)
   → snackbar, button stops spinning
 ```
 

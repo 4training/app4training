@@ -11,7 +11,7 @@ ViewPage
         Padding → SingleChildScrollView → Column → SelectionArea
           → Directionality(LTR | RTL based on Globals.rtlLanguages)
             → Html.fromDom(
-                document: sanitize(content, isDarkMode),
+                document: _sanitizedDocument(isDarkMode),  // cached sanitize()
                 extensions: [TagWrapExtension({'table'}, …), TableHtmlExtension()],
                 style: { body, td, th, h1, h2, h3, li, p, ul },
                 onAnchorTap: (url, _, __) => Navigator.pushNamed(context, '/view$url'),
@@ -19,6 +19,8 @@ ViewPage
 ```
 
 ## `sanitize()` (`lib/widgets/html_view.dart`)
+
+`HtmlView` is a `StatefulWidget` purely so it can cache the result of `sanitize()` for the current `(content, isDarkMode)` pair. Parsing the HTML and running the passes below over the whole document is expensive on a slow device, while `build()` runs again for all sorts of unrelated reasons (a snackbar, the drawer opening, an orientation change). `flutter_html` only re-reads the document when its dependencies change, so recomputing it on every build was pure waste.
 
 The HTML emitted by the upstream `pywikitools` exporter has a few constructs that `flutter_html` can't render correctly. `sanitize()` runs a tree-rewrite step over the parsed DOM to fix them. Each rewrite is documented in-place, but here is the index:
 
@@ -83,4 +85,4 @@ A single breadcrumb is emitted via `debugPrint` on the first suppression per app
 
 ## Image handling
 
-Images are inlined as base64 by `pageContentProvider` *before* `HtmlView` ever sees the HTML. This avoids `flutter_html` having to load `file://`-prefixed URIs (which is fragile on Android/iOS). The downside is the rendered HTML can be large — for image-heavy worksheets like "God's Story (five fingers)" the inlined string can be hundreds of KB. So far this hasn't been a problem in practice.
+Images are inlined as base64 by `pageContentProvider` *before* `HtmlView` ever sees the HTML. This avoids `flutter_html` having to load `file://`-prefixed URIs (which is fragile on Android/iOS). The downside is the rendered HTML can be large — for image-heavy worksheets like "God's Story (five fingers)" the inlined string can be hundreds of KB, and every image is base64-encoded here only to be decoded again by `flutter_html`. So far this hasn't been a problem in practice; `pageContentProvider` at least reads and encodes all images of a page in parallel rather than one at a time. Serving images through a custom image extension that reads file paths directly would remove the round-trip altogether if this ever does become a problem.

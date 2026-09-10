@@ -1,5 +1,6 @@
-import 'dart:typed_data';
 import 'dart:async';
+import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/language_downloader.dart';
@@ -261,6 +262,57 @@ void main() {
     gate.complete();
     await Future.wait([f1, f2]);
     expect(htmlCallCount, 2);
+  });
+
+  test('Only kMaxParallelZipDecodes archives are decoded at the same time',
+      () async {
+    // Every decode blocks on a gate so we can watch how many run at once
+    var inFlight = 0;
+    var maxInFlight = 0;
+    final gates = <Completer<void>>[];
+    Future<List<ArchiveEntry>> gatedDecoder(Uint8List zipBytes) async {
+      inFlight++;
+      maxInFlight = max(maxInFlight, inFlight);
+      final gate = Completer<void>();
+      gates.add(gate);
+      await gate.future;
+      inFlight--;
+      return decodeZipEntries(zipBytes);
+    }
+
+    downloader = LanguageDownloaderImpl(
+        root: root, dio: dio, fileSystem: fs, zipDecoder: gatedDecoder);
+
+    const langCodes = ['de', 'fr', 'es'];
+    for (final langCode in langCodes) {
+      mockDioGet(dio, Globals.getRemoteUrlHtml(langCode),
+          createTestZip({'${Globals.getResourcesDir('de')}/f.html': 'x'}));
+      mockDioGet(dio, Globals.getRemoteUrlPdf(langCode),
+          createTestZip({'${Globals.getPdfDir('de')}/f.pdf': 'x'}));
+    }
+
+    final downloads = [for (final code in langCodes) downloader.download(code)];
+    var finished = false;
+    unawaited(Future.wait(downloads).then((_) => finished = true));
+
+    // Let all three downloads reach their first decode
+    for (var i = 0; i < 5; i++) {
+      await Future<void>.delayed(Duration.zero);
+    }
+    expect(inFlight, kMaxParallelZipDecodes);
+    expect(gates.length, kMaxParallelZipDecodes);
+
+    // Now let them through one by one - a queued decode may only start
+    // once a running one has finished
+    for (var i = 0; !finished && i < 100; i++) {
+      if (gates.isNotEmpty) gates.removeAt(0).complete();
+      await Future<void>.delayed(Duration.zero);
+    }
+    expect(finished, isTrue);
+    expect(maxInFlight, kMaxParallelZipDecodes);
+    for (final langCode in langCodes) {
+      expect(await downloader.isDownloaded(langCode), true);
+    }
   });
 
   test('Crash recovery: pre-seeded staging dir is wiped by next download',

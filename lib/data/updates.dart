@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:app4training/background/background_scheduler.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/globals.dart';
@@ -187,7 +188,7 @@ class LanguageStatusNotifier extends Notifier<LanguageStatus> {
     }
 
     final status = LanguageStatus(updatesAvailable, dlTimestamp, lcTimestamp);
-    debugPrint('Language $_languageCode: $status');
+    if (kDebugMode) debugPrint('Language $_languageCode: $status');
     return status;
   }
 
@@ -284,6 +285,6 @@ final lastCheckedProvider = Provider<DateTime>((ref) {
     return DateTime.utc(2023);
   }
   assert(timestamp.isUtc);
-  debugPrint('Last checked for updates: $timestamp');
+  if (kDebugMode) debugPrint('Last checked for updates: $timestamp');
   return timestamp;
 });

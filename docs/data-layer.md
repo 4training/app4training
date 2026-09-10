@@ -57,7 +57,6 @@ class Language {
   final List<String> pageIndex;     // menu order (subset of pages.keys)
   final Map<String, Image> images;  // by filename
   final String path;                // local path to html-<lang>-main/
-  final int sizeInKB;
   final DateTime downloadTimestamp; // UTC, taken from contents.json mtime
   bool get downloaded => languageCode != '';
 }
@@ -106,25 +105,29 @@ The branch name (`main`) is hardcoded; switching branches would require a code c
    - `await ref.read(languageDownloaderProvider).download(languageCode)`. The downloader handles the full atomic flow internally (see below); on success the on-disk directory at `pathFor(langCode)` is the new content. On failure it throws and the prior on-disk directory (if any) is left untouched.
    - The caller wraps in a `try/catch` to preserve the existing `Future<bool>` shape.
 2. `_load()`:
-   - Recompute `assetsDirAlreadyExists()`.
-   - Sum file sizes recursively → `sizeInKB`.
-   - Read `contents.json` mtime → `downloadTimestamp` (UTC).
+   - A single `stat()` of `structure/contents.json` answers both "is this language on the device?" and "when was it stored there?" (`downloadTimestamp`, UTC). Not found → `return false`.
    - Parse `contents.json` worksheets, build `pages`, `pageIndex`.
    - Scan `pdf-<lang>-main/` for `.pdf` files; match each `worksheet.pdf` → `Page.pdfPath`.
    - Scan `html-<lang>-main/files/` for images; build `Map<String, Image>`.
-   - `_checkConsistency()` warns about HTML files referenced but missing, or HTML files present but unreferenced.
+   - `_checkConsistency()` warns about HTML files referenced but missing, or HTML files present but unreferenced. **Debug builds only** — it is another full directory listing and only produces log output.
    - On any throw: log, call `deleteResources()` (which delegates to `languageDownloader.delete(languageCode)`), reset to empty `Language`, return `false`.
 
-`init()` calls `_load()` only — no network. `lazyInit()` only checks for `contents.json` existence and returns a sparse `Language(languageCode, {}, [], {}, path, 0, timestamp)` without parsing — used by the background isolate which doesn't need page details. Both `lazyInit()` and `_load()` read the path from `ref.read(languageDownloaderProvider).pathFor(languageCode)`.
+`_load()` runs for every language on the UI isolate, so every call in it is asynchronous and it deliberately does *no* disk-usage accounting — see `languageSizeProvider` in [state-management.md](state-management.md).
+
+`init()` calls `_load()` only — no network. `lazyInit()` only checks for `contents.json` existence and returns a sparse `Language(languageCode, {}, [], {}, path, timestamp)` without parsing — used by the background isolate, and by `StartupPage` for all languages before the first frame. Both `lazyInit()` and `_load()` read the path from `ref.read(languageDownloaderProvider).pathFor(languageCode)`.
 
 ### Inside `LanguageDownloaderImpl` (`lib/data/language_downloader.dart`)
 
 The downloader owns the atomicity, concurrency, and crash-recovery guarantees so callers don't need to reason about partial state. One `download(langCode)` call performs:
 
-1. **Serialize** against any in-flight download — at most one zip pair is held in memory at a time (concurrency cap; protects low-end devices from rapid taps on the per-language download buttons).
+1. **Serialize** against any in-flight download of the *same* language (different languages still download in parallel; protects against rapid taps on the per-language download buttons).
 2. **Crash recovery** — `rm -rf <pathFor(lang)>.staging` so a leftover from a prior crashed run never accumulates.
 3. **Fetch concurrently** — `Future.wait` over two `dio.get(..., responseType: bytes)` calls for the HTML and PDF zips.
-4. **Extract into staging** — `ZipDecoder().decodeBytes(...)` over each response, writing every `ArchiveFile` via the injected `FileSystem`. Not `extractArchiveToDisk` (it is tied to `dart:io` and not testable against `MemoryFileSystem`).
+4. **Extract into staging** — `decodeZipEntries()` (a `ZipDecoder().decodeBytes(...)` pass) followed by writing every entry via the injected `FileSystem`. Not `extractArchiveToDisk` (it is tied to `dart:io` and not testable against `MemoryFileSystem`).
+
+   Decoding is pure, synchronous CPU work that takes seconds per archive on a slow device, so by default it runs in a worker isolate (`decodeZipInIsolate`, injectable via the `zipDecoder` constructor parameter). The decoded entries are copied back to this isolate rather than written from inside the worker, which keeps *all* file access going through the injected `FileSystem`; copying a few MB is negligible next to the decoding.
+
+   At most `kMaxParallelZipDecodes` (2) archives decode at the same time, process-wide. Onboarding downloads up to `kMaxParallelLanguageDownloads` (4) languages at once, each with two archives — letting all of those decode simultaneously would hold far too many decompressed archives in memory on a 4 GB device.
 5. **Atomic swap** — rename existing `assets-<lang>` → `assets-<lang>.old` (if any), rename `.staging` → `assets-<lang>` (rename is atomic on a single filesystem), then best-effort `rm -rf .old`.
 6. **On any throw mid-flight** — `rm -rf .staging` and `rethrow`. The prior on-disk directory (if any) is never touched until step 5, so a failed update never destroys offline content.
 
@@ -149,7 +152,7 @@ FutureProvider.family<String, Resource>((ref, page) async { … }, retry: null)
 
 Behaviour:
 - Reads `<lang.path>/<page.fileName>` as a string.
-- Replaces `<img src="files/x.png">` with `<img src="data:image/png;base64,…">` by base64-encoding the local file via `imageContentProvider`. (Inlining is necessary because `flutter_html` can't load arbitrary local file URIs.)
+- Collects every `<img src="files/x.png">` reference, loads all of them at once through `imageContentProvider` (`Future.wait`), then replaces the references with `<img src="data:image/png;base64,…">`. (Inlining is necessary because `flutter_html` can't load arbitrary local file URIs.) Loading them up-front and in parallel keeps the blocking disk reads out of the render path — a worksheet like "God's Story (five fingers)" references five images.
 - Throws:
   - `LanguageNotDownloadedException(langCode)` if the language is gone.
   - `PageNotFoundException(name, langCode)` if the page isn't in `pages`.
