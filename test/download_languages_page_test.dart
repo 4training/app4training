@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app4training/data/app_language.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
@@ -7,6 +9,7 @@ import 'package:app4training/l10n/generated/app_localizations_de.dart';
 import 'package:app4training/l10n/generated/app_localizations_en.dart';
 import 'package:app4training/routes/onboarding/download_languages_page.dart';
 import 'package:app4training/routes/routes.dart';
+import 'package:app4training/widgets/download_language_button.dart';
 import 'package:app4training/widgets/languages_table.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_language_test.dart';
+import 'download_language_button_test.dart';
 import 'languages_test.dart';
 import 'routes_test.dart';
 import 'updates_test.dart';
@@ -33,6 +37,7 @@ class TestDownloadLanguagesPage extends ConsumerWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       onGenerateRoute: (settings) => generateRoutes(settings),
       navigatorObservers: [navigatorObserver],
+      scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
       home: const DownloadLanguagesPage(),
     );
   }
@@ -125,6 +130,53 @@ void main() {
     );
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/onboarding/1']), isTrue);
+  });
+
+  testWidgets('Download-all progress is shown on the onboarding screen', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final gates = {
+      for (final code in ['de', 'en', 'fr']) code: Completer<void>()
+    };
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+        availableLanguagesProvider.overrideWithValue(['de', 'en', 'fr']),
+        languageProvider.overrideWith2(
+          (languageCode) => GatedDownloadLanguageController(gates),
+        ),
+        languageStatusProvider.overrideWith2(
+          (languageCode) => TestLanguageStatus(),
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: TestDownloadLanguagesPage(TestObserver()),
+      ),
+    );
+    final l10n = AppLocalizationsEn();
+
+    await tester.tap(find.byType(DownloadAllLanguagesButton));
+    await tester.pump();
+    expect(find.text(l10n.downloadProgress(0, 3)), findsOneWidget);
+
+    // One pump lets the download finish, the next draws the new caption
+    gates['de']!.complete();
+    await tester.pump();
+    await tester.pump();
+    expect(find.text(l10n.downloadProgress(1, 3)), findsOneWidget);
+
+    gates['en']!.complete();
+    gates['fr']!.complete();
+    await tester.pump();
+    await tester.pump();
+    expect(find.text(l10n.downloadedNLanguages(3)), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('Test skipping third onboarding step', (
