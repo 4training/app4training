@@ -509,4 +509,24 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get pdfNotAvailable =>
       'Für dieses Arbeitsblatt ist leider noch kein PDF verfügbar. Wenn du mithelfen möchtest, damit sich das bald ändert, dann melde dich bitte!';
+
+  @override
+  String get loading => 'Wird geladen';
+
+  @override
+  String get loadingContent => 'Inhalt wird geladen...';
+
+  @override
+  String get startupCheckingLanguages => 'Überprüfe heruntergeladene Sprachen';
+
+  @override
+  String get startupLoadingAppLanguage => 'Lade App-Sprache';
+
+  @override
+  String get startupLoadingRecentPage => 'Lade dein letztes Arbeitsblatt';
+
+  @override
+  String downloadProgress(int completed, int total) {
+    return '$completed von $total';
+  }
 }

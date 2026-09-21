@@ -339,5 +339,37 @@
     "openPdf": "PDF öffnen",
     "openInBrowser": "Im Browser öffnen",
     "shareLink": "Link teilen",
-    "pdfNotAvailable": "Für dieses Arbeitsblatt ist leider noch kein PDF verfügbar. Wenn du mithelfen möchtest, damit sich das bald ändert, dann melde dich bitte!"
+    "pdfNotAvailable": "Für dieses Arbeitsblatt ist leider noch kein PDF verfügbar. Wenn du mithelfen möchtest, damit sich das bald ändert, dann melde dich bitte!",
+    "loading": "Wird geladen",
+    "@loading": {
+        "description": "Caption under the spinner on the startup screen"
+    },
+    "loadingContent": "Inhalt wird geladen...",
+    "@loadingContent": {
+        "description": "Caption under the spinner while a worksheet is being loaded"
+    },
+    "startupCheckingLanguages": "Überprüfe heruntergeladene Sprachen",
+    "@startupCheckingLanguages": {
+        "description": "Caption under the startup spinner while the app finds out which languages are on the device"
+    },
+    "startupLoadingAppLanguage": "Lade App-Sprache",
+    "@startupLoadingAppLanguage": {
+        "description": "Caption under the startup spinner while the app language is being loaded"
+    },
+    "startupLoadingRecentPage": "Lade dein letztes Arbeitsblatt",
+    "@startupLoadingRecentPage": {
+        "description": "Caption under the startup spinner while the language of the worksheet the user last read is being loaded"
+    },
+    "downloadProgress": "{completed} von {total}",
+    "@downloadProgress": {
+        "description": "Caption next to the progress ring while all languages are being downloaded, e.g. '3 of 34'",
+        "placeholders": {
+            "completed": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    }
 }

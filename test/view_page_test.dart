@@ -43,7 +43,7 @@ void main() {
     expect(prefs.getString('recentLang'), isNull);
     // First there should be the loading animation
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.text('Loading content...'), findsOneWidget);
+    expect(find.text('Inhalt wird geladen...'), findsOneWidget);
     // In Riverpod v3, FutureProvider needs additional frames to settle
     await tester.pumpAndSettle();
 

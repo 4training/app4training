@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Background of the native splash screen. Keep this identical to the
+         scaffold background of the Flutter light theme (lib/design/theme.dart,
+         FlexScheme.red: #FFFFFF) so that the first Flutter frame doesn't
+         change the colour under the logo. Dark mode: values-night/colors.xml -->
+    <color name="splash_background">#FFFFFFFF</color>
+</resources>

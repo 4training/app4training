@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Scaffold background of the Flutter dark theme (FlexThemeData.dark,
+         FlexScheme.red): #010101 -->
+    <color name="splash_background">#FF010101</color>
+</resources>

@@ -128,7 +128,7 @@ Almost every test:
 
 Uses a `TestObserver extends NavigatorObserver` to record `didPush` and `didReplace` calls. The asserts then check that, given a starting state, the right `pushReplacementNamed` was invoked. This is the cleanest way to verify `StartupPage`'s decision matrix end-to-end.
 
-`startup_page_test.dart` additionally pins the staged loading described in [routing.md](routing.md): a `GatedLanguageController` holds each `init()` open until the test releases it, so the test can assert that navigation happens once the app language and the recent page's language are loaded — while another downloaded language is still loading in the background.
+`startup_page_test.dart` additionally pins the staged loading described in [routing.md](routing.md): a `GatedLanguageController` holds each `init()` open until the test releases it, so the test can assert that navigation happens once the app language and the recent page's language are loaded — while another downloaded language is still loading in the background. The same controller can also hold `lazyInit()` open (`lazyInitGate`), which is how the stage-caption tests walk `init()` through its stages one at a time and check the caption at each of them.
 
 ## Integration test
 

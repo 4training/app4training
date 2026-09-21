@@ -508,4 +508,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pdfNotAvailable =>
       'Unfortunately there is no PDF available yet for this worksheet. If you want to help make this change soon, please contact us!';
+
+  @override
+  String get loading => 'Loading';
+
+  @override
+  String get loadingContent => 'Loading content...';
+
+  @override
+  String get startupCheckingLanguages => 'Checking downloaded languages';
+
+  @override
+  String get startupLoadingAppLanguage => 'Loading app language';
+
+  @override
+  String get startupLoadingRecentPage => 'Loading your last worksheet';
+
+  @override
+  String downloadProgress(int completed, int total) {
+    return '$completed of $total';
+  }
 }

@@ -32,6 +32,7 @@ StartupPage.init():
       return '/onboarding/1'                 # first time
 
   # step 1: which languages are on the device? one stat() each, in parallel
+  stage.report(checkingLanguages)
   await Future.wait(languageProvider(code).notifier.lazyInit() for all codes)
 
   if app language is not yet downloaded:
@@ -45,8 +46,11 @@ StartupPage.init():
       navigateTo = '/home'
 
   # step 2: fully load only what the first screen renders
+  stage.report(loadingAppLanguage)
   await Future.wait(languageProvider(code).notifier.init()
                     for code in {appLanguage, recentLang?})
+      # once the app language is in and recentLang is still loading:
+      # stage.report(loadingRecentPage)
 
   # step 3: the remaining downloaded languages, unawaited, 3 at a time
   unawaited(_loadRemainingLanguages(...))
@@ -64,6 +68,14 @@ Fully loading all 34 languages before the first frame is what made cold start fe
 Only the app language (for the menu) and the language of the resumed worksheet are needed before navigating; `lazyInit()` gives the *downloaded* flag for all the others, which is all the routing decision needs. Everything else is loaded afterwards — the widgets that use it (language selection menu, the drawer's translate icons) are driven by `languageProvider` and rebuild by themselves as languages arrive.
 
 Step 3 gets the `LanguageController`s handed to it rather than the `WidgetRef`: `StartupPage` is disposed by `pushReplacementNamed` while that work is still running, and a disposed `WidgetRef` must not be used.
+
+### Telling the user which stage we're in
+
+On a slow device a single stage can take seconds, and a static caption then looks like a hang. So `init()` reports a `StartupStage` (`lib/data/startup_stage.dart`, exposed as `startupStageProvider`) right before it starts each stage, and the caption under the spinner renders the localized name of that stage. The rule is: only report a stage the code is actually in. That is why `loadingRecentPage` is reported from a continuation of the app language's `init()` and only if the worksheet's language is still loading at that moment - if it landed first there is nothing left to wait for and the caption stays on `loadingAppLanguage`.
+
+Two consequences for the widget:
+- Only the caption (a small `Consumer` inside `LoadingAnimation`) watches the provider, so a stage change rebuilds nothing but that text - in particular it never rebuilds `StartupPage` itself, which would restart `init()`.
+- Riverpod forbids modifying a provider while the widget tree is building, so `StartupPage` is a `ConsumerStatefulWidget` that starts `init()` from a microtask in `initState`: the first frame (spinner, generic `loading` caption) goes out, then `init()` runs.
 
 ## Navigation primitives
 

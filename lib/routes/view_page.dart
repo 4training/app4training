@@ -61,7 +61,7 @@ class ViewPage extends ConsumerWidget {
                 case ConnectionState.none:
                 case ConnectionState.waiting:
                 case ConnectionState.active:
-                  return loadingAnimation("Loading content...");
+                  return loadingAnimation(context.l10n.loadingContent);
                 case ConnectionState.done:
                   if (kDebugMode) {
                     debugPrint('Done, hasData: ${snapshot.hasData},'

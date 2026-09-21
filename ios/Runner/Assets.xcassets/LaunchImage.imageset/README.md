@@ -1,5 +1,11 @@
 # Launch Screen Assets
 
-You can customize the launch screen with your own desired assets by replacing the image files in this directory.
+The three `LaunchImage*.png` files are the app logo at 127pt (1x/2x/3x),
+generated from `../AppIcon.appiconset/4training logo_1024x1024.png` with the
+white corners made transparent (so it also works on the dark launch
+background, see `../LaunchBackground.colorset`). 127pt matches the logo size
+of the Android splash screen (`android/app/src/main/res/values/dimens.xml`).
 
-You can also do it by opening your Flutter project's Xcode project with `open ios/Runner.xcworkspace`, selecting `Runner/Assets.xcassets` in the Project Navigator and dropping in the desired images.
+To regenerate after changing the logo, resize the transparent-corner source
+to 127, 254 and 381 px and replace the files here; `Contents.json` needs no
+change as long as the file names stay the same.
