@@ -96,10 +96,10 @@ class LanguagesTable extends ConsumerWidget {
                           style: const TextStyle(fontWeight: FontWeight.bold))),
                   const SizedBox(
                       height: 32, width: 32, child: UpdateAllLanguagesButton()),
+                  // No fixed width: while a bulk download runs this shows a
+                  // progress ring with an "n of m" caption next to it
                   const SizedBox(
-                      height: 32,
-                      width: 32,
-                      child: DownloadAllLanguagesButton()),
+                      height: 32, child: DownloadAllLanguagesButton()),
                   const SizedBox(
                       height: 32, width: 32, child: DeleteAllLanguagesButton()),
                 ])

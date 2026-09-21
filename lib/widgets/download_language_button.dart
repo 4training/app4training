@@ -70,8 +70,10 @@ class _DownloadLanguageButtonState
   }
 }
 
-/// Button to download all languages. Shows a CircularProgressIndicator while
-/// the download is in progress (that's why the class is stateful)
+/// Button to download all languages. While the batch runs it turns into a
+/// determinate progress ring with an "n of m" caption (that's why the class
+/// is stateful): 34 languages on a slow connection can take minutes, and a
+/// bare spinner gives no hint whether anything is happening.
 class DownloadAllLanguagesButton extends ConsumerStatefulWidget {
   const DownloadAllLanguagesButton({super.key});
 
@@ -84,17 +86,30 @@ class _DownloadAllLanguagesButtonState
     extends ConsumerState<DownloadAllLanguagesButton> {
   bool _isLoading = false;
 
+  /// How many of [_total] languages of the running batch are finished
+  int _completed = 0;
+  int _total = 0;
+
   @override
   Widget build(BuildContext context) {
-    return _isLoading
-        ? const Center(
-            child: SizedBox(
-                height: 24, width: 24, child: CircularProgressIndicator()))
-        : IconButton(
+    if (_isLoading) {
+      return Row(mainAxisSize: MainAxisSize.min, children: [
+        SizedBox(
+            height: 24,
+            width: 24,
+            child: CircularProgressIndicator(
+                value: _total == 0 ? null : _completed / _total)),
+        const SizedBox(width: 4),
+        Text(context.l10n.downloadProgress(_completed, _total),
+            style: Theme.of(context).textTheme.bodyMedium),
+      ]);
+    }
+    // Same footprint as the other header buttons while idle - the table cell
+    // deliberately has no fixed width so that the row above can grow
+    return SizedBox(
+        width: 32,
+        child: IconButton(
             onPressed: () async {
-              setState(() {
-                _isLoading = true;
-              });
               // Get l10n now as we can't access context after async gap later
               final l10n = context.l10n;
               final codesToDownload = [
@@ -102,10 +117,19 @@ class _DownloadAllLanguagesButtonState
                   if (!ref.read(languageProvider(languageCode)).downloaded)
                     languageCode,
               ];
+              setState(() {
+                _isLoading = true;
+                _completed = 0;
+                _total = codesToDownload.length;
+              });
               final result = await downloadLanguagesInParallel(
                 codesToDownload,
                 download: (code) =>
                     ref.read(languageProvider(code).notifier).download(),
+                onProgress: (progress) {
+                  if (!mounted) return;
+                  setState(() => _completed = progress.completed);
+                },
               );
               if (result.successCount > 0) {
                 // Show info message in snackbar
@@ -128,6 +152,6 @@ class _DownloadAllLanguagesButtonState
               });
             },
             icon: const Icon(Icons.download),
-            padding: EdgeInsets.zero);
+            padding: EdgeInsets.zero));
   }
 }
