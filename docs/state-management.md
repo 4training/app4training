@@ -32,6 +32,14 @@ This page is the index of every provider in the app — what it holds, what it d
 
 `Globals` (a static-only class in the same file) holds the constant URLs (`https://github.com/4training/html-<lang>/archive/refs/heads/main.zip`) and folder names (`html-<lang>-main`).
 
+### Startup progress (`lib/data/startup_stage.dart`)
+
+| Provider | Type | Purpose |
+| --- | --- | --- |
+| `startupStageProvider` | `NotifierProvider<StartupStageNotifier, StartupStage>` | Which stage `StartupPage.init()` is in (`starting` / `checkingLanguages` / `loadingAppLanguage` / `loadingRecentPage`). Drives the caption under the startup spinner; only `init()` calls `report()` |
+
+`StartupStage.getLocalized(context, stage)` maps a stage to its localized caption, following the `AutomaticUpdates.getLocalized` pattern. See [routing.md](routing.md), "Telling the user which stage we're in".
+
 ### App language (`lib/data/app_language.dart`)
 
 | Provider | Type | Purpose |

@@ -20,7 +20,7 @@ The page is wrapped in `LayoutBuilder + SingleChildScrollView + ConstrainedBox(m
 
 File: `lib/routes/onboarding/download_languages_page.dart`.
 
-- Renders the same `LanguagesTable` widget used on the settings page, but with `highlightLang: appLanguage.languageCode` so the user's app-language download button is visually highlighted.
+- Renders the same `LanguagesTable` widget used on the settings page, but with `highlightLang: appLanguage.languageCode` so the user's app-language download button is visually highlighted. Because it is the same table, "download all" shows its "n of m" progress here too - this is the first-run path where a user is most likely to download everything.
 - "Continue" is disabled-looking until the app language is downloaded:
   - Implementation note: we don't set `onPressed: null` (which would also disable click handling). We pass a manually-greyed `ButtonStyle` (`onSurface.withOpacity(0.12)` background, `0.38` foreground) so the button stays clickable. Clicking it while not yet downloaded shows a `MissingAppLanguageDialog` warning.
   - Once the app language is downloaded, "Continue" routes to `getNextRoute(ref)`. Currently that always returns `/home` — for v0.9 this will branch to `/onboarding/3` if `checkFrequency` isn't set yet.

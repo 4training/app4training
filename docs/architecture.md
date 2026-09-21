@@ -66,6 +66,13 @@ which is mitigated by overriding `fileSystemProvider` and `httpClientProvider` i
 
 ## Lifecycle
 
+0. **Native splash screen** (no Dart code running yet)
+
+   - Covers Android process start, Flutter engine initialization and the `await`s at the top of `main()` - the single longest blank stretch of a cold start, and the one no Dart change can shorten. It shows the app logo on the same background colour as the first Flutter frame, so the hand-over doesn't flash (`values/colors.xml`: `#FFFFFF` light / `#010101` dark, i.e. the scaffold colours of the two themes in `lib/design/theme.dart`).
+   - Android: `drawable/launch_background.xml` is the `windowBackground` of both `LaunchTheme` (the system's starting window) and `NormalTheme` (the activity's own window - `FlutterActivity` switches to it in `onCreate()`, well before the first Flutter frame, so a plain colour there would drop the logo for the longest part of the wait); it centers `drawable-nodpi/splash_logo.png` (one 508 px bitmap, scaled by dp) at `@dimen/splash_logo_size` (127dp). On Android 12+ the system draws its own splash first: `values-v31/styles.xml` gives it the same colour and `drawable-v31/splash_icon.xml`, the logo inset by 28% so it sits inside the system's circular mask at the same 127dp - without that the system would upscale the launcher icon and cut its corners off.
+   - iOS: `LaunchScreen.storyboard` centers `LaunchImage` (127pt, 1x/2x/3x) on the `LaunchBackground` colour set (light/dark).
+   - All resources are hand-maintained, no splash generator package; the bitmaps derive from the 1024 px icon in `ios/Runner/Assets.xcassets/AppIcon.appiconset` with the white corners made transparent.
+
 1. **`main()`** (`lib/main.dart`)
 
    - `WidgetsFlutterBinding.ensureInitialized()`

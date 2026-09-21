@@ -5,7 +5,7 @@ What's on each screen, what each widget does, and where to find it.
 ## Screens (`lib/routes/`)
 
 ### `StartupPage`
-Initial loading screen. Computes `init()` (see [routing.md](routing.md)), shows a `loadingAnimation('Loading')` spinner while the future is pending, navigates with `pushReplacementNamed` once decided. The `initFunction` constructor parameter is exposed only for tests so that `StartupPage` can drive `Navigator` against a `Completer<String>`.
+Initial loading screen. Runs `init()` (see [routing.md](routing.md)) and shows a `LoadingAnimation` while it is pending, then navigates with `pushReplacementNamed` once decided. The caption under the spinner names the stage `init()` is in (`startupStageProvider`, localized `startupCheckingLanguages` / `startupLoadingAppLanguage` / `startupLoadingRecentPage`; `loading` until the first stage is reported). The `initFunction` constructor parameter is exposed only for tests so that `StartupPage` can drive `Navigator` against a `Completer<String>`; with it, the caption stays at `loading`.
 
 ### `HomePage` (`/home`)
 Minimal — an `AppBar(title: '4training')`, the `MainDrawer`, and a `TableOfContent` body with the localized "What this app is" intro at the top.
@@ -76,7 +76,7 @@ Below the table: `diskUsage` total (calculated asynchronously — a `…` placeh
 
 ### Language buttons
 - **`DownloadLanguageButton`** (`ConsumerStatefulWidget`): icon with internal `_isLoading` flag — swaps to `CircularProgressIndicator` during `LanguageController.download()`. Optional `highlight` flag wraps it in a tinted rounded box (used during onboarding).
-- **`DownloadAllLanguagesButton`**: same idea, iterates `availableLanguagesProvider`.
+- **`DownloadAllLanguagesButton`**: iterates `availableLanguagesProvider` through `downloadLanguagesInParallel()`. While the batch runs the icon is replaced by a *determinate* progress ring plus an "n of m" caption (`downloadProgress`), fed by the helper's `onProgress` callback; a failed language advances the counter like a successful one. The header cell of `LanguagesTable` has no fixed width for this reason - the control is 32 px wide while idle and grows while downloading. The end-of-batch snackbars are unchanged.
 - **`DeleteLanguageButton`**: deleting the *current app language* is "discouraged" — the icon turns `inversePrimary` and clicking shows a `ConfirmDeletionDialog`.
 - **`DeleteAllLanguagesButton`**: skips the current app language without prompting.
 - **`UpdateLanguageButton`**: same loading pattern, calls `download(force: true)`.
@@ -109,8 +109,8 @@ The wrapper `ShareService` (and `shareProvider`) exists *purely* for testability
 ### `ErrorMessage`
 A reusable card with an icon, title, and message. Used by `ErrorPage` and by `ViewPage`'s error states.
 
-### `loadingAnimation(msg)`
-Function (not a class) returning a `Scaffold` with a centered `CircularProgressIndicator` + label. Used during startup and when fetching page content.
+### `LoadingAnimation`
+A `Scaffold` with a centered `CircularProgressIndicator` and a `caption` *widget* underneath - a widget rather than a string so that the caption can rebuild on its own (`StartupPage` passes a `Consumer` watching `startupStageProvider`). `loadingAnimation(msg)` is the shorthand for a fixed, already localized text; `ViewPage` uses it with `loadingContent`.
 
 ## Sharing assets
 

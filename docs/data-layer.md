@@ -116,6 +116,10 @@ The branch name (`main`) is hardcoded; switching branches would require a code c
 
 `init()` calls `_load()` only — no network. `lazyInit()` only checks for `contents.json` existence and returns a sparse `Language(languageCode, {}, [], {}, path, timestamp)` without parsing — used by the background isolate, and by `StartupPage` for all languages before the first frame. Both `lazyInit()` and `_load()` read the path from `ref.read(languageDownloaderProvider).pathFor(languageCode)`.
 
+### Bulk downloads (`lib/data/bulk_language_download.dart`)
+
+`downloadLanguagesInParallel(codes, download: ..., maxConcurrent: kMaxParallelLanguageDownloads, onProgress: ...)` runs a worker pool over the given language codes: at most `maxConcurrent` (4) downloads are in flight, and as soon as one finishes the next one starts, so a slow language never blocks idle slots. A download that returns `false` or throws counts as an error and the batch carries on. It returns a `BulkDownloadResult` (success/error counts, last successful code) for the summary snackbar - and, if `onProgress` is given, reports a `BulkDownloadProgress` (completed, total, language code, success) as each language finishes, which is what the "n of m" caption of `DownloadAllLanguagesButton` renders. Both "download all" and "update all" buttons use it.
+
 ### Inside `LanguageDownloaderImpl` (`lib/data/language_downloader.dart`)
 
 The downloader owns the atomicity, concurrency, and crash-recovery guarantees so callers don't need to reason about partial state. One `download(langCode)` call performs:
