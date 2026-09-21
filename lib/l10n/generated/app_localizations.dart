@@ -883,6 +883,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unfortunately there is no PDF available yet for this worksheet. If you want to help make this change soon, please contact us!'**
   String get pdfNotAvailable;
+
+  /// Caption under the spinner on the startup screen
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get loading;
+
+  /// Caption under the spinner while a worksheet is being loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Loading content...'**
+  String get loadingContent;
+
+  /// Caption under the startup spinner while the app finds out which languages are on the device
+  ///
+  /// In en, this message translates to:
+  /// **'Checking downloaded languages'**
+  String get startupCheckingLanguages;
+
+  /// Caption under the startup spinner while the app language is being loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Loading app language'**
+  String get startupLoadingAppLanguage;
+
+  /// Caption under the startup spinner while the language of the worksheet the user last read is being loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your last worksheet'**
+  String get startupLoadingRecentPage;
+
+  /// Caption next to the progress ring while all languages are being downloaded, e.g. '3 of 34'
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {total}'**
+  String downloadProgress(int completed, int total);
 }
 
 class _AppLocalizationsDelegate

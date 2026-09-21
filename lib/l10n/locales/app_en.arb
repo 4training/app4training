@@ -339,5 +339,37 @@
     "openPdf": "Open PDF",
     "openInBrowser": "Open in browser",
     "shareLink": "Share link",
-    "pdfNotAvailable": "Unfortunately there is no PDF available yet for this worksheet. If you want to help make this change soon, please contact us!"
+    "pdfNotAvailable": "Unfortunately there is no PDF available yet for this worksheet. If you want to help make this change soon, please contact us!",
+    "loading": "Loading",
+    "@loading": {
+        "description": "Caption under the spinner on the startup screen"
+    },
+    "loadingContent": "Loading content...",
+    "@loadingContent": {
+        "description": "Caption under the spinner while a worksheet is being loaded"
+    },
+    "startupCheckingLanguages": "Checking downloaded languages",
+    "@startupCheckingLanguages": {
+        "description": "Caption under the startup spinner while the app finds out which languages are on the device"
+    },
+    "startupLoadingAppLanguage": "Loading app language",
+    "@startupLoadingAppLanguage": {
+        "description": "Caption under the startup spinner while the app language is being loaded"
+    },
+    "startupLoadingRecentPage": "Loading your last worksheet",
+    "@startupLoadingRecentPage": {
+        "description": "Caption under the startup spinner while the language of the worksheet the user last read is being loaded"
+    },
+    "downloadProgress": "{completed} of {total}",
+    "@downloadProgress": {
+        "description": "Caption next to the progress ring while all languages are being downloaded, e.g. '3 of 34'",
+        "placeholders": {
+            "completed": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    }
 }
