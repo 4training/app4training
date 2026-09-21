@@ -74,7 +74,7 @@ void main() async {
       languageDownloaderProvider
           .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
     ], child: const App4Training()));
-    expect(find.text('Loading'), findsOneWidget);
+    expect(find.text('Wird geladen'), findsOneWidget);
     await tester.pumpAndSettle();
 
     // The languageStatusProvider haven't been loaded into memory yet -
