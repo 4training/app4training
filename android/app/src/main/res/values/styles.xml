@@ -13,6 +13,10 @@
 
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowBackground">?android:colorBackground</item>
+        <!-- Same logo as LaunchTheme: FlutterActivity switches to this theme
+             in onCreate(), i.e. before the first Flutter frame. With a plain
+             colour here the logo would vanish while the engine is still
+             starting up - the longest part of a cold start on a slow device. -->
+        <item name="android:windowBackground">@drawable/launch_background</item>
     </style>
 </resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Size of the logo on the splash screen shown before Flutter's first
+         frame. 127dp is what the Android 12+ system splash renders our icon
+         at (drawable/splash_icon.xml: 288dp icon canvas, 28% inset on each
+         side), so the hand-off from the system splash to this window
+         background doesn't visibly resize the logo. -->
+    <dimen name="splash_logo_size">127dp</dimen>
+</resources>

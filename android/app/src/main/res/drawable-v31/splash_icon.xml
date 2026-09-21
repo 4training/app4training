@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icon for the Android 12+ system splash screen. The system draws it on a
+     288dp canvas and masks it to a 192dp circle (no icon background colour
+     is set), so the square logo is inset far enough to sit inside that
+     circle - 288dp * (1 - 2 * 28%) = 127dp, see values/dimens.xml. Without
+     this the system would show the launcher icon: upscaled from 48dp and
+     with its corners cut off by the circular mask. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/splash_logo"
+    android:inset="28%" />
