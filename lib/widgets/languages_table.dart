@@ -93,8 +93,9 @@ class LanguagesTable extends ConsumerWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold))),
               const SizedBox(
                   height: 32, width: 32, child: UpdateAllLanguagesButton()),
-              const SizedBox(
-                  height: 32, width: 32, child: DownloadAllLanguagesButton()),
+              // No fixed width: while a bulk download runs this shows a
+              // progress ring with an "n of m" caption next to it
+              const SizedBox(height: 32, child: DownloadAllLanguagesButton()),
               const SizedBox(
                   height: 32, width: 32, child: DeleteAllLanguagesButton()),
             ])
@@ -114,8 +115,9 @@ class LanguagesTable extends ConsumerWidget {
     );
 
     // Disk usage summary (pinned at the bottom)
-    final Widget diskUsage = Text(
-      '${context.l10n.diskUsage}: $sizeInKB kB $countLanguages',
+    final Widget diskUsageText = Text(
+      '${context.l10n.diskUsage}: ${diskUsage.value ?? '…'} kB'
+      ' $countLanguages',
       style: Theme.of(context).textTheme.bodyMedium,
     );
 
@@ -131,31 +133,11 @@ class LanguagesTable extends ConsumerWidget {
           constraints.maxHeight >= minHeightForPinnedLayout) {
         return Column(
           children: [
-            // header with all-languages-buttons
-            TableRow(
-                decoration: const BoxDecoration(
-                    border: Border(
-                        bottom: BorderSide(width: 3, color: Colors.grey))),
-                children: [
-                  SizedBox(
-                      height: 32,
-                      width: 32,
-                      child: IsDownloaded(allDownloaded)),
-                  Container(
-                      height: 32,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                          '${context.l10n.allLanguages} ($countAvailableLanguages)',
-                          style: const TextStyle(fontWeight: FontWeight.bold))),
-                  const SizedBox(
-                      height: 32, width: 32, child: UpdateAllLanguagesButton()),
-                  // No fixed width: while a bulk download runs this shows a
-                  // progress ring with an "n of m" caption next to it
-                  const SizedBox(
-                      height: 32, child: DownloadAllLanguagesButton()),
-                  const SizedBox(
-                      height: 32, width: 32, child: DeleteAllLanguagesButton()),
-                ])
+            header,
+            const SizedBox(height: 5),
+            Expanded(child: SingleChildScrollView(child: languageList)),
+            const SizedBox(height: 5),
+            diskUsageText,
           ],
         );
       }
@@ -166,30 +148,11 @@ class LanguagesTable extends ConsumerWidget {
             const SizedBox(height: 5),
             languageList,
             const SizedBox(height: 5),
-            diskUsage,
+            diskUsageText,
           ],
         ),
-        const SizedBox(height: 5),
-        Expanded(
-            child: SingleChildScrollView(
-                child: Table(
-          //border: TableBorder.all(color: Colors.black26),
-          columnWidths: const {
-            0: IntrinsicColumnWidth(),
-            1: FlexColumnWidth(),
-            2: IntrinsicColumnWidth(),
-            3: IntrinsicColumnWidth(),
-          },
-          children: rows,
-        ))),
-        const SizedBox(height: 5),
-        Text(
-          '${context.l10n.diskUsage}: ${diskUsage.value ?? '…'} kB'
-          ' $countLanguages',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ],
-    );
+      );
+    });
   }
 }
 
