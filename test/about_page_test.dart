@@ -11,20 +11,26 @@ import 'package:package_info_plus/package_info_plus.dart';
 void main() {
   testWidgets('Basic test', (WidgetTester tester) async {
     const testVersion = '0.8.1';
-    await tester.pumpWidget(ProviderScope(
+    await tester.pumpWidget(
+      ProviderScope(
         overrides: [
-          packageInfoProvider.overrideWithValue(PackageInfo(
-            version: testVersion,
-            buildNumber: '1',
-            appName: 'app4training',
-            packageName: 'net.app4training',
-          ))
+          packageInfoProvider.overrideWithValue(
+            PackageInfo(
+              version: testVersion,
+              buildNumber: '1',
+              appName: 'app4training',
+              packageName: 'net.app4training',
+            ),
+          ),
         ],
         child: const MaterialApp(
-            locale: Locale('en'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: AboutPage())));
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: AboutPage(),
+        ),
+      ),
+    );
 
     expect(find.byType(PromoBlock), findsOneWidget);
     // are all headlines there?

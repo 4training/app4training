@@ -50,7 +50,7 @@ extension GetLanguageNameExt on AppLocalizations {
       'es': language_es,
       'sq': language_sq,
       'en': language_en,
-      'de': language_de
+      'de': language_de,
     };
     if (languageMap.containsKey(languageCode)) {
       return "${languageMap[languageCode]!} ($languageCode)";

@@ -138,7 +138,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final gates = {
-      for (final code in ['de', 'en', 'fr']) code: Completer<void>()
+      for (final code in ['de', 'en', 'fr']) code: Completer<void>(),
     };
     final ref = ProviderContainer(
       overrides: [

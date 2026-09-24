@@ -127,9 +127,9 @@ bool _isKnownHtmlTableAssertion(FlutterErrorDetails details) {
   final String exceptionText = details.exception.toString();
   final bool exceptionMatchesKnownSignature =
       exceptionText.contains('RenderBox was not laid out') ||
-          exceptionText.contains('computeDryBaseline') ||
-          exceptionText.contains('renderBoxDoingDryBaseline') ||
-          exceptionText.contains("'child!.hasSize'");
+      exceptionText.contains('computeDryBaseline') ||
+      exceptionText.contains('renderBoxDoingDryBaseline') ||
+      exceptionText.contains("'child!.hasSize'");
   // Stringifying the stack is by far the expensive half of this check, and
   // these assertions fire hundreds of times per page load in debug/profile
   // builds - so only pay for it once the cheap message check has matched.
@@ -148,15 +148,18 @@ void main() async {
   // sequential platform channel round trips - the native splash screen is up
   // for all of it, without a single Flutter frame rendered yet.
   final (prefs, packageInfo, appDocsDir) = await PerfLogger.span(
-      'main.platformChannels',
-      () => (
-            SharedPreferences.getInstance(),
-            PackageInfo.fromPlatform(),
-            getApplicationDocumentsDirectory(),
-          ).wait);
+    'main.platformChannels',
+    () =>
+        (
+          SharedPreferences.getInstance(),
+          PackageInfo.fromPlatform(),
+          getApplicationDocumentsDirectory(),
+        ).wait,
+  );
   PerfLogger.start(
-      fileSystem: const LocalFileSystem(),
-      directory: p.join(appDocsDir.path, 'perf_sessions'));
+    fileSystem: const LocalFileSystem(),
+    directory: p.join(appDocsDir.path, 'perf_sessions'),
+  );
   unawaited(PerfLogger.logDeviceAndApp(packageInfo));
   final languageDownloader = LanguageDownloaderImpl(
     root: appDocsDir.path,
@@ -169,12 +172,19 @@ void main() async {
   // startup / onboarding / the check-frequency setting.
   await Workmanager().initialize(backgroundTask);
 
-  runApp(ProviderScope(overrides: [
-    sharedPrefsProvider.overrideWithValue(prefs),
-    packageInfoProvider.overrideWithValue(packageInfo),
-    languageDownloaderProvider.overrideWithValue(languageDownloader),
-    connectivityServiceProvider.overrideWithValue(ConnectivityServiceImpl()),
-  ], child: const App4Training()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        packageInfoProvider.overrideWithValue(packageInfo),
+        languageDownloaderProvider.overrideWithValue(languageDownloader),
+        connectivityServiceProvider.overrideWithValue(
+          ConnectivityServiceImpl(),
+        ),
+      ],
+      child: const App4Training(),
+    ),
+  );
   PerfLogger.attachToApp();
 }
 

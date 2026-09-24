@@ -45,7 +45,7 @@ class AppLanguage {
   static const Map<String, String> availableAppLanguages = {
     'system': 'System default',
     'en': 'English (en)',
-    'de': 'Deutsch (de)'
+    'de': 'Deutsch (de)',
   };
 }
 
@@ -74,8 +74,8 @@ class AppLanguageController extends Notifier<AppLanguage> {
 
 final appLanguageProvider =
     NotifierProvider<AppLanguageController, AppLanguage>(() {
-  return AppLanguageController();
-});
+      return AppLanguageController();
+    });
 
 /// wrapper class around `Platform.localeName`:
 /// - provides the language code (just 'en' instead of 'en_US' e.g.)

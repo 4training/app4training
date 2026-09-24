@@ -23,34 +23,48 @@ class _UpdateLanguageButtonState extends ConsumerState<UpdateLanguageButton> {
 
   @override
   Widget build(BuildContext context) {
-    LanguageController lang =
-        ref.read(languageProvider(widget.languageCode).notifier);
+    LanguageController lang = ref.read(
+      languageProvider(widget.languageCode).notifier,
+    );
     return _isUpdating
         ? const Center(
-            child: SizedBox(
-                height: 24, width: 24, child: CircularProgressIndicator()))
+          child: SizedBox(
+            height: 24,
+            width: 24,
+            child: CircularProgressIndicator(),
+          ),
+        )
         : IconButton(
-            onPressed: () async {
-              setState(() {
-                _isUpdating = true;
-              });
-              // Get l10n now as we can't access context after async gap later
-              AppLocalizations l10n = context.l10n;
+          onPressed: () async {
+            setState(() {
+              _isUpdating = true;
+            });
+            // Get l10n now as we can't access context after async gap later
+            AppLocalizations l10n = context.l10n;
 
-              bool success = await lang.download();
+            bool success = await lang.download();
 
-              ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
-                  content: Text(success
-                      ? l10n.updatedLanguage(
-                          l10n.getLanguageName(widget.languageCode))
-                      : l10n.updateError)));
+            ref
+                .watch(scaffoldMessengerProvider)
+                .showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? l10n.updatedLanguage(
+                            l10n.getLanguageName(widget.languageCode),
+                          )
+                          : l10n.updateError,
+                    ),
+                  ),
+                );
 
-              setState(() {
-                _isUpdating = false;
-              });
-            },
-            icon: const Icon(Icons.refresh),
-            padding: EdgeInsets.zero);
+            setState(() {
+              _isUpdating = false;
+            });
+          },
+          icon: const Icon(Icons.refresh),
+          padding: EdgeInsets.zero,
+        );
   }
 }
 
@@ -75,45 +89,57 @@ class _UpdateAllLanguagesButtonState
 
     return _isLoading
         ? const Center(
-            child: SizedBox(
-                height: 24, width: 24, child: CircularProgressIndicator()))
+          child: SizedBox(
+            height: 24,
+            width: 24,
+            child: CircularProgressIndicator(),
+          ),
+        )
         : IconButton(
-            onPressed: () async {
-              setState(() {
-                _isLoading = true;
-              });
-              // Get l10n now as we can't access context after async gap later
-              final l10n = context.l10n;
-              final codesToUpdate = [
-                for (final languageCode in ref.read(availableLanguagesProvider))
-                  if (ref.read(languageStatusProvider(languageCode)).updatesAvailable &&
-                      ref.read(languageProvider(languageCode)).downloaded)
-                    languageCode,
-              ];
-              final result = await downloadLanguagesInParallel(
-                codesToUpdate,
-                download: (code) =>
-                    ref.read(languageProvider(code).notifier).download(),
-              );
-              if (result.successCount > 0) {
-                // Show info message in snackbar
-                String text = (result.successCount == 1)
-                    ? l10n.updatedLanguage(
-                        l10n.getLanguageName(result.lastSuccessCode))
-                    : l10n.updatedNLanguages(
-                        result.successCount, result.errorCount);
-                final snackBar = SnackBar(content: Text(text));
-                ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
-              } else if (result.errorCount > 0) {
-                ref
-                    .watch(scaffoldMessengerProvider)
-                    .showSnackBar(SnackBar(content: Text(l10n.updateError)));
-              }
-              setState(() {
-                _isLoading = false;
-              });
-            },
-            icon: const Icon(Icons.refresh),
-            padding: EdgeInsets.zero);
+          onPressed: () async {
+            setState(() {
+              _isLoading = true;
+            });
+            // Get l10n now as we can't access context after async gap later
+            final l10n = context.l10n;
+            final codesToUpdate = [
+              for (final languageCode in ref.read(availableLanguagesProvider))
+                if (ref
+                        .read(languageStatusProvider(languageCode))
+                        .updatesAvailable &&
+                    ref.read(languageProvider(languageCode)).downloaded)
+                  languageCode,
+            ];
+            final result = await downloadLanguagesInParallel(
+              codesToUpdate,
+              download:
+                  (code) =>
+                      ref.read(languageProvider(code).notifier).download(),
+            );
+            if (result.successCount > 0) {
+              // Show info message in snackbar
+              String text =
+                  (result.successCount == 1)
+                      ? l10n.updatedLanguage(
+                        l10n.getLanguageName(result.lastSuccessCode),
+                      )
+                      : l10n.updatedNLanguages(
+                        result.successCount,
+                        result.errorCount,
+                      );
+              final snackBar = SnackBar(content: Text(text));
+              ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
+            } else if (result.errorCount > 0) {
+              ref
+                  .watch(scaffoldMessengerProvider)
+                  .showSnackBar(SnackBar(content: Text(l10n.updateError)));
+            }
+            setState(() {
+              _isLoading = false;
+            });
+          },
+          icon: const Icon(Icons.refresh),
+          padding: EdgeInsets.zero,
+        );
   }
 }

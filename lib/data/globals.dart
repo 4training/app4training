@@ -77,7 +77,7 @@ final availableLanguagesProvider = Provider<List<String>>((ref) {
     'es',
     'sq',
     'en',
-    'de'
+    'de',
   ];
 });
 
@@ -119,7 +119,8 @@ class AutomaticUpdatesNotifier extends Notifier<AutomaticUpdates> {
   @override
   AutomaticUpdates build() {
     return AutomaticUpdates.fromString(
-        ref.read(sharedPrefsProvider).getString('automaticUpdates'));
+      ref.read(sharedPrefsProvider).getString('automaticUpdates'),
+    );
   }
 
   /// Our one function to change our global setting
@@ -136,8 +137,8 @@ class AutomaticUpdatesNotifier extends Notifier<AutomaticUpdates> {
 
 final automaticUpdatesProvider =
     NotifierProvider<AutomaticUpdatesNotifier, AutomaticUpdates>(() {
-  return AutomaticUpdatesNotifier();
-});
+      return AutomaticUpdatesNotifier();
+    });
 
 /// global constants
 class Globals {

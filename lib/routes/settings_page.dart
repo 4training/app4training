@@ -21,24 +21,28 @@ class SettingsPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(children: [
-            // Set app language
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(context.l10n.appLanguage,
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const DropdownButtonAppLanguage(),
-              ],
-            ),
-            const SizedBox(height: 10),
-            const Expanded(child: LanguageSettings()),
-            const UpdateSettings(),
-            // Only visible in instrumented tester builds
-            const PerfExportSection()
-            // const SizedBox(height: 10),
-            // const DesignSettings()
-          ]),
+          child: Column(
+            children: [
+              // Set app language
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    context.l10n.appLanguage,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const DropdownButtonAppLanguage(),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Expanded(child: LanguageSettings()),
+              const UpdateSettings(),
+              // Only visible in instrumented tester builds
+              const PerfExportSection(),
+              // const SizedBox(height: 10),
+              // const DesignSettings()
+            ],
+          ),
         ),
       ),
     );

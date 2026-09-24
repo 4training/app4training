@@ -25,12 +25,13 @@ class TestSetUpdatePrefsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        onGenerateRoute: (settings) => generateRoutes(settings),
-        navigatorObservers: [navigatorObserver],
-        home: const SetUpdatePrefsPage());
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      onGenerateRoute: (settings) => generateRoutes(settings),
+      navigatorObservers: [navigatorObserver],
+      home: const SetUpdatePrefsPage(),
+    );
   }
 }
 
@@ -40,13 +41,21 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final testObserver = TestObserver();
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      backgroundSchedulerProvider.overrideWith(() => TestBackgroundScheduler()),
-      sharedPrefsProvider.overrideWithValue(prefs)
-    ]);
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: TestSetUpdatePrefsPage(testObserver)));
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+        backgroundSchedulerProvider.overrideWith(
+          () => TestBackgroundScheduler(),
+        ),
+        sharedPrefsProvider.overrideWithValue(prefs),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: TestSetUpdatePrefsPage(testObserver),
+      ),
+    );
 
     expect(ref.read(backgroundSchedulerProvider), false);
     expect(find.text(AppLocalizationsEn().updatesExplanation), findsOneWidget);
@@ -57,8 +66,9 @@ void main() {
 
     // Press the "Let's go!" button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsEn().letsGo));
+    await tester.tap(
+      find.widgetWithText(ElevatedButton, AppLocalizationsEn().letsGo),
+    );
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/home']), isTrue);
     // Even if user didn't change any setting, after clicking "Continue"
@@ -68,16 +78,22 @@ void main() {
     expect(ref.read(backgroundSchedulerProvider), true);
   });
 
-  testWidgets('Test SetUpdatePrefsPage back button in German',
-      (WidgetTester tester) async {
+  testWidgets('Test SetUpdatePrefsPage back button in German', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
     final testObserver = TestObserver();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      sharedPrefsProvider.overrideWithValue(prefs)
-    ], child: TestSetUpdatePrefsPage(testObserver)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          sharedPrefsProvider.overrideWithValue(prefs),
+        ],
+        child: TestSetUpdatePrefsPage(testObserver),
+      ),
+    );
 
     // Check that the page is in German
     expect(find.text(AppLocalizationsDe().updatesExplanation), findsOneWidget);
@@ -85,8 +101,9 @@ void main() {
 
     // Click the back button
     expect(testObserver.replacedRoutes, isEmpty);
-    await tester
-        .tap(find.widgetWithText(ElevatedButton, AppLocalizationsDe().back));
+    await tester.tap(
+      find.widgetWithText(ElevatedButton, AppLocalizationsDe().back),
+    );
     await tester.pump();
     expect(listEquals(testObserver.replacedRoutes, ['/onboarding/2']), isTrue);
   });

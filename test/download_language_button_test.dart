@@ -30,31 +30,43 @@ class GatedDownloadLanguageController extends TestLanguageController {
 class TestDownloadLanguageButton extends ConsumerWidget {
   final String languageCode;
   final bool highlight;
-  const TestDownloadLanguageButton(this.languageCode,
-      {this.highlight = false, super.key});
+  const TestDownloadLanguageButton(
+    this.languageCode, {
+    this.highlight = false,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
-        home: Scaffold(
-            body: DownloadLanguageButton(languageCode, highlight: highlight)));
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
+      home: Scaffold(
+        body: DownloadLanguageButton(languageCode, highlight: highlight),
+      ),
+    );
   }
 }
 
 void main() {
   testWidgets('Test DownloadLanguageButton', (WidgetTester tester) async {
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider
-          .overrideWith2((langCode) => TestLanguageController(downloadedLanguages: [])),
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (langCode) => TestLanguageController(downloadedLanguages: []),
+        ),
+      ],
+    );
 
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: const TestDownloadLanguageButton('en')));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: const TestDownloadLanguageButton('en'),
+      ),
+    );
 
     expect(find.byIcon(Icons.download), findsOneWidget);
     expect(find.byType(Container), findsNothing); // should not be highlighted
@@ -68,20 +80,27 @@ void main() {
   });
 
   testWidgets('Test DownloadAllLanguagesButton', (WidgetTester tester) async {
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider
-          .overrideWith2((langCode) => TestLanguageController(downloadedLanguages: []))
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (langCode) => TestLanguageController(downloadedLanguages: []),
+        ),
+      ],
+    );
 
-    await tester.pumpWidget(UncontrolledProviderScope(
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: ref,
         child: MaterialApp(
-            locale: ref.read(appLanguageProvider).locale,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
-            home: const Scaffold(body: DownloadAllLanguagesButton()))));
+          locale: ref.read(appLanguageProvider).locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
+          home: const Scaffold(body: DownloadAllLanguagesButton()),
+        ),
+      ),
+    );
 
     expect(ref.read(languageProvider('ar')).downloaded, false);
 
@@ -96,31 +115,40 @@ void main() {
     expect(find.text('34 Sprachen heruntergeladen'), findsOneWidget);
   });
 
-  testWidgets('DownloadAllLanguagesButton shows how far the batch is',
-      (WidgetTester tester) async {
+  testWidgets('DownloadAllLanguagesButton shows how far the batch is', (
+    WidgetTester tester,
+  ) async {
     final gates = {
-      for (final code in ['de', 'en', 'fr']) code: Completer<void>()
+      for (final code in ['de', 'en', 'fr']) code: Completer<void>(),
     };
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      availableLanguagesProvider.overrideWithValue(['de', 'en', 'fr']),
-      languageProvider
-          .overrideWith2((langCode) => GatedDownloadLanguageController(gates)),
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        availableLanguagesProvider.overrideWithValue(['de', 'en', 'fr']),
+        languageProvider.overrideWith2(
+          (langCode) => GatedDownloadLanguageController(gates),
+        ),
+      ],
+    );
     final l10n = AppLocalizationsDe();
 
-    await tester.pumpWidget(UncontrolledProviderScope(
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: ref,
         child: MaterialApp(
-            locale: ref.read(appLanguageProvider).locale,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
-            home: const Scaffold(body: DownloadAllLanguagesButton()))));
+          locale: ref.read(appLanguageProvider).locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
+          home: const Scaffold(body: DownloadAllLanguagesButton()),
+        ),
+      ),
+    );
 
-    CircularProgressIndicator indicator() => tester
-        .widget<CircularProgressIndicator>(
-            find.byType(CircularProgressIndicator));
+    CircularProgressIndicator indicator() =>
+        tester.widget<CircularProgressIndicator>(
+          find.byType(CircularProgressIndicator),
+        );
 
     // Let a released download finish (first pump) and draw the caption that
     // its setState() asked for (second pump)
@@ -150,17 +178,24 @@ void main() {
     expect(find.text('3 Sprachen heruntergeladen'), findsOneWidget);
   });
 
-  testWidgets('Test highlighted DownloadLanguageButton',
-      (WidgetTester tester) async {
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider
-          .overrideWith2((langCode) => TestLanguageController(downloadedLanguages: [])),
-    ]);
+  testWidgets('Test highlighted DownloadLanguageButton', (
+    WidgetTester tester,
+  ) async {
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (langCode) => TestLanguageController(downloadedLanguages: []),
+        ),
+      ],
+    );
 
-    await tester.pumpWidget(UncontrolledProviderScope(
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: ref,
-        child: const TestDownloadLanguageButton('en', highlight: true)));
+        child: const TestDownloadLanguageButton('en', highlight: true),
+      ),
+    );
 
     expect(find.byIcon(Icons.download), findsOneWidget);
     // Test the highlighting
@@ -177,15 +212,23 @@ void main() {
   testWidgets('Test failing download', (WidgetTester tester) async {
     final fileSystem = MemoryFileSystem();
     final fakeDownloader = FakeLanguageDownloader(
-        fileSystem: fileSystem, throwOnDownload: true);
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      fileSystemProvider.overrideWith((ref) => fileSystem),
-      languageDownloaderProvider.overrideWithValue(fakeDownloader),
-    ]);
+      fileSystem: fileSystem,
+      throwOnDownload: true,
+    );
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        fileSystemProvider.overrideWith((ref) => fileSystem),
+        languageDownloaderProvider.overrideWithValue(fakeDownloader),
+      ],
+    );
 
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: const TestDownloadLanguageButton('en')));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: const TestDownloadLanguageButton('en'),
+      ),
+    );
 
     await tester.tap(find.byType(DownloadLanguageButton));
     await tester.pump();

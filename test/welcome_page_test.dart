@@ -22,12 +22,13 @@ class TestWelcomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        onGenerateRoute: (settings) => generateRoutes(settings),
-        navigatorObservers: [navigatorObserver],
-        home: const WelcomePage());
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      onGenerateRoute: (settings) => generateRoutes(settings),
+      navigatorObservers: [navigatorObserver],
+      home: const WelcomePage(),
+    );
   }
 }
 
@@ -38,25 +39,36 @@ class TestSmallWelcomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-            appBar: AppBar(title: const Text(Globals.appTitle)),
-            body: const SizedBox(height: 400, child: WelcomeScreen())));
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        appBar: AppBar(title: const Text(Globals.appTitle)),
+        body: const SizedBox(height: 400, child: WelcomeScreen()),
+      ),
+    );
   }
 }
 
 void main() {
   testWidgets('Test PromoBlock in German', (WidgetTester tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de'))
-    ], child: TestWelcomePage(TestObserver())));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        ],
+        child: TestWelcomePage(TestObserver()),
+      ),
+    );
 
-    expect(find.textContaining(countAvailableLanguages.toString()),
-        findsOneWidget);
-    expect(find.textContaining(worksheetCategories.length.toString()),
-        findsOneWidget);
+    expect(
+      find.textContaining(countAvailableLanguages.toString()),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(worksheetCategories.length.toString()),
+      findsOneWidget,
+    );
     expect(find.textContaining('offline'), findsOneWidget);
     expect(find.textContaining('Kein Copyright'), findsOneWidget);
   });
@@ -66,10 +78,15 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final testObserver = TestObserver();
 
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ], child: TestWelcomePage(testObserver)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: TestWelcomePage(testObserver),
+      ),
+    );
 
     expect(find.text(AppLocalizationsEn().welcome), findsOneWidget);
     expect(find.text(AppLocalizationsEn().selectAppLanguage), findsOneWidget);
@@ -83,30 +100,39 @@ void main() {
     expect(listEquals(testObserver.replacedRoutes, ['/onboarding/2']), isTrue);
   });
 
-  testWidgets('appLanguage should get saved in SharedPrefs when user continues',
-      (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
+  testWidgets(
+    'appLanguage should get saved in SharedPrefs when user continues',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(ProviderScope(
-        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestWelcomePage(TestObserver())));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+          child: TestWelcomePage(TestObserver()),
+        ),
+      );
 
-    expect(prefs.getString('appLanguage'), null);
-    await tester.tap(find.byType(ElevatedButton));
-    await tester.pump();
-    // Even if user doesn't touch the appLanguage, after clicking "Continue"
-    // there should be an entry in the SharedPreferences
-    expect(prefs.getString('appLanguage'), 'system');
-  });
+      expect(prefs.getString('appLanguage'), null);
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump();
+      // Even if user doesn't touch the appLanguage, after clicking "Continue"
+      // there should be an entry in the SharedPreferences
+      expect(prefs.getString('appLanguage'), 'system');
+    },
+  );
 
-  testWidgets('Test that changing the app language to German works',
-      (WidgetTester tester) async {
+  testWidgets('Test that changing the app language to German works', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'system'});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(
+    await tester.pumpWidget(
+      ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-        child: TestWelcomePage(TestObserver())));
+        child: TestWelcomePage(TestObserver()),
+      ),
+    );
 
     // Select German and verify correct UI and saving in SharedPreferences
     expect(prefs.getString('appLanguage'), 'system');
@@ -119,15 +145,21 @@ void main() {
   });
 
   testWidgets(
-      'Test that view is scrollable and button reachable on very small device',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en'))
-    ], child: const TestSmallWelcomePage()));
+    'Test that view is scrollable and button reachable on very small device',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+          ],
+          child: const TestSmallWelcomePage(),
+        ),
+      );
 
-    // the button should become visible after scrolling
-    expect(find.byType(ElevatedButton).hitTestable(), findsNothing);
-    await tester.ensureVisible(find.byType(ElevatedButton));
-    expect(find.byType(ElevatedButton).hitTestable(), findsOneWidget);
-  });
+      // the button should become visible after scrolling
+      expect(find.byType(ElevatedButton).hitTestable(), findsNothing);
+      await tester.ensureVisible(find.byType(ElevatedButton));
+      expect(find.byType(ElevatedButton).hitTestable(), findsOneWidget);
+    },
+  );
 }

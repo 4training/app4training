@@ -78,7 +78,8 @@ class CheckFrequencyNotifier extends Notifier<CheckFrequency> {
   @override
   CheckFrequency build() {
     return CheckFrequency.fromString(
-        ref.read(sharedPrefsProvider).getString('checkFrequency'));
+      ref.read(sharedPrefsProvider).getString('checkFrequency'),
+    );
   }
 
   /// Our one function to change our global setting
@@ -97,8 +98,8 @@ class CheckFrequencyNotifier extends Notifier<CheckFrequency> {
 
 final checkFrequencyProvider =
     NotifierProvider<CheckFrequencyNotifier, CheckFrequency>(() {
-  return CheckFrequencyNotifier();
-});
+      return CheckFrequencyNotifier();
+    });
 
 /// Status of one language: Are there updates available?
 /// LanguageStatusNotifier.build() is watching the languageProvider, which means
@@ -118,7 +119,10 @@ class LanguageStatus {
   /// When did we check the remote repository last time?
   final DateTime lastCheckedTimestamp; // UTC
   const LanguageStatus(
-      this.updatesAvailable, this.downloadTimestamp, this.lastCheckedTimestamp);
+    this.updatesAvailable,
+    this.downloadTimestamp,
+    this.lastCheckedTimestamp,
+  );
 
   @override
   String toString() {
@@ -136,7 +140,7 @@ class LanguageStatus {
 class LanguageStatusNotifier extends Notifier<LanguageStatus> {
   String _languageCode;
   LanguageStatusNotifier({String languageCode = ''})
-      : _languageCode = languageCode;
+    : _languageCode = languageCode;
 
   @override
   LanguageStatus build() {
@@ -156,14 +160,16 @@ class LanguageStatusNotifier extends Notifier<LanguageStatus> {
     DateTime? lcTimestamp;
 
     // are there updates available for this language?
-    updatesAvailable = ref
+    updatesAvailable =
+        ref
             .read(sharedPrefsProvider)
             .getBool('updatesAvailable-$_languageCode') ??
         false;
 
     // last checked timestamp: When did we check for updates the last time?
-    String? lcRaw =
-        ref.read(sharedPrefsProvider).getString('lastChecked-$_languageCode');
+    String? lcRaw = ref
+        .read(sharedPrefsProvider)
+        .getString('lastChecked-$_languageCode');
     if (lcRaw != null) {
       try {
         lcTimestamp = DateTime.parse(lcRaw).toUtc();
@@ -183,8 +189,12 @@ class LanguageStatusNotifier extends Notifier<LanguageStatus> {
       ref
           .read(sharedPrefsProvider)
           .setBool('updatesAvailable-$_languageCode', false);
-      ref.read(sharedPrefsProvider).setString(
-          'lastChecked-$_languageCode', lcTimestamp.toIso8601String());
+      ref
+          .read(sharedPrefsProvider)
+          .setString(
+            'lastChecked-$_languageCode',
+            lcTimestamp.toIso8601String(),
+          );
     }
 
     final status = LanguageStatus(updatesAvailable, dlTimestamp, lcTimestamp);
@@ -202,7 +212,7 @@ class LanguageStatusNotifier extends Notifier<LanguageStatus> {
   ///  -1: any other error
   Future<int> check() async {
     assert(_languageCode != '');
-// TODO    assert(ref.read(languageProvider(_languageCode)).downloaded);
+    // TODO    assert(ref.read(languageProvider(_languageCode)).downloaded);
     // since = since.subtract(const Duration(days: 100)); // for testing
     var uri = Globals.getCommitsSince(_languageCode, state.downloadTimestamp);
     debugPrint(uri);
@@ -243,10 +253,11 @@ class LanguageStatusNotifier extends Notifier<LanguageStatus> {
 /// Check for updates for English
 /// ref.watch(languageStatusProvider('en').notifier).check()
 final languageStatusProvider =
-    NotifierProvider.family<LanguageStatusNotifier, LanguageStatus, String>(
-        (arg) {
-  return LanguageStatusNotifier(languageCode: arg);
-});
+    NotifierProvider.family<LanguageStatusNotifier, LanguageStatus, String>((
+      arg,
+    ) {
+      return LanguageStatusNotifier(languageCode: arg);
+    });
 
 /// Whether updates are waiting for the user's explicit confirmation:
 /// the user chose [AutomaticUpdates.requireConfirmation] and the background

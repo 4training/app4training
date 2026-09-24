@@ -18,9 +18,12 @@ import 'languages_test.dart';
 /// Records which languages a full init() was requested for and lets the
 /// test decide when each of them finishes loading
 class GatedLanguageController extends TestLanguageController {
-  GatedLanguageController(this.initCalls, this.gates,
-      {super.downloadedLanguages, this.lazyInitGate})
-      : super(initReturns: true);
+  GatedLanguageController(
+    this.initCalls,
+    this.gates, {
+    super.downloadedLanguages,
+    this.lazyInitGate,
+  }) : super(initReturns: true);
 
   final List<String> initCalls;
   final Map<String, Completer<void>> gates;
@@ -128,21 +131,29 @@ void main() {
     expect(ref.read(backgroundSchedulerProvider), false);
   });
 
-  testWidgets('Test continuing to third onboarding step',
-      (WidgetTester tester) async {
+  testWidgets('Test continuing to third onboarding step', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
     final prefs = await SharedPreferences.getInstance();
     route = null;
-    final ref = ProviderContainer(overrides: [
-      languageProvider.overrideWith2(
-        (languageCode) => TestLanguageController(initReturns: true),
-      ),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ]);
-    await tester.pumpWidget(UncontrolledProviderScope(
+    final ref = ProviderContainer(
+      overrides: [
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(initReturns: true),
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+      ],
+    );
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: ref,
         child: MaterialApp(
-            home: const StartupPage(), onGenerateRoute: generateRoutes)));
+          home: const StartupPage(),
+          onGenerateRoute: generateRoutes,
+        ),
+      ),
+    );
     await tester.pump();
     expect(route, equals('/onboarding/3'));
     expect(ref.read(backgroundSchedulerProvider), false);
@@ -162,7 +173,7 @@ void main() {
     final initCalls = <String>[];
     final gates = {
       for (final languageCode in ['en', 'de', 'fr'])
-        languageCode: Completer<void>()
+        languageCode: Completer<void>(),
     };
     final ref = ProviderContainer(
       overrides: [
@@ -227,8 +238,7 @@ void main() {
     final initCalls = <String>[];
     final lazyInitGate = Completer<void>();
     final gates = {
-      for (final languageCode in ['en', 'de'])
-        languageCode: Completer<void>()
+      for (final languageCode in ['en', 'de']) languageCode: Completer<void>(),
     };
     final ref = ProviderContainer(
       overrides: [
@@ -295,8 +305,7 @@ void main() {
     route = null;
     final l10n = AppLocalizationsEn();
     final gates = {
-      for (final languageCode in ['en', 'de'])
-        languageCode: Completer<void>()
+      for (final languageCode in ['en', 'de']) languageCode: Completer<void>(),
     };
     final ref = ProviderContainer(
       overrides: [
@@ -341,53 +350,55 @@ void main() {
     expect(find.text(l10n.startupLoadingRecentPage), findsNothing);
   });
 
-  testWidgets('Reporting a stage changes the caption but does not restart init',
-      (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
-    final prefs = await SharedPreferences.getInstance();
-    route = null;
-    final l10n = AppLocalizationsEn();
-    int initCalls = 0;
-    final Completer<String> gate = Completer<String>();
-    Future<String> countingInit() {
-      initCalls++;
-      return gate.future;
-    }
+  testWidgets(
+    'Reporting a stage changes the caption but does not restart init',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
+      final prefs = await SharedPreferences.getInstance();
+      route = null;
+      final l10n = AppLocalizationsEn();
+      int initCalls = 0;
+      final Completer<String> gate = Completer<String>();
+      Future<String> countingInit() {
+        initCalls++;
+        return gate.future;
+      }
 
-    final ref = ProviderContainer(
-      overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
-    );
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: ref,
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: StartupPage(initFunction: countingInit),
-          onGenerateRoute: generateRoutes,
+      final ref = ProviderContainer(
+        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+      );
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: ref,
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: StartupPage(initFunction: countingInit),
+            onGenerateRoute: generateRoutes,
+          ),
         ),
-      ),
-    );
-    await tester.pump();
-    expect(find.text(l10n.loading), findsOneWidget);
-    expect(initCalls, 1);
+      );
+      await tester.pump();
+      expect(find.text(l10n.loading), findsOneWidget);
+      expect(initCalls, 1);
 
-    ref
-        .read(startupStageProvider.notifier)
-        .report(StartupStage.loadingAppLanguage);
-    await tester.pump();
-    expect(find.text(l10n.startupLoadingAppLanguage), findsOneWidget);
-    expect(find.text(l10n.loading), findsNothing);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(initCalls, 1);
-    expect(route, isNull);
+      ref
+          .read(startupStageProvider.notifier)
+          .report(StartupStage.loadingAppLanguage);
+      await tester.pump();
+      expect(find.text(l10n.startupLoadingAppLanguage), findsOneWidget);
+      expect(find.text(l10n.loading), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(initCalls, 1);
+      expect(route, isNull);
 
-    gate.complete('/home');
-    await tester.pump();
-    expect(route, equals('/home'));
-    expect(initCalls, 1);
-  });
+      gate.complete('/home');
+      await tester.pump();
+      expect(route, equals('/home'));
+      expect(initCalls, 1);
+    },
+  );
 
   testWidgets('Test failing initFunction', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'appLanguage': 'de'});

@@ -24,68 +24,79 @@ class DownloadLanguagesPage extends ConsumerWidget {
     // unfortunately an ElevatedButton only looks greyed out when setting
     // onPressed to null - so create a greyed-out style by hand so that
     // we can have a clickable greyed-out button.
-    ButtonStyle buttonStyle = appLanguageDownloaded
-        ? ElevatedButton.styleFrom(shape: const StadiumBorder())
-        : ElevatedButton.styleFrom(
-            // https://api.flutter.dev/flutter/material/ElevatedButton/defaultStyleOf.html
-            backgroundColor:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
-            foregroundColor:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38),
-            elevation: 0,
-            shape: const StadiumBorder(),
-          );
+    ButtonStyle buttonStyle =
+        appLanguageDownloaded
+            ? ElevatedButton.styleFrom(shape: const StadiumBorder())
+            : ElevatedButton.styleFrom(
+              // https://api.flutter.dev/flutter/material/ElevatedButton/defaultStyleOf.html
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.12),
+              foregroundColor: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.38),
+              elevation: 0,
+              shape: const StadiumBorder(),
+            );
 
     return Scaffold(
-        appBar: AppBar(title: Text(context.l10n.downloadLanguages)),
-        body: SafeArea(
-            child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 20),
-                    Text(context.l10n.downloadLanguagesExplanation),
-                    const SizedBox(height: 20),
-                    Expanded(
-                        child: LanguagesTable(
-                      highlightLang: appLanguage.languageCode,
-                    )),
-                    const SizedBox(height: 20),
-                    Row(children: [
-                      const Spacer(flex: 2),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder(),
+      appBar: AppBar(title: Text(context.l10n.downloadLanguages)),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Text(context.l10n.downloadLanguagesExplanation),
+              const SizedBox(height: 20),
+              Expanded(
+                child: LanguagesTable(highlightLang: appLanguage.languageCode),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Spacer(flex: 2),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: const StadiumBorder(),
+                    ),
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/onboarding/1');
+                    },
+                    child: Text(context.l10n.back),
+                  ),
+                  const Spacer(),
+                  ElevatedButton(
+                    style: buttonStyle,
+                    onPressed: () async {
+                      // Show warning if user hasn't downloaded his app language
+                      if (!appLanguageDownloaded) {
+                        await showDialog(
+                          context: context,
+                          builder: (context) {
+                            return const MissingAppLanguageDialog();
+                          },
+                        );
+                        return;
+                      }
+                      unawaited(
+                        Navigator.pushReplacementNamed(
+                          context,
+                          getNextRoute(ref),
                         ),
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(
-                              context, '/onboarding/1');
-                        },
-                        child: Text(context.l10n.back),
-                      ),
-                      const Spacer(),
-                      ElevatedButton(
-                        style: buttonStyle,
-                        onPressed: () async {
-                          // Show warning if user hasn't downloaded his app language
-                          if (!appLanguageDownloaded) {
-                            await showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return const MissingAppLanguageDialog();
-                                });
-                            return;
-                          }
-                          unawaited(Navigator.pushReplacementNamed(
-                              context, getNextRoute(ref)));
-                        },
-                        child: Text(context.l10n.continueText),
-                      ),
-                      const Spacer(flex: 2),
-                    ])
-                  ],
-                ))));
+                      );
+                    },
+                    child: Text(context.l10n.continueText),
+                  ),
+                  const Spacer(flex: 2),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   /// Which route should we continue with after this?
@@ -107,14 +118,16 @@ class MissingAppLanguageDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: Text(context.l10n.warning),
-        content: Text(context.l10n.warnMissingAppLanguage),
-        actions: <Widget>[
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: Text(context.l10n.gotit)),
-        ]);
+      title: Text(context.l10n.warning),
+      content: Text(context.l10n.warnMissingAppLanguage),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(false);
+          },
+          child: Text(context.l10n.gotit),
+        ),
+      ],
+    );
   }
 }

@@ -35,7 +35,7 @@ List<ArchiveEntry> decodeZipEntries(Uint8List zipBytes) {
   final archive = ZipDecoder().decodeBytes(zipBytes);
   return [
     for (final file in archive)
-      (path: file.name, bytes: file.isFile ? file.content : null)
+      (path: file.name, bytes: file.isFile ? file.content : null),
   ];
 }
 
@@ -103,17 +103,18 @@ class LanguageDownloaderImpl implements LanguageDownloader {
 
       // Download both zips concurrently
       final results = await PerfLogger.span(
-          'download.fetchZips',
-          () => Future.wait([
-                _dio.get<List<int>>(
-                  Globals.getRemoteUrlHtml(langCode),
-                  options: Options(responseType: ResponseType.bytes),
-                ),
-                _dio.get<List<int>>(
-                  Globals.getRemoteUrlPdf(langCode),
-                  options: Options(responseType: ResponseType.bytes),
-                ),
-              ]));
+        'download.fetchZips',
+        () => Future.wait([
+          _dio.get<List<int>>(
+            Globals.getRemoteUrlHtml(langCode),
+            options: Options(responseType: ResponseType.bytes),
+          ),
+          _dio.get<List<int>>(
+            Globals.getRemoteUrlPdf(langCode),
+            options: Options(responseType: ResponseType.bytes),
+          ),
+        ]),
+      );
 
       // Extract both zips into staging
       for (final response in results) {
@@ -155,9 +156,11 @@ class LanguageDownloaderImpl implements LanguageDownloader {
     final bytes = zipData is Uint8List ? zipData : Uint8List.fromList(zipData);
     // The span includes time spent queueing for a decode slot - on a slow
     // device that wait is part of what the user experiences
-    final entries = await PerfLogger.span('download.decodeZip',
-        () => _zipDecodeLimit.run(() => _decodeZip(bytes)),
-        data: () => {'zipBytes': bytes.length});
+    final entries = await PerfLogger.span(
+      'download.decodeZip',
+      () => _zipDecodeLimit.run(() => _decodeZip(bytes)),
+      data: () => {'zipBytes': bytes.length},
+    );
 
     await PerfLogger.span('download.writeFiles', () async {
       // An archive holds hundreds of files in a handful of directories, so

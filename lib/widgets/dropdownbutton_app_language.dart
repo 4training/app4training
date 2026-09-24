@@ -10,13 +10,14 @@ class DropdownButtonAppLanguage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLanguage appLanguage = ref.watch(appLanguageProvider);
     return DropdownButton(
-        value: appLanguage.toString(),
-        items: [
-          for (MapEntry item in AppLanguage.availableAppLanguages.entries)
-            DropdownMenuItem<String>(value: item.key, child: Text(item.value))
-        ],
-        onChanged: (String? value) {
-          ref.read(appLanguageProvider.notifier).setLocale(value!);
-        });
+      value: appLanguage.toString(),
+      items: [
+        for (MapEntry item in AppLanguage.availableAppLanguages.entries)
+          DropdownMenuItem<String>(value: item.key, child: Text(item.value)),
+      ],
+      onChanged: (String? value) {
+        ref.read(appLanguageProvider.notifier).setLocale(value!);
+      },
+    );
   }
 }

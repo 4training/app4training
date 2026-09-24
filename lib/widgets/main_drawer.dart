@@ -32,9 +32,12 @@ class MainDrawer extends StatelessWidget {
       title: Padding(
         padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
         child: Align(
-            alignment: Alignment.center,
-            child: Text(context.l10n.content,
-                style: Theme.of(context).textTheme.titleLarge)),
+          alignment: Alignment.center,
+          child: Text(
+            context.l10n.content,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
       ),
       onTap: () {
         // Drawer should be closed when user leaves the settings page
@@ -64,55 +67,68 @@ class TableOfContent extends ConsumerWidget {
       if ((_langCode != null) && (_langCode != appLangCode)) {
         otherLanguage = ref.watch(languageProvider(_langCode));
       }
-      categories = Category.values.map<CategoryTile>((Category category) {
-        return CategoryTile(_page, appLanguage, category,
-            otherLanguage: otherLanguage);
-      }).toList();
+      categories =
+          Category.values.map<CategoryTile>((Category category) {
+            return CategoryTile(
+              _page,
+              appLanguage,
+              category,
+              otherLanguage: otherLanguage,
+            );
+          }).toList();
     } else {
       // show error message because menu is empty
       categories = [
         Padding(
-            padding: const EdgeInsets.all(10),
-            child: Text(
-                context.l10n.languageNotDownloaded(
-                    context.l10n.getLanguageName(appLangCode)),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                )))
+          padding: const EdgeInsets.all(10),
+          child: Text(
+            context.l10n.languageNotDownloaded(
+              context.l10n.getLanguageName(appLangCode),
+            ),
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ),
       ];
     }
 
     return SingleChildScrollView(
-        child: Column(children: [
-      // Header
-      header ?? const SizedBox(),
-      ...categories,
-      const Divider(),
-      ListTile(
-        title: Text(context.l10n.settings),
-        leading: const Icon(Icons.settings),
-        // Persistent indicator: a dot when updates found in the background
-        // are waiting for the user to confirm the download (requireConfirmation)
-        trailing: ref.watch(updatesNeedConfirmationProvider)
-            ? Icon(Icons.circle,
-                size: 12, color: Theme.of(context).colorScheme.error)
-            : null,
-        onTap: () {
-          // Drawer should be closed when user leaves the settings page
-          context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
-          Navigator.pushNamed(context, '/settings');
-        },
+      child: Column(
+        children: [
+          // Header
+          header ?? const SizedBox(),
+          ...categories,
+          const Divider(),
+          ListTile(
+            title: Text(context.l10n.settings),
+            leading: const Icon(Icons.settings),
+            // Persistent indicator: a dot when updates found in the background
+            // are waiting for the user to confirm the download (requireConfirmation)
+            trailing:
+                ref.watch(updatesNeedConfirmationProvider)
+                    ? Icon(
+                      Icons.circle,
+                      size: 12,
+                      color: Theme.of(context).colorScheme.error,
+                    )
+                    : null,
+            onTap: () {
+              // Drawer should be closed when user leaves the settings page
+              context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
+              Navigator.pushNamed(context, '/settings');
+            },
+          ),
+          ListTile(
+            title: Text(context.l10n.about),
+            leading: const Icon(Icons.info),
+            onTap: () {
+              // Drawer should be closed when user leaves the settings page
+              context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
+              Navigator.pushNamed(context, '/about');
+            },
+          ),
+        ],
       ),
-      ListTile(
-        title: Text(context.l10n.about),
-        leading: const Icon(Icons.info),
-        onTap: () {
-          // Drawer should be closed when user leaves the settings page
-          context.findAncestorStateOfType<ScaffoldState>()?.closeDrawer();
-          Navigator.pushNamed(context, '/about');
-        },
-      )
-    ]));
+    );
   }
 }
 
@@ -124,9 +140,13 @@ class CategoryTile extends ConsumerWidget {
   final Language _appLanguage;
   final Language? _otherLanguage;
   final Category _category;
-  const CategoryTile(this._page, this._appLanguage, this._category,
-      {Language? otherLanguage, super.key})
-      : _otherLanguage = otherLanguage;
+  const CategoryTile(
+    this._page,
+    this._appLanguage,
+    this._category, {
+    Language? otherLanguage,
+    super.key,
+  }) : _otherLanguage = otherLanguage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -136,7 +156,8 @@ class CategoryTile extends ConsumerWidget {
     List<Widget> categoryContent = [];
     allTitles.forEach((englishName, translatedName) {
       if (worksheetCategories[englishName] == _category) {
-        bool isTranslated = (_otherLanguage != null) &&
+        bool isTranslated =
+            (_otherLanguage != null) &&
             (_otherLanguage.pages.containsKey(englishName));
         // default: no icon (this is a dummy)
         Widget translationIcon = const SizedBox();
@@ -144,80 +165,115 @@ class CategoryTile extends ConsumerWidget {
           if (isTranslated) {
             // Show normal translate icon
             translationIcon = IconButton(
-                onPressed: () async {
-                  bool result = await showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AvailableInDialog(
-                            translatedName, _otherLanguage.languageCode);
-                      });
-                  if (result) {
-                    if (!context.mounted) return;
-                    unawaited(Navigator.popAndPushNamed(context,
-                        '/view/$englishName/${_otherLanguage.languageCode}'));
-                  }
-                },
-                icon: const Icon(Icons.translate));
+              onPressed: () async {
+                bool result = await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AvailableInDialog(
+                      translatedName,
+                      _otherLanguage.languageCode,
+                    );
+                  },
+                );
+                if (result) {
+                  if (!context.mounted) return;
+                  unawaited(
+                    Navigator.popAndPushNamed(
+                      context,
+                      '/view/$englishName/${_otherLanguage.languageCode}',
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.translate),
+            );
           } else {
             // Show a greyed-out icon
             translationIcon = IconButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return NotTranslatedDialog(_otherLanguage.languageCode);
-                      });
-                },
-                color: Theme.of(context).colorScheme.inversePrimary,
-                icon: const Icon(Icons.translate));
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return NotTranslatedDialog(_otherLanguage.languageCode);
+                  },
+                );
+              },
+              color: Theme.of(context).colorScheme.inversePrimary,
+              icon: const Icon(Icons.translate),
+            );
           }
         }
 
-        categoryContent.add(Row(children: [
-          const SizedBox(width: 10),
-          Expanded(
-              child: TextButton(
+        categoryContent.add(
+          Row(
+            children: [
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextButton(
                   style: ButtonStyle(
-                      alignment: Alignment.centerLeft,
-                      shape: const WidgetStatePropertyAll(
-                          RoundedRectangleBorder()),
-                      backgroundColor: WidgetStatePropertyAll(
-                          (englishName == _page)
-                              ? Theme.of(context).focusColor
-                              : null)),
+                    alignment: Alignment.centerLeft,
+                    shape: const WidgetStatePropertyAll(
+                      RoundedRectangleBorder(),
+                    ),
+                    backgroundColor: WidgetStatePropertyAll(
+                      (englishName == _page)
+                          ? Theme.of(context).focusColor
+                          : null,
+                    ),
+                  ),
                   onPressed: () {
-                    final destLangCode = isTranslated
-                        ? _otherLanguage.languageCode
-                        : _appLanguage.languageCode;
+                    final destLangCode =
+                        isTranslated
+                            ? _otherLanguage.languageCode
+                            : _appLanguage.languageCode;
                     if ((_otherLanguage != null) && !isTranslated) {
-                      ref.watch(scaffoldMessengerProvider).showSnackBar(
-                          SnackBar(
-                              content: Text(context.l10n.languageChangedBack(
+                      ref
+                          .watch(scaffoldMessengerProvider)
+                          .showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                context.l10n.languageChangedBack(
                                   translatedName,
                                   context.l10n.getLanguageName(
-                                      _otherLanguage.languageCode),
+                                    _otherLanguage.languageCode,
+                                  ),
                                   context.l10n.getLanguageName(
-                                      _appLanguage.languageCode)))));
+                                    _appLanguage.languageCode,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
                     }
                     Navigator.pop(context);
                     Navigator.pushNamed(
-                        context, '/view/$englishName/$destLangCode');
+                      context,
+                      '/view/$englishName/$destLangCode',
+                    );
                   },
-                  child: Text(translatedName,
-                      style: Theme.of(context).textTheme.titleMedium))),
-          translationIcon
-        ]));
+                  child: Text(
+                    translatedName,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ),
+              translationIcon,
+            ],
+          ),
+        );
       }
     });
     return ExpansionTile(
-        title: Text(Category.getLocalized(context, _category)),
-        collapsedBackgroundColor: (worksheetCategories[_page] == _category)
-            ? Theme.of(context).highlightColor
-            : null,
-        controlAffinity: ListTileControlAffinity.leading,
-        shape: const Border(), // remove border when tile is expanded
-        initiallyExpanded: worksheetCategories[_page] == _category,
-        children: categoryContent);
+      title: Text(Category.getLocalized(context, _category)),
+      collapsedBackgroundColor:
+          (worksheetCategories[_page] == _category)
+              ? Theme.of(context).highlightColor
+              : null,
+      controlAffinity: ListTileControlAffinity.leading,
+      shape: const Border(), // remove border when tile is expanded
+      initiallyExpanded: worksheetCategories[_page] == _category,
+      children: categoryContent,
+    );
   }
 }
 
@@ -231,28 +287,35 @@ class AvailableInDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: Text(context.l10n.translationAvailable),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(
-            Icons.sentiment_satisfied,
-            size: smileySize,
-          ),
+      title: Text(context.l10n.translationAvailable),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.sentiment_satisfied, size: smileySize),
           const SizedBox(height: 10),
-          Text(context.l10n.translationAvailableText(
-              page, context.l10n.getLanguageName(languageCode)))
-        ]),
-        actions: <Widget>[
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: Text(context.l10n.close)),
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: Text(context.l10n.showPage))
-        ]);
+          Text(
+            context.l10n.translationAvailableText(
+              page,
+              context.l10n.getLanguageName(languageCode),
+            ),
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(false);
+          },
+          child: Text(context.l10n.close),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(true);
+          },
+          child: Text(context.l10n.showPage),
+        ),
+      ],
+    );
   }
 }
 
@@ -265,22 +328,27 @@ class NotTranslatedDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: Text(context.l10n.sorry),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(
-            Icons.sentiment_dissatisfied,
-            size: smileySize,
-          ),
+      title: Text(context.l10n.sorry),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.sentiment_dissatisfied, size: smileySize),
           const SizedBox(height: 10),
-          Text(context.l10n
-              .notTranslated(context.l10n.getLanguageName(languageCode))),
-        ]),
-        actions: <Widget>[
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(context.l10n.okay))
-        ]);
+          Text(
+            context.l10n.notTranslated(
+              context.l10n.getLanguageName(languageCode),
+            ),
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text(context.l10n.okay),
+        ),
+      ],
+    );
   }
 }

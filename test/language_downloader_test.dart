@@ -24,14 +24,15 @@ Uint8List createTestZip(Map<String, String> files) {
 
 /// Helper to set up a mock Dio response for a URL returning zip bytes.
 void mockDioGet(MockDio dio, String url, Uint8List zipBytes) {
-  when(() => dio.get<List<int>>(
-        url,
-        options: any(named: 'options'),
-      )).thenAnswer((_) async => Response(
-        data: zipBytes.toList(),
-        statusCode: 200,
-        requestOptions: RequestOptions(path: url),
-      ));
+  when(
+    () => dio.get<List<int>>(url, options: any(named: 'options')),
+  ).thenAnswer(
+    (_) async => Response(
+      data: zipBytes.toList(),
+      statusCode: 200,
+      requestOptions: RequestOptions(path: url),
+    ),
+  );
 }
 
 void main() {
@@ -68,41 +69,53 @@ void main() {
 
     expect(await downloader.isDownloaded('de'), true);
     final contentsJson = fs.file(
-        '/app-docs/assets-de/${Globals.getResourcesDir('de')}/structure/contents.json');
+      '/app-docs/assets-de/${Globals.getResourcesDir('de')}/structure/contents.json',
+    );
     expect(await contentsJson.exists(), true);
     expect(await contentsJson.readAsString(), '{"worksheets":[]}');
 
     final indexHtml = fs.file(
-        '/app-docs/assets-de/${Globals.getResourcesDir('de')}/index.html');
+      '/app-docs/assets-de/${Globals.getResourcesDir('de')}/index.html',
+    );
     expect(await indexHtml.exists(), true);
 
     final pdfFile = fs.file(
-        '/app-docs/assets-de/${Globals.getPdfDir('de')}/test.pdf');
+      '/app-docs/assets-de/${Globals.getPdfDir('de')}/test.pdf',
+    );
     expect(await pdfFile.exists(), true);
 
     // No staging dir left behind
     expect(await fs.directory('/app-docs/assets-de.staging').exists(), false);
   });
 
-  test('Network failure: nothing remains at pathFor and no staging leftover',
-      () async {
-    // HTML download succeeds but PDF download throws
-    final htmlZip = createTestZip({
-      '${Globals.getResourcesDir('fr')}/index.html': '<h1>Bonjour</h1>',
-    });
-    mockDioGet(dio, Globals.getRemoteUrlHtml('fr'), htmlZip);
-    when(() => dio.get<List<int>>(
+  test(
+    'Network failure: nothing remains at pathFor and no staging leftover',
+    () async {
+      // HTML download succeeds but PDF download throws
+      final htmlZip = createTestZip({
+        '${Globals.getResourcesDir('fr')}/index.html': '<h1>Bonjour</h1>',
+      });
+      mockDioGet(dio, Globals.getRemoteUrlHtml('fr'), htmlZip);
+      when(
+        () => dio.get<List<int>>(
           Globals.getRemoteUrlPdf('fr'),
           options: any(named: 'options'),
-        )).thenThrow(DioException(
-      requestOptions: RequestOptions(path: Globals.getRemoteUrlPdf('fr')),
-    ));
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(path: Globals.getRemoteUrlPdf('fr')),
+        ),
+      );
 
-    await expectLater(downloader.download('fr'), throwsA(isA<DioException>()));
+      await expectLater(
+        downloader.download('fr'),
+        throwsA(isA<DioException>()),
+      );
 
-    expect(await downloader.isDownloaded('fr'), false);
-    expect(await fs.directory('/app-docs/assets-fr.staging').exists(), false);
-  });
+      expect(await downloader.isDownloaded('fr'), false);
+      expect(await fs.directory('/app-docs/assets-fr.staging').exists(), false);
+    },
+  );
 
   test('Corrupted zip: cleanup same as network failure', () async {
     // A zip header (PK\x03\x04) followed by garbage triggers a real decode error
@@ -132,20 +145,25 @@ void main() {
       '${Globals.getResourcesDir('it')}/file.html': '<h1>ciao</h1>',
     });
     mockDioGet(dio, Globals.getRemoteUrlHtml('it'), htmlZip);
-    when(() => dio.get<List<int>>(
-          Globals.getRemoteUrlPdf('it'),
-          options: any(named: 'options'),
-        )).thenThrow(DioException(
-      requestOptions: RequestOptions(path: Globals.getRemoteUrlPdf('it')),
-    ));
+    when(
+      () => dio.get<List<int>>(
+        Globals.getRemoteUrlPdf('it'),
+        options: any(named: 'options'),
+      ),
+    ).thenThrow(
+      DioException(
+        requestOptions: RequestOptions(path: Globals.getRemoteUrlPdf('it')),
+      ),
+    );
 
     await expectLater(downloader.download('it'), throwsA(isA<DioException>()));
 
     // Prior data is intact
     expect(await downloader.isDownloaded('it'), true);
     expect(
-        await fs.file('/app-docs/assets-it/existing.txt').readAsString(),
-        'precious');
+      await fs.file('/app-docs/assets-it/existing.txt').readAsString(),
+      'precious',
+    );
   });
 
   test('Different languages download in parallel', () async {
@@ -167,10 +185,12 @@ void main() {
       '${Globals.getPdfDir('fr')}/file.pdf': 'fr-pdf',
     });
 
-    when(() => dio.get<List<int>>(
-          Globals.getRemoteUrlHtml('de'),
-          options: any(named: 'options'),
-        )).thenAnswer((_) async {
+    when(
+      () => dio.get<List<int>>(
+        Globals.getRemoteUrlHtml('de'),
+        options: any(named: 'options'),
+      ),
+    ).thenAnswer((_) async {
       deHtmlInFlight = true;
       await deHtmlGate.future;
       return Response(
@@ -179,18 +199,24 @@ void main() {
         requestOptions: RequestOptions(),
       );
     });
-    when(() => dio.get<List<int>>(
-          Globals.getRemoteUrlPdf('de'),
-          options: any(named: 'options'),
-        )).thenAnswer((_) async => Response(
-          data: pdfZip1.toList(),
-          statusCode: 200,
-          requestOptions: RequestOptions(),
-        ));
-    when(() => dio.get<List<int>>(
-          Globals.getRemoteUrlHtml('fr'),
-          options: any(named: 'options'),
-        )).thenAnswer((_) async {
+    when(
+      () => dio.get<List<int>>(
+        Globals.getRemoteUrlPdf('de'),
+        options: any(named: 'options'),
+      ),
+    ).thenAnswer(
+      (_) async => Response(
+        data: pdfZip1.toList(),
+        statusCode: 200,
+        requestOptions: RequestOptions(),
+      ),
+    );
+    when(
+      () => dio.get<List<int>>(
+        Globals.getRemoteUrlHtml('fr'),
+        options: any(named: 'options'),
+      ),
+    ).thenAnswer((_) async {
       frHtmlInFlight = true;
       await frHtmlGate.future;
       return Response(
@@ -199,14 +225,18 @@ void main() {
         requestOptions: RequestOptions(),
       );
     });
-    when(() => dio.get<List<int>>(
-          Globals.getRemoteUrlPdf('fr'),
-          options: any(named: 'options'),
-        )).thenAnswer((_) async => Response(
-          data: pdfZip2.toList(),
-          statusCode: 200,
-          requestOptions: RequestOptions(),
-        ));
+    when(
+      () => dio.get<List<int>>(
+        Globals.getRemoteUrlPdf('fr'),
+        options: any(named: 'options'),
+      ),
+    ).thenAnswer(
+      (_) async => Response(
+        data: pdfZip2.toList(),
+        statusCode: 200,
+        requestOptions: RequestOptions(),
+      ),
+    );
 
     final f1 = downloader.download('de');
     await Future<void>.delayed(Duration.zero);
@@ -232,10 +262,12 @@ void main() {
       '${Globals.getPdfDir('de')}/file.pdf': 'de-pdf',
     });
 
-    when(() => dio.get<List<int>>(
-          Globals.getRemoteUrlHtml('de'),
-          options: any(named: 'options'),
-        )).thenAnswer((_) async {
+    when(
+      () => dio.get<List<int>>(
+        Globals.getRemoteUrlHtml('de'),
+        options: any(named: 'options'),
+      ),
+    ).thenAnswer((_) async {
       htmlCallCount++;
       await gate.future;
       return Response(
@@ -244,14 +276,18 @@ void main() {
         requestOptions: RequestOptions(),
       );
     });
-    when(() => dio.get<List<int>>(
-          Globals.getRemoteUrlPdf('de'),
-          options: any(named: 'options'),
-        )).thenAnswer((_) async => Response(
-          data: pdfZip.toList(),
-          statusCode: 200,
-          requestOptions: RequestOptions(),
-        ));
+    when(
+      () => dio.get<List<int>>(
+        Globals.getRemoteUrlPdf('de'),
+        options: any(named: 'options'),
+      ),
+    ).thenAnswer(
+      (_) async => Response(
+        data: pdfZip.toList(),
+        statusCode: 200,
+        requestOptions: RequestOptions(),
+      ),
+    );
 
     final f1 = downloader.download('de');
     await Future<void>.delayed(Duration.zero);
@@ -264,88 +300,108 @@ void main() {
     expect(htmlCallCount, 2);
   });
 
-  test('Only kMaxParallelZipDecodes archives are decoded at the same time',
-      () async {
-    // Every decode blocks on a gate so we can watch how many run at once
-    var inFlight = 0;
-    var maxInFlight = 0;
-    final gates = <Completer<void>>[];
-    Future<List<ArchiveEntry>> gatedDecoder(Uint8List zipBytes) async {
-      inFlight++;
-      maxInFlight = max(maxInFlight, inFlight);
-      final gate = Completer<void>();
-      gates.add(gate);
-      await gate.future;
-      inFlight--;
-      return decodeZipEntries(zipBytes);
-    }
+  test(
+    'Only kMaxParallelZipDecodes archives are decoded at the same time',
+    () async {
+      // Every decode blocks on a gate so we can watch how many run at once
+      var inFlight = 0;
+      var maxInFlight = 0;
+      final gates = <Completer<void>>[];
+      Future<List<ArchiveEntry>> gatedDecoder(Uint8List zipBytes) async {
+        inFlight++;
+        maxInFlight = max(maxInFlight, inFlight);
+        final gate = Completer<void>();
+        gates.add(gate);
+        await gate.future;
+        inFlight--;
+        return decodeZipEntries(zipBytes);
+      }
 
-    downloader = LanguageDownloaderImpl(
-        root: root, dio: dio, fileSystem: fs, zipDecoder: gatedDecoder);
+      downloader = LanguageDownloaderImpl(
+        root: root,
+        dio: dio,
+        fileSystem: fs,
+        zipDecoder: gatedDecoder,
+      );
 
-    const langCodes = ['de', 'fr', 'es'];
-    for (final langCode in langCodes) {
-      mockDioGet(dio, Globals.getRemoteUrlHtml(langCode),
-          createTestZip({'${Globals.getResourcesDir('de')}/f.html': 'x'}));
-      mockDioGet(dio, Globals.getRemoteUrlPdf(langCode),
-          createTestZip({'${Globals.getPdfDir('de')}/f.pdf': 'x'}));
-    }
+      const langCodes = ['de', 'fr', 'es'];
+      for (final langCode in langCodes) {
+        mockDioGet(
+          dio,
+          Globals.getRemoteUrlHtml(langCode),
+          createTestZip({'${Globals.getResourcesDir('de')}/f.html': 'x'}),
+        );
+        mockDioGet(
+          dio,
+          Globals.getRemoteUrlPdf(langCode),
+          createTestZip({'${Globals.getPdfDir('de')}/f.pdf': 'x'}),
+        );
+      }
 
-    final downloads = [for (final code in langCodes) downloader.download(code)];
-    var finished = false;
-    unawaited(Future.wait(downloads).then((_) => finished = true));
+      final downloads = [
+        for (final code in langCodes) downloader.download(code),
+      ];
+      var finished = false;
+      unawaited(Future.wait(downloads).then((_) => finished = true));
 
-    // Let all three downloads reach their first decode
-    for (var i = 0; i < 5; i++) {
-      await Future<void>.delayed(Duration.zero);
-    }
-    expect(inFlight, kMaxParallelZipDecodes);
-    expect(gates.length, kMaxParallelZipDecodes);
+      // Let all three downloads reach their first decode
+      for (var i = 0; i < 5; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      expect(inFlight, kMaxParallelZipDecodes);
+      expect(gates.length, kMaxParallelZipDecodes);
 
-    // Now let them through one by one - a queued decode may only start
-    // once a running one has finished
-    for (var i = 0; !finished && i < 100; i++) {
-      if (gates.isNotEmpty) gates.removeAt(0).complete();
-      await Future<void>.delayed(Duration.zero);
-    }
-    expect(finished, isTrue);
-    expect(maxInFlight, kMaxParallelZipDecodes);
-    for (final langCode in langCodes) {
-      expect(await downloader.isDownloaded(langCode), true);
-    }
-  });
+      // Now let them through one by one - a queued decode may only start
+      // once a running one has finished
+      for (var i = 0; !finished && i < 100; i++) {
+        if (gates.isNotEmpty) gates.removeAt(0).complete();
+        await Future<void>.delayed(Duration.zero);
+      }
+      expect(finished, isTrue);
+      expect(maxInFlight, kMaxParallelZipDecodes);
+      for (final langCode in langCodes) {
+        expect(await downloader.isDownloaded(langCode), true);
+      }
+    },
+  );
 
-  test('Crash recovery: pre-seeded staging dir is wiped by next download',
-      () async {
-    // Simulate crashed prior run leaving a staging dir
-    await fs
-        .directory('/app-docs/assets-de.staging/leftover')
-        .create(recursive: true);
-    await fs
-        .file('/app-docs/assets-de.staging/leftover/junk.txt')
-        .writeAsString('crash-leftover');
+  test(
+    'Crash recovery: pre-seeded staging dir is wiped by next download',
+    () async {
+      // Simulate crashed prior run leaving a staging dir
+      await fs
+          .directory('/app-docs/assets-de.staging/leftover')
+          .create(recursive: true);
+      await fs
+          .file('/app-docs/assets-de.staging/leftover/junk.txt')
+          .writeAsString('crash-leftover');
 
-    final htmlZip = createTestZip({
-      '${Globals.getResourcesDir('de')}/fresh.html': '<h1>Fresh</h1>',
-    });
-    final pdfZip = createTestZip({
-      '${Globals.getPdfDir('de')}/fresh.pdf': 'fresh-pdf',
-    });
+      final htmlZip = createTestZip({
+        '${Globals.getResourcesDir('de')}/fresh.html': '<h1>Fresh</h1>',
+      });
+      final pdfZip = createTestZip({
+        '${Globals.getPdfDir('de')}/fresh.pdf': 'fresh-pdf',
+      });
 
-    mockDioGet(dio, Globals.getRemoteUrlHtml('de'), htmlZip);
-    mockDioGet(dio, Globals.getRemoteUrlPdf('de'), pdfZip);
+      mockDioGet(dio, Globals.getRemoteUrlHtml('de'), htmlZip);
+      mockDioGet(dio, Globals.getRemoteUrlPdf('de'), pdfZip);
 
-    await downloader.download('de');
+      await downloader.download('de');
 
-    // Old staging leftover is gone
-    expect(
-        await fs.file('/app-docs/assets-de/leftover/junk.txt').exists(), false);
-    // Fresh content is there
-    expect(
+      // Old staging leftover is gone
+      expect(
+        await fs.file('/app-docs/assets-de/leftover/junk.txt').exists(),
+        false,
+      );
+      // Fresh content is there
+      expect(
         await fs
             .file(
-                '/app-docs/assets-de/${Globals.getResourcesDir('de')}/fresh.html')
+              '/app-docs/assets-de/${Globals.getResourcesDir('de')}/fresh.html',
+            )
             .exists(),
-        true);
-  });
+        true,
+      );
+    },
+  );
 }
