@@ -149,6 +149,9 @@ void main() {
       UncontrolledProviderScope(
         container: ref,
         child: MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: const StartupPage(),
           onGenerateRoute: generateRoutes,
         ),
