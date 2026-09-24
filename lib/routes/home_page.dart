@@ -14,13 +14,18 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // When we're finished with loading: Go to the recently opened page
     return Scaffold(
-        appBar: AppBar(
-          title: const Text(Globals.appTitle),
+      appBar: AppBar(title: const Text(Globals.appTitle)),
+      drawer: const MainDrawer(null, null),
+      body: SafeArea(
+        child: TableOfContent(
+          null,
+          null,
+          header: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: Text(context.l10n.homeExplanation),
+          ),
         ),
-        drawer: const MainDrawer(null, null),
-        body: SafeArea(child: TableOfContent(null, null,
-            header: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                child: Text(context.l10n.homeExplanation)))));
+      ),
+    );
   }
 }

@@ -19,13 +19,18 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final fileSystem = MemoryFileSystem();
 
-    final ref = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      fileSystemProvider.overrideWith((ref) => fileSystem),
-      languageDownloaderProvider
-          .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
-      languageStatusProvider.overrideWith2((langCode) => TestLanguageStatus())
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        fileSystemProvider.overrideWith((ref) => fileSystem),
+        languageDownloaderProvider.overrideWithValue(
+          FakeLanguageDownloader(fileSystem: fileSystem),
+        ),
+        languageStatusProvider.overrideWith2(
+          (langCode) => TestLanguageStatus(),
+        ),
+      ],
+    );
     await backgroundCheck(ref);
     expect(ref.read(updatesAvailableProvider), false);
   });
@@ -35,13 +40,16 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     var fileSystem = await createBasicFileSystem(['de', 'en']);
 
-    final ref = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      httpClientProvider.overrideWith((ref) => mockCheckResponse({'de': 2})),
-      fileSystemProvider.overrideWith((ref) => fileSystem),
-      languageDownloaderProvider
-          .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        httpClientProvider.overrideWith((ref) => mockCheckResponse({'de': 2})),
+        fileSystemProvider.overrideWith((ref) => fileSystem),
+        languageDownloaderProvider.overrideWithValue(
+          FakeLanguageDownloader(fileSystem: fileSystem),
+        ),
+      ],
+    );
 
     expect(ref.read(sharedPrefsProvider).getBool('updatesAvailable-de'), null);
     await backgroundCheck(ref);

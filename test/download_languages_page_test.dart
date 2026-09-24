@@ -96,10 +96,8 @@ void main() {
       find.widgetWithText(ElevatedButton, AppLocalizationsEn().continueText),
     );
     await tester.pump();
-    expect(listEquals(testObserver.replacedRoutes, ['/home']), isTrue);
-    /*  TODO for version 0.9
+    // checkFrequency is unset (fresh onboarding) -> continue to third step
     expect(listEquals(testObserver.replacedRoutes, ['/onboarding/3']), isTrue);
-*/
   });
 
   testWidgets('Test DownloadLanguagesPage back button in German', (
@@ -110,7 +108,9 @@ void main() {
       ProviderScope(
         overrides: [
           appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-          languageStatusProvider.overrideWith2((languageCode) => TestLanguageStatus()),
+          languageStatusProvider.overrideWith2(
+            (languageCode) => TestLanguageStatus(),
+          ),
         ],
         child: TestDownloadLanguagesPage(testObserver),
       ),
@@ -138,7 +138,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final gates = {
-      for (final code in ['de', 'en', 'fr']) code: Completer<void>()
+      for (final code in ['de', 'en', 'fr']) code: Completer<void>(),
     };
     final ref = ProviderContainer(
       overrides: [

@@ -10,18 +10,17 @@ class DropdownButtonAutomaticUpdates extends ConsumerWidget {
     final AutomaticUpdates setting = ref.watch(automaticUpdatesProvider);
 
     return DropdownButton(
-        value: setting.name,
-        items: [
-          for (var option in AutomaticUpdates.values)
-            DropdownMenuItem<String>(
-              value: option.name,
-              child: Text(AutomaticUpdates.getLocalized(context, option)),
-            )
-        ],
-        onChanged: (String? value) {
-          ref
-              .read(automaticUpdatesProvider.notifier)
-              .setAutomaticUpdates(value);
-        });
+      value: setting.name,
+      items: [
+        for (var option in AutomaticUpdates.values)
+          DropdownMenuItem<String>(
+            value: option.name,
+            child: Text(AutomaticUpdates.getLocalized(context, option)),
+          ),
+      ],
+      onChanged: (String? value) {
+        ref.read(automaticUpdatesProvider.notifier).setAutomaticUpdates(value);
+      },
+    );
   }
 }

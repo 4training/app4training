@@ -1,7 +1,12 @@
+import 'dart:convert';
+
+import 'package:app4training/data/connectivity_service.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/language_downloader.dart';
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
+import 'package:http/http.dart';
+import 'package:http/testing.dart';
 import 'package:path/path.dart' as p;
 
 /* These are utility functions for the integration test.
@@ -18,6 +23,9 @@ class FakeLanguageDownloader implements LanguageDownloader {
   final bool throwOnDownload;
   int downloadCalls = 0;
   int deleteCalls = 0;
+
+  /// The language codes passed to [download], in call order.
+  final List<String> downloadedLangs = [];
 
   FakeLanguageDownloader({
     required this.fileSystem,
@@ -36,6 +44,7 @@ class FakeLanguageDownloader implements LanguageDownloader {
   @override
   Future<void> download(String langCode) async {
     downloadCalls += 1;
+    downloadedLangs.add(langCode);
     if (throwOnDownload) {
       throw Exception('Simulated download failure');
     }
@@ -49,6 +58,33 @@ class FakeLanguageDownloader implements LanguageDownloader {
       await dir.delete(recursive: true);
     }
   }
+}
+
+/// A test double for [ConnectivityService] with a controllable result.
+/// Set [unmetered] to simulate being on WiFi/ethernet (true) or mobile (false).
+/// Lives in `lib/` so the background isolate's integration test can import it
+/// too (same rationale as [FakeLanguageDownloader]).
+class FakeConnectivityService implements ConnectivityService {
+  bool unmetered;
+  int isUnmeteredCalls = 0;
+
+  FakeConnectivityService({this.unmetered = false});
+
+  @override
+  Future<bool> isUnmetered() async {
+    isUnmeteredCalls += 1;
+    return unmetered;
+  }
+}
+
+/// A fake HTTP client for the background isolate's integration test.
+/// Always returns an empty commit list (HTTP 200), so
+/// [LanguageStatusNotifier.check] persists a fresh lastChecked timestamp
+/// without hitting the live GitHub API (which is rate-limited and makes the
+/// test flaky). An empty list keeps updatesAvailable false, so the background
+/// download phase stays a no-op.
+Client fakeNoUpdatesClient() {
+  return MockClient((request) async => Response(json.encode([]), 200));
 }
 
 // Simulate a file system where German is downloaded with one worksheet

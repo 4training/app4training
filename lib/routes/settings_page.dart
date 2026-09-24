@@ -1,14 +1,15 @@
-//import 'package:app4training/widgets/dropdownbutton_automatic_updates.dart';
+import 'package:app4training/widgets/dropdownbutton_automatic_updates.dart';
 import 'package:app4training/features/perf/perf_export_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app4training/data/updates.dart';
 import 'package:app4training/l10n/l10n.dart';
 import 'package:app4training/widgets/check_now_button.dart';
+import 'package:app4training/widgets/confirm_updates_prompt.dart';
 import 'package:app4training/widgets/languages_table.dart';
 import 'package:intl/intl.dart';
 import '../widgets/dropdownbutton_app_language.dart';
-//import '../widgets/dropdownbutton_check_frequency.dart';
+import '../widgets/dropdownbutton_check_frequency.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -20,24 +21,28 @@ class SettingsPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(children: [
-            // Set app language
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(context.l10n.appLanguage,
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const DropdownButtonAppLanguage(),
-              ],
-            ),
-            const SizedBox(height: 10),
-            const Expanded(child: LanguageSettings()),
-            const UpdateSettings(),
-            // Only visible in instrumented tester builds
-            const PerfExportSection()
-            // const SizedBox(height: 10),
-            // const DesignSettings()
-          ]),
+          child: Column(
+            children: [
+              // Set app language
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    context.l10n.appLanguage,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const DropdownButtonAppLanguage(),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Expanded(child: LanguageSettings()),
+              const UpdateSettings(),
+              // Only visible in instrumented tester builds
+              const PerfExportSection(),
+              // const SizedBox(height: 10),
+              // const DesignSettings()
+            ],
+          ),
         ),
       ),
     );
@@ -51,22 +56,25 @@ class LanguageSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Column(children: [
-      Align(
+    return Column(
+      children: [
+        Align(
           alignment: Alignment.topLeft,
           child: Text(
             context.l10n.languages,
             style: Theme.of(context).textTheme.titleLarge,
-          )),
-      const SizedBox(height: 10),
-      Text(
-        context.l10n.languagesText,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      const SizedBox(height: 10),
-      const Expanded(child: LanguagesTable()),
-      const SizedBox(height: 10),
-    ]);
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          context.l10n.languagesText,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 10),
+        const Expanded(child: LanguagesTable()),
+        const SizedBox(height: 10),
+      ],
+    );
   }
 }
 
@@ -81,51 +89,70 @@ class UpdateSettings extends ConsumerWidget {
     DateTime localTime = lastCheck.add(DateTime.now().timeZoneOffset);
     String timestamp = DateFormat('yyyy-MM-dd HH:mm').format(localTime);
 
-    return Column(children: [
-      // Updates (headline)
-      Align(
+    return Column(
+      children: [
+        // Updates (headline)
+        Align(
           alignment: Alignment.topLeft,
-          child: Text(context.l10n.updates,
-              style: Theme.of(context).textTheme.titleLarge)),
-      // Check for updates TODO for version 0.9
-/*      Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-              child: Text(context.l10n.checkFrequency,
-                  style: Theme.of(context).textTheme.bodyMedium)),
-          const SizedBox(width: 20),
-          const DropdownButtonCheckFrequency(),
-        ],
-      ),
-      const SizedBox(height: 10),*/
-      // Last check with date
-      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text("${context.l10n.lastCheck} ",
-            style: Theme.of(context).textTheme.bodyMedium),
-        Text(timestamp, style: Theme.of(context).textTheme.bodyMedium)
-      ]),
-      const SizedBox(height: 10),
-      // Check now
-      Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [CheckNowButton(buttonText: context.l10n.checkNow)],
-      ),
-/*      const SizedBox(height: 10),
-      // Do automatic updates TODO for version 0.9
+          child: Text(
+            context.l10n.updates,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+        // Prompt to confirm downloading updates (requireConfirmation mode).
+        // Renders nothing in the other AutomaticUpdates modes.
+        const ConfirmUpdatesPrompt(),
+        // Check for updates
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                context.l10n.checkFrequency,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            const SizedBox(width: 20),
+            const DropdownButtonCheckFrequency(),
+          ],
+        ),
+        const SizedBox(height: 10),
+        // Last check with date
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "${context.l10n.lastCheck} ",
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            Text(timestamp, style: Theme.of(context).textTheme.bodyMedium),
+          ],
+        ),
+        const SizedBox(height: 10),
+        // Check now
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [CheckNowButton(buttonText: context.l10n.checkNow)],
+        ),
+        const SizedBox(height: 10),
 
-      Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-              child: Text(context.l10n.doAutomaticUpdates,
-                  style: Theme.of(context).textTheme.bodyMedium)),
-          const SizedBox(width: 20),
-          const DropdownButtonAutomaticUpdates(),
-        ],
-      ),*/
-    ]);
+        // Do automatic updates
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                context.l10n.doAutomaticUpdates,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            const SizedBox(width: 20),
+            const DropdownButtonAutomaticUpdates(),
+          ],
+        ),
+      ],
+    );
   }
 }

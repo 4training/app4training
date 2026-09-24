@@ -45,8 +45,10 @@ class _HtmlViewState extends State<HtmlView> {
       // Synchronous CPU work on the UI isolate right before a page appears -
       // one of the render-time suspects, so worth a span of its own
       _document = PerfLogger.spanSync(
-          'page.sanitize', () => sanitize(widget.content, isDarkMode),
-          data: () => {'htmlBytes': widget.content.length});
+        'page.sanitize',
+        () => sanitize(widget.content, isDarkMode),
+        data: () => {'htmlBytes': widget.content.length},
+      );
       _documentIsDarkMode = isDarkMode;
     }
     return _document!;

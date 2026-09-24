@@ -14,10 +14,14 @@ class ErrorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     debugPrint('Internal error: $message');
     return Scaffold(
-        appBar: AppBar(title: const Text(Globals.appTitle)),
-        drawer: const MainDrawer(null, null),
-        body: SafeArea(
-            child: ErrorMessage(
-                context.l10n.error, context.l10n.internalError(message))));
+      appBar: AppBar(title: const Text(Globals.appTitle)),
+      drawer: const MainDrawer(null, null),
+      body: SafeArea(
+        child: ErrorMessage(
+          context.l10n.error,
+          context.l10n.internalError(message),
+        ),
+      ),
+    );
   }
 }

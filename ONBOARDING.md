@@ -115,7 +115,7 @@ The detailed docs live in `docs/`. Read them in this order if you're new:
 1. **[docs/content-rendering.md](docs/content-rendering.md)** — HTML rendering, the `sanitize()` workarounds, `flutter_html_table` filter in `main.dart`.
 1. **[docs/onboarding-flow.md](docs/onboarding-flow.md)** — the three onboarding pages and their persistence side-effects.
 1. **[docs/features.md](docs/features.md)** — pages, widgets, drawer, share menu, language switcher.
-1. **[docs/background-tasks.md](docs/background-tasks.md)** — `workmanager` isolate, the result-sync trick, why parts are commented out.
+1. **[docs/background-tasks.md](docs/background-tasks.md)** — `workmanager` isolate, the two-phase check/download flow, the settings matrix, and the result-sync trick.
 1. **[docs/localization.md](docs/localization.md)** — `.arb` workflow, `context.l10n` extension, in-app language vs. content language.
 1. **[docs/testing.md](docs/testing.md)** — unit/widget tests, fixtures, integration test, CI.
 1. **[docs/conventions.md](docs/conventions.md)** — coding conventions, lints, do/don't.
@@ -131,7 +131,7 @@ These are the load-bearing oddities — read these before changing code in their
 - **`LanguageDownloader`** (`lib/data/language_downloader.dart`) is the in-house module that downloads + unzips a language's HTML + PDF into a staging directory and swaps it into place atomically. Failed downloads never destroy prior offline content, concurrent `download()` calls are serialized (peak memory bounded by two zips), and a `.staging` leftover from a crashed run is cleaned up on the next attempt. It replaced the third-party `download_assets` package and is wired up in `main.dart` and the background isolate via `languageDownloaderProvider.overrideWithValue(...)`.
 - **`flutter_html` error filter.** `main.dart` installs a `FlutterError.onError` shim that swallows four specific assertions thrown by `flutter_html_table` 3.0.0. Read the long docstring there before touching it — the four assertion variants are documented in detail.
 - **HTML pre-processing.** `widgets/html_view.dart` calls `sanitize()` to fix bugs in `flutter_html` (e.g. percent table widths, fuzzy translations, stylized subtitles). Some workarounds are also in the HTML generator (`pywikitools`) upstream.
-- **Background task is half-disabled.** Big chunks of `BackgroundScheduler.schedule()` and `Workmanager().initialize` in `main.dart` are commented out, gated on a "version 0.9" milestone. Don't delete them — they are the working scaffolding for the next release.
+- **Background task is enabled and settings-driven.** `BackgroundScheduler.schedule()` registers a periodic `workmanager` task at the `CheckFrequency` interval (or cancels it when `never`), and `backgroundMain()` runs a two-phase flow: `backgroundCheck` then a settings-gated `backgroundDownload` (see the `AutomaticUpdates` × connectivity matrix in `docs/background-tasks.md`). Scheduling is owned by `BackgroundScheduler`, triggered from startup / onboarding step 3 / the check-frequency setting — `main.dart` only calls `Workmanager().initialize(backgroundTask)`.
 - **No package on pub.dev.** `pubspec.yaml` has `publish_to: 'none'`.
 - **License is AGPL** with an Apple App Store exception. See `LICENSE` and `COPYING.iOS`.
 - **`test` is pinned to ^1.29.0** because 1.30+ needs a newer `test_api` than `flutter_test` allows.
@@ -170,8 +170,8 @@ ______________________________________________________________________
 
 ## 8. Roadmap context (from README)
 
-- **0.9**: enable automatic background updates (scaffolding present but commented out).
+- **0.9**: enable automatic background updates — **done**: the periodic task is
+  scheduled from `CheckFrequency` and downloads per `AutomaticUpdates` (see
+  `docs/background-tasks.md`).
 - **1.0**: solid release.
 - iOS planned for 2024.
-
-If you see code with `TODO for version 0.9`, that's why.

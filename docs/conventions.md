@@ -57,7 +57,6 @@ The repo's existing code is sparing with comments — but where comments exist, 
 - Don't write comments that restate the code.
 - **Do** write comments when the *why* is non-obvious — e.g. why an internal Riverpod import is needed, why a button is intentionally clickable while looking disabled.
 - `// FIXME` is used to mark workarounds that should ideally move upstream (`pywikitools`, `flutter_html`).
-- `// TODO for version 0.9` marks the v0.9 milestone code.
 
 ## Don'ts
 
@@ -65,6 +64,5 @@ The repo's existing code is sparing with comments — but where comments exist, 
 - **Don't** reintroduce `custom_lint` (removed for analyzer-version conflict).
 - **Don't** unpin `test` without first reading the comments in `pubspec.yaml`.
 - **Don't** reintroduce `download_assets` (replaced by the in-house `LanguageDownloader` in `lib/data/language_downloader.dart`, which gives atomic staging-and-swap downloads, a concurrency cap, and no same-filename workaround).
-- **Don't** delete commented-out v0.9 code without project agreement — it's the working scaffold for the next release.
 - **Don't** introduce a navigation library (`go_router`, etc.) — Navigator 1.0 is intentional and it interplays cleanly with the URL-mirroring `/view/<page>/<lang>` scheme.
 - **Don't** delete the `flutter_html_table` error filter — the four assertion variants are real and well-documented.

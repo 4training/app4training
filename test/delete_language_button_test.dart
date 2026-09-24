@@ -17,24 +17,33 @@ class TestDeleteLanguageButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
-        home: Scaffold(body: DeleteLanguageButton(languageCode)));
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
+      home: Scaffold(body: DeleteLanguageButton(languageCode)),
+    );
   }
 }
 
 void main() {
   testWidgets('Test DeleteLanguageButton', (WidgetTester tester) async {
     final testLanguageController = TestLanguageController();
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith2((languageCode) => testLanguageController)
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (languageCode) => testLanguageController,
+        ),
+      ],
+    );
 
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: const TestDeleteLanguageButton('en')));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: const TestDeleteLanguageButton('en'),
+      ),
+    );
 
     expect(find.byIcon(Icons.delete), findsOneWidget);
     expect(testLanguageController.state.downloaded, true);
@@ -52,15 +61,24 @@ void main() {
   });
 
   // Trying to delete the currently selected app language is discouraged
-  testWidgets('Test DeleteLanguageButton for app language',
-      (WidgetTester tester) async {
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith2((languageCode) => TestLanguageController())
-    ]);
+  testWidgets('Test DeleteLanguageButton for app language', (
+    WidgetTester tester,
+  ) async {
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(),
+        ),
+      ],
+    );
 
-    await tester.pumpWidget(UncontrolledProviderScope(
-        container: ref, child: const TestDeleteLanguageButton('de')));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: ref,
+        child: const TestDeleteLanguageButton('de'),
+      ),
+    );
 
     expect(find.byIcon(Icons.delete), findsOneWidget);
     // TODO test that the color of the icon is greyed out
@@ -88,19 +106,27 @@ void main() {
   });
 
   testWidgets('Test DeleteAllLanguagesButton', (WidgetTester tester) async {
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith2((languageCode) => TestLanguageController())
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        languageProvider.overrideWith2(
+          (languageCode) => TestLanguageController(),
+        ),
+      ],
+    );
 
-    await tester.pumpWidget(UncontrolledProviderScope(
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: ref,
         child: MaterialApp(
-            locale: ref.read(appLanguageProvider).locale,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
-            home: const Scaffold(body: DeleteAllLanguagesButton()))));
+          locale: ref.read(appLanguageProvider).locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          scaffoldMessengerKey: ref.read(scaffoldMessengerKeyProvider),
+          home: const Scaffold(body: DeleteAllLanguagesButton()),
+        ),
+      ),
+    );
 
     expect(ref.read(languageProvider('ar')).downloaded, true);
 

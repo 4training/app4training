@@ -39,75 +39,84 @@ class ViewPage extends ConsumerWidget {
             .watch(scaffoldMessengerProvider)
             .showSnackBar(SnackBar(content: Text(l10n.foundBgActivity)));
       }
-      return ref
-          .watch(pageContentProvider((name: page, langCode: langCode)).future);
+      return ref.watch(
+        pageContentProvider((name: page, langCode: langCode)).future,
+      );
     });
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text(Globals.appTitle),
-          actions: const [ShareButton(), LanguageSelectionButton()],
-        ),
-        drawer: MainDrawer(page, langCode),
-        body: FutureBuilder(
-            future: checkAndLoad(context, ref),
-            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              if (kDebugMode) debugPrint(snapshot.connectionState.toString());
+      appBar: AppBar(
+        title: const Text(Globals.appTitle),
+        actions: const [ShareButton(), LanguageSelectionButton()],
+      ),
+      drawer: MainDrawer(page, langCode),
+      body: FutureBuilder(
+        future: checkAndLoad(context, ref),
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          if (kDebugMode) debugPrint(snapshot.connectionState.toString());
 
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                case ConnectionState.waiting:
-                case ConnectionState.active:
-                  return loadingAnimation(context.l10n.loadingContent);
-                case ConnectionState.done:
-                  if (kDebugMode) {
-                    debugPrint('Done, hasData: ${snapshot.hasData},'
-                        ' Error: ${snapshot.hasError}');
-                  }
-                  if (snapshot.hasError) {
-                    // In Riverpod v3, provider errors are wrapped in
-                    // ProviderException - unwrap to get the original error
-                    var e = snapshot.error;
-                    if (e is ProviderException) {
-                      e = e.exception;
-                    }
-                    if (e is App4TrainingException) {
-                      if ((e is PageNotFoundException) ||
-                          (e is LanguageNotDownloadedException)) {
-                        return ErrorMessage(
-                            context.l10n.warning,
-                            '${context.l10n.cantDisplayPage(page, context.l10n.getLanguageName(langCode))}\n'
-                            '${context.l10n.reason} ${e.toLocalizedString(context)}',
-                            icon: Icons.warning_amber,
-                            iconColor: Colors.black);
-                      } else if (e is LanguageCorruptedException) {
-                        return ErrorMessage(
-                            context.l10n.error, e.toLocalizedString(context));
-                      }
-                    }
-                    // What happened?!
-                    return ErrorMessage(context.l10n.error,
-                        context.l10n.internalError(e.toString()));
-                  } else {
-                    String content = snapshot.data;
-                    // Save the selected page to the SharedPreferences to continue here
-                    // in case the user closes the app
-                    ref.read(sharedPrefsProvider).setString('recentPage', page);
-                    ref
-                        .read(sharedPrefsProvider)
-                        .setString('recentLang', langCode);
-                    return SafeArea(
-                      child: HtmlView(
-                          content,
-                          (Globals.rtlLanguages.contains(langCode))
-                              ? TextDirection.rtl
-                              : TextDirection.ltr),
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+            case ConnectionState.waiting:
+            case ConnectionState.active:
+              return loadingAnimation(context.l10n.loadingContent);
+            case ConnectionState.done:
+              if (kDebugMode) {
+                debugPrint(
+                  'Done, hasData: ${snapshot.hasData},'
+                  ' Error: ${snapshot.hasError}',
+                );
+              }
+              if (snapshot.hasError) {
+                // In Riverpod v3, provider errors are wrapped in
+                // ProviderException - unwrap to get the original error
+                var e = snapshot.error;
+                if (e is ProviderException) {
+                  e = e.exception;
+                }
+                if (e is App4TrainingException) {
+                  if ((e is PageNotFoundException) ||
+                      (e is LanguageNotDownloadedException)) {
+                    return ErrorMessage(
+                      context.l10n.warning,
+                      '${context.l10n.cantDisplayPage(page, context.l10n.getLanguageName(langCode))}\n'
+                      '${context.l10n.reason} ${e.toLocalizedString(context)}',
+                      icon: Icons.warning_amber,
+                      iconColor: Colors.black,
+                    );
+                  } else if (e is LanguageCorruptedException) {
+                    return ErrorMessage(
+                      context.l10n.error,
+                      e.toLocalizedString(context),
                     );
                   }
+                }
+                // What happened?!
+                return ErrorMessage(
+                  context.l10n.error,
+                  context.l10n.internalError(e.toString()),
+                );
+              } else {
+                String content = snapshot.data;
+                // Save the selected page to the SharedPreferences to continue here
+                // in case the user closes the app
+                ref.read(sharedPrefsProvider).setString('recentPage', page);
+                ref.read(sharedPrefsProvider).setString('recentLang', langCode);
+                return SafeArea(
+                  child: HtmlView(
+                    content,
+                    (Globals.rtlLanguages.contains(langCode))
+                        ? TextDirection.rtl
+                        : TextDirection.ltr,
+                  ),
+                );
               }
-            }));
+          }
+        },
+      ),
+    );
   }
 }

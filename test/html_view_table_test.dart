@@ -9,14 +9,13 @@ import 'package:flutter_test/flutter_test.dart';
 /// make sure HtmlView can render common table shapes without throwing.
 void main() {
   Future<void> pump(WidgetTester tester, String body) async {
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: HtmlView(
-          '<html><body>$body</body></html>',
-          TextDirection.ltr,
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: HtmlView('<html><body>$body</body></html>', TextDirection.ltr),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
   }
 
@@ -30,8 +29,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('wraps each <table> in a visible horizontal Scrollbar',
-      (tester) async {
+  testWidgets('wraps each <table> in a visible horizontal Scrollbar', (
+    tester,
+  ) async {
     // Guards the UX affordance: users need a visible scroll thumb to
     // discover that wide tables are horizontally scrollable.
     await pump(tester, '''
@@ -50,14 +50,19 @@ void main() {
     // here belongs to a _HorizontalTableScroll wrapper.
     expect(find.byType(Scrollbar), findsNWidgets(2));
     // And the scroll direction inside each wrapper must be horizontal.
-    final horizontalScrolls = tester
-        .widgetList<SingleChildScrollView>(find.byType(SingleChildScrollView))
-        .where((w) => w.scrollDirection == Axis.horizontal)
-        .toList();
+    final horizontalScrolls =
+        tester
+            .widgetList<SingleChildScrollView>(
+              find.byType(SingleChildScrollView),
+            )
+            .where((w) => w.scrollDirection == Axis.horizontal)
+            .toList();
     expect(horizontalScrolls.length, 2);
   });
 
-  testWidgets('renders a table with long non-breaking cell content', (tester) async {
+  testWidgets('renders a table with long non-breaking cell content', (
+    tester,
+  ) async {
     // Long single token that cannot wrap — this is the kind of content that
     // causes layout problems on some translations of Time With God.
     await pump(tester, '''
@@ -94,8 +99,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('renders a table with th[style] (stripped by sanitize)',
-      (tester) async {
+  testWidgets('renders a table with th[style] (stripped by sanitize)', (
+    tester,
+  ) async {
     await pump(tester, '''
 <table>
   <tr>
@@ -113,8 +119,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('renders a table with empty <td> cells (fill-in-the-blank)',
-      (tester) async {
+  testWidgets('renders a table with empty <td> cells (fill-in-the-blank)', (
+    tester,
+  ) async {
     // Real Time_with_God table shape: lots of empty cells for users to fill in.
     await pump(tester, '''
 <table class="wikitable" style="width:100%">
@@ -144,8 +151,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('renders a <table> nested inside a <li> (Time_with_God shape)',
-      (tester) async {
+  testWidgets('renders a <table> nested inside a <li> (Time_with_God shape)', (
+    tester,
+  ) async {
     // This is the exact shape from Time_with_God line 70: a table inside a
     // list item inside a ul. It uses a <br/> before the nested table.
     await pump(tester, '''
@@ -175,8 +183,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('renders the real Time_with_God fixture end-to-end',
-      (tester) async {
+  testWidgets('renders the real Time_with_God fixture end-to-end', (
+    tester,
+  ) async {
     // Pumping the exact page content that was crashing in production.
     // Critically:
     // 1. enable semantics — on a real device the semantics pass walks the
@@ -190,8 +199,10 @@ void main() {
     final semantics = tester.ensureSemantics();
     try {
       await tester.binding.setSurfaceSize(const Size(390, 844));
-      final html = File('test/assets-en/html-en-main/Time_with_God.html')
-          .readAsStringSync();
+      final html =
+          File(
+            'test/assets-en/html-en-main/Time_with_God.html',
+          ).readAsStringSync();
       await pump(tester, html);
       expect(tester.takeException(), isNull);
     } finally {
@@ -200,8 +211,9 @@ void main() {
     }
   });
 
-  testWidgets('renders a table wrapped in the standard page chrome',
-      (tester) async {
+  testWidgets('renders a table wrapped in the standard page chrome', (
+    tester,
+  ) async {
     // Mimics the structure of a real Time With God page: headings,
     // paragraphs, and a table together.
     await pump(tester, '''

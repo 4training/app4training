@@ -10,21 +10,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'background_scheduler_test.dart';
 
 void main() {
-  testWidgets('Test DropdownButtonCheckFrequency with frequency: daily',
-      (WidgetTester tester) async {
+  testWidgets('Test DropdownButtonCheckFrequency with frequency: daily', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({'checkFrequency': 'daily'});
     final prefs = await SharedPreferences.getInstance();
-    final ref = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      backgroundSchedulerProvider.overrideWith(() => TestBackgroundScheduler())
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        backgroundSchedulerProvider.overrideWith(
+          () => TestBackgroundScheduler(),
+        ),
+      ],
+    );
     expect(ref.read(backgroundSchedulerProvider), false);
-    await tester.pumpWidget(UncontrolledProviderScope(
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: ref,
         child: const MaterialApp(
-            // We need the following to access l10n; Locale is default en_US
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            home: Scaffold(body: DropdownButtonCheckFrequency()))));
+          // We need the following to access l10n; Locale is default en_US
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: Scaffold(body: DropdownButtonCheckFrequency()),
+        ),
+      ),
+    );
 
     // Verify initial value
     expect(prefs.getString('checkFrequency'), 'daily');
@@ -46,21 +55,30 @@ void main() {
     expect(ref.read(backgroundSchedulerProvider), false);
   });
 
-  testWidgets('Test DropdownButtonCheckFrequency with frequency: monthly',
-      (WidgetTester tester) async {
+  testWidgets('Test DropdownButtonCheckFrequency with frequency: monthly', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({'checkFrequency': 'monthly'});
     final prefs = await SharedPreferences.getInstance();
-    final ref = ProviderContainer(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      backgroundSchedulerProvider.overrideWith(() => TestBackgroundScheduler())
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        backgroundSchedulerProvider.overrideWith(
+          () => TestBackgroundScheduler(),
+        ),
+      ],
+    );
     expect(ref.read(backgroundSchedulerProvider), false);
-    await tester.pumpWidget(UncontrolledProviderScope(
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: ref,
         child: const MaterialApp(
-            // We need the following to access l10n; Locale is default en_US
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            home: Scaffold(body: DropdownButtonCheckFrequency()))));
+          // We need the following to access l10n; Locale is default en_US
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: Scaffold(body: DropdownButtonCheckFrequency()),
+        ),
+      ),
+    );
 
     // Verify initial value
     expect(prefs.getString('checkFrequency'), 'monthly');

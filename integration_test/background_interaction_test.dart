@@ -33,17 +33,26 @@ void main() async {
       completer.complete(data);
     });
     await Workmanager().initialize(backgroundTask);
-    await Workmanager().registerOneOffTask("task-identifier", "testTask",
-        initialDelay: const Duration(seconds: 2));
+    await Workmanager().registerOneOffTask(
+      "task-identifier",
+      "testTask",
+      initialDelay: const Duration(seconds: 2),
+    );
 
     final fileSystem = MemoryFileSystem();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      packageInfoProvider.overrideWithValue(packageInfo),
-      fileSystemProvider.overrideWith((ref) => fileSystem),
-      languageDownloaderProvider
-          .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
-    ], child: const App4Training()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPrefsProvider.overrideWithValue(prefs),
+          packageInfoProvider.overrideWithValue(packageInfo),
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+          languageDownloaderProvider.overrideWithValue(
+            FakeLanguageDownloader(fileSystem: fileSystem),
+          ),
+        ],
+        child: const App4Training(),
+      ),
+    );
     expect(find.text('Loading'), findsOneWidget);
 
     // Wait for the background isolate to finish
@@ -67,13 +76,19 @@ void main() async {
     });
     var fileSystem = await createTestFileSystem();
 
-    await tester.pumpWidget(ProviderScope(overrides: [
-      sharedPrefsProvider.overrideWithValue(prefs),
-      packageInfoProvider.overrideWithValue(packageInfo),
-      fileSystemProvider.overrideWith((ref) => fileSystem),
-      languageDownloaderProvider
-          .overrideWithValue(FakeLanguageDownloader(fileSystem: fileSystem)),
-    ], child: const App4Training()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPrefsProvider.overrideWithValue(prefs),
+          packageInfoProvider.overrideWithValue(packageInfo),
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+          languageDownloaderProvider.overrideWithValue(
+            FakeLanguageDownloader(fileSystem: fileSystem),
+          ),
+        ],
+        child: const App4Training(),
+      ),
+    );
     expect(find.text('Wird geladen'), findsOneWidget);
     await tester.pumpAndSettle();
 
@@ -87,8 +102,11 @@ void main() async {
     await tester.pumpAndSettle();
 
     await Workmanager().initialize(backgroundTask);
-    await Workmanager().registerOneOffTask("task-identifier", "testTask",
-        initialDelay: const Duration(seconds: 2));
+    await Workmanager().registerOneOffTask(
+      "task-identifier",
+      "testTask",
+      initialDelay: const Duration(seconds: 2),
+    );
 
     // Wait for the background isolate to finish
     final msg = await completer.future.timeout(const Duration(seconds: 10));

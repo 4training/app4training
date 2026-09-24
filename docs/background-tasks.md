@@ -1,6 +1,10 @@
 # Background Tasks
 
-The app has a `workmanager`-based periodic background task that **checks** for content updates while the app is closed. Note: as of v0.8 the *scheduling* of this task is **disabled** (commented out, gated for v0.9). The task implementation is complete and integration-tested; only the registration is dormant.
+The app has a `workmanager`-based periodic background task that **checks** for
+content updates while the app is closed and, when the user's settings allow it,
+**downloads** the languages that have updates. The task is scheduled at the
+`CheckFrequency` interval (and not scheduled at all when the user picks
+`never`); what it does once it runs is driven by the `AutomaticUpdates` setting.
 
 ## What runs in the background
 
@@ -25,49 +29,103 @@ void backgroundTask() {
 ### `backgroundMain()`
 1. Gets a fresh `SharedPreferences` instance (the background isolate has its own memory).
 2. Resolves `getApplicationDocumentsDirectory()` and builds a real `LanguageDownloaderImpl` with a fresh `Dio` and the local `FileSystem`.
-3. Builds a new `ProviderContainer` with `sharedPrefsProvider` **and** `languageDownloaderProvider` overridden — the background isolate has the same atomicity and concurrency guarantees as the foreground path.
-4. Calls `backgroundCheck(ref)`.
-5. Currently, the task only checks for updates, never auto-downloads.
+3. Builds a new `ProviderContainer` with `sharedPrefsProvider`, `languageDownloaderProvider` **and** `connectivityServiceProvider` overridden — the background isolate has the same atomicity and concurrency guarantees as the foreground path, plus a way to check the connection type without a `BuildContext`.
+4. Runs the two-phase flow: **`backgroundCheck(ref)`** (phase 1) then **`backgroundDownload(ref)`** (phase 2).
 
-### `backgroundCheck(ProviderContainer ref)`
+### `backgroundCheck(ProviderContainer ref)` — phase 1
 For each language code in `availableLanguagesProvider`:
 1. `languageProvider(code).notifier.lazyInit()` — minimal disk check, no JSON parse.
 2. Skip if not downloaded.
-3. `languageStatusProvider(code).check()` — same GitHub Commits API call as the foreground.
+3. `languageStatusProvider(code).check()` — same GitHub Commits API call as the foreground. This refreshes `updatesAvailable-<lang>` / `lastChecked-<lang>` in prefs.
 4. Bail out of the loop if the rate limit (`apiRateLimitExceeded`) is hit.
+
+### `backgroundDownload(ProviderContainer ref)` — phase 2
+Reads `automaticUpdatesProvider` (from the isolate's own prefs) and decides
+whether to download the languages that phase 1 flagged with `updatesAvailable`:
+
+| `AutomaticUpdates`    | metered (mobile) | unmetered (WiFi/ethernet) |
+| --------------------- | ---------------- | ------------------------- |
+| `never`               | no download      | no download               |
+| `requireConfirmation` | no download¹     | no download¹              |
+| `onlyOnWifi`          | no download      | download                  |
+| `yesAlways`           | download         | download                  |
+
+¹ `requireConfirmation` deliberately leaves `updatesAvailable` set so the
+foreground can surface it — see [Confirming updates in the foreground](#confirming-updates-in-the-foreground).
+
+For `onlyOnWifi`, connectivity is queried via `connectivityServiceProvider`
+(`ConnectivityService.isUnmetered()`). "Unmetered" means WiFi **or** ethernet —
+the user's real intent behind `onlyOnWifi` is "don't burn mobile data". When
+downloading, each language with `updatesAvailable` is re-downloaded via
+`languageDownloader.download(code)` in a per-language `try`/`catch`, so one
+language's failure never aborts the whole run. After each download the language's
+`languageStatusProvider` is invalidated so `updatesAvailable` resets to false.
+
+### Connectivity (`lib/data/connectivity_service.dart`)
+`ConnectivityService.isUnmetered()` wraps the `connectivity_plus` package
+(Android needs the `ACCESS_NETWORK_STATE` permission). It is exposed as
+`connectivityServiceProvider`, a `MustOverrideProvider` — the real
+`ConnectivityServiceImpl` is wired up in `main.dart` and in `backgroundMain()`,
+and tests inject `FakeConnectivityService` (a controllable `unmetered` flag,
+living in `lib/background/background_test.dart` next to `FakeLanguageDownloader`).
 
 ### Debug logging
 `writeLog(message)` appends to `<docDir>/background.log` so the integration test (and human debuggers) can confirm the task ran. Marked `TODO: Remove later`.
 
 ## Scheduling (`lib/background/background_scheduler.dart`)
 
-The current code is essentially:
+`BackgroundScheduler.schedule()` registers (or cancels) the periodic task
+according to the `CheckFrequency` setting:
 
 ```dart
-class BackgroundScheduler extends Notifier<bool> {
-  @override
-  bool build() => false;
-
-  Future<void> schedule() async {
-    /* TODO Enable this with version 0.9
-       cancelByUniqueName('backgroundTask')
-       interval = checkFrequency.getDuration()  // null if 'never'
-       if interval == null: state = false; return
-       Workmanager().registerPeriodicTask('backgroundTask', 'backgroundTask',
-           constraints: Constraints(networkType: NetworkType.connected),
-           initialDelay: interval ~/ 2)
-       state = true
-    */
+Future<void> schedule() async {
+  // idempotent re-scheduling: always cancel the prior registration first
+  await Workmanager().cancelByUniqueName('backgroundTask');
+  final interval = ref.read(checkFrequencyProvider).getDuration(); // null == never
+  if (interval == null) {
+    state = false;          // CheckFrequency.never -> task stays cancelled
+    return;
   }
+  await Workmanager().registerPeriodicTask('backgroundTask', 'backgroundTask',
+      constraints: Constraints(networkType: NetworkType.connected),
+      initialDelay: interval ~/ 2);
+  state = true;
 }
 ```
 
-`schedule()` is called from three places (and is currently a no-op):
+- The provider's `bool` state reflects whether the task is currently scheduled.
+- `CheckFrequency.never` → nothing registered, `state = false`.
+- The `NetworkType.connected` constraint guarantees *some* connection when the
+  task fires (which is why `yesAlways` can download without a connectivity check).
+- The `task` name `'backgroundTask'` is what reaches `executeTask` and selects
+  the `backgroundMain` branch (kept distinct from `'testTask'`).
+
+`schedule()` is called from three places:
 - `StartupPage.init()` after a successful startup,
 - `SetUpdatePrefsPage` after the user submits onboarding step 3,
 - `CheckFrequencyNotifier.setCheckFrequency` whenever the user changes the frequency.
 
-The `Workmanager().initialize(backgroundTask, isInDebugMode: false)` call in `main()` is also commented out behind the same `TODO enable in version 0.9`.
+`main()` calls `Workmanager().initialize(backgroundTask)` to register the isolate
+entry point; the periodic scheduling itself is owned entirely by
+`BackgroundScheduler` (there is no one-off registration on launch).
+
+Unit tests can't touch the `workmanager` platform channel, so `schedule()`'s
+branching logic is mirrored by `TestBackgroundScheduler`
+(`test/background_scheduler_test.dart`), which is asserted across every
+`CheckFrequency` and for cancel-before-register re-scheduling.
+
+## Confirming updates in the foreground
+
+Under `AutomaticUpdates.requireConfirmation` the background task finds updates but
+does not download them. `updatesNeedConfirmationProvider`
+(`lib/data/updates.dart`) is true exactly when that setting is active **and**
+updates are available. It drives a **persistent indicator**:
+- a red dot next to the Settings entry in the drawer (`MainDrawer`), and
+- a `ConfirmUpdatesPrompt` on the settings page with a "download now" button that
+  runs the normal foreground download path for every language with updates.
+
+After a successful foreground download, `updatesAvailable` resets via the usual
+`LanguageStatusNotifier` rebuild, so the indicator and prompt disappear.
 
 ## How the foreground learns about background work
 
@@ -90,7 +148,7 @@ There's a comment in `BackgroundResultNotifier.checkForActivity`: "*languageStat
 Two tests, both running on a real Android emulator (CI uses `reactivecircus/android-emulator-runner@v2`, API level 29):
 
 1. **"Test that background task gets executed"**
-   - `Workmanager().initialize(backgroundTask, isInDebugMode: false)`.
+   - `Workmanager().initialize(backgroundTask)`.
    - `registerOneOffTask(..., 'testTask', initialDelay: 2s)` — `task` argument is what gets passed to `executeTask` and what selects the `backgroundTestMain()` branch.
    - Main isolate registers a port via `IsolateNameServer.registerPortWithName(port.sendPort, 'test')`.
    - `backgroundTask` sends `'success'` via `IsolateNameServer.lookupPortByName('test')`.
@@ -98,7 +156,12 @@ Two tests, both running on a real Android emulator (CI uses `reactivecircus/andr
 
 2. **"Test synchronization with main isolate"** — full happy-path: mount `App4Training` with `appLanguage='de'`, open settings to warm `languageStatusProvider`, fire the background task, then open a worksheet and verify the `foundBgActivity` snackbar appears.
 
-The fixtures use `MemoryFileSystem` and `FakeLanguageDownloader` from `lib/background/background_test.dart`.
+`backgroundTestMain()` mirrors `backgroundMain()`'s two-phase flow
+(`backgroundCheck` then `backgroundDownload`) with a `FakeConnectivityService`,
+so the integration test exercises the full check-then-download path
+deterministically. The fixtures use `MemoryFileSystem`,
+`FakeLanguageDownloader` and `FakeConnectivityService` from
+`lib/background/background_test.dart`.
 
 ## Why the test fixtures live in `lib/`
 

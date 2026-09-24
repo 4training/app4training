@@ -49,4 +49,5 @@ class StartupStageNotifier extends Notifier<StartupStage> {
 /// The stage StartupPage.init() is in - drives the caption of its spinner
 final startupStageProvider =
     NotifierProvider<StartupStageNotifier, StartupStage>(
-        StartupStageNotifier.new);
+      StartupStageNotifier.new,
+    );

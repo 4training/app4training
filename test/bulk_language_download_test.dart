@@ -34,20 +34,22 @@ void main() {
     expect(['de', 'fr'], contains(result.lastSuccessCode));
   });
 
-  test('counts a throwing download as an error without aborting the rest',
-      () async {
-    final result = await downloadLanguagesInParallel(
-      ['de', 'en', 'fr'],
-      maxConcurrent: 4,
-      download: (code) async {
-        if (code == 'en') throw Exception('boom');
-        return true;
-      },
-    );
+  test(
+    'counts a throwing download as an error without aborting the rest',
+    () async {
+      final result = await downloadLanguagesInParallel(
+        ['de', 'en', 'fr'],
+        maxConcurrent: 4,
+        download: (code) async {
+          if (code == 'en') throw Exception('boom');
+          return true;
+        },
+      );
 
-    expect(result.successCount, 2);
-    expect(result.errorCount, 1);
-  });
+      expect(result.successCount, 2);
+      expect(result.errorCount, 1);
+    },
+  );
 
   test('never exceeds maxConcurrent in flight', () async {
     var inFlight = 0;
@@ -115,29 +117,34 @@ void main() {
     );
 
     expect(
-      [for (final r in reports) (r.completed, r.total, r.languageCode, r.success)],
+      [
+        for (final r in reports)
+          (r.completed, r.total, r.languageCode, r.success),
+      ],
       [(1, 3, 'de', true), (2, 3, 'en', false), (3, 3, 'fr', true)],
     );
     expect(result.successCount, 2);
     expect(result.errorCount, 1);
   });
 
-  test('a throwing download advances the counter instead of stalling it',
-      () async {
-    final reports = <BulkDownloadProgress>[];
-    await downloadLanguagesInParallel(
-      ['de', 'en', 'fr'],
-      maxConcurrent: 1,
-      download: (code) async {
-        if (code == 'en') throw Exception('boom');
-        return true;
-      },
-      onProgress: reports.add,
-    );
+  test(
+    'a throwing download advances the counter instead of stalling it',
+    () async {
+      final reports = <BulkDownloadProgress>[];
+      await downloadLanguagesInParallel(
+        ['de', 'en', 'fr'],
+        maxConcurrent: 1,
+        download: (code) async {
+          if (code == 'en') throw Exception('boom');
+          return true;
+        },
+        onProgress: reports.add,
+      );
 
-    expect([for (final r in reports) r.completed], [1, 2, 3]);
-    expect([for (final r in reports) r.success], [true, false, true]);
-  });
+      expect([for (final r in reports) r.completed], [1, 2, 3]);
+      expect([for (final r in reports) r.success], [true, false, true]);
+    },
+  );
 
   test('uses default maxConcurrent constant', () async {
     expect(kMaxParallelLanguageDownloads, 4);
