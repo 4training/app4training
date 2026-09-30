@@ -71,12 +71,57 @@ Future<void> backgroundMain() async {
     ],
   );
 
+  await backgroundRun(ref);
+}
+
+/// One run of the background task: check for updates, then download them.
+/// Exits early (without any network calls) when the user's [CheckFrequency]
+/// interval hasn't elapsed since the most recent check - on iOS the task is
+/// rescheduled natively at a fixed daily frequency, so this is what makes
+/// weekly/monthly actually weekly/monthly there. [now] is for testing.
+///
+/// A run is only skipped if less than 90% of the interval has elapsed: runs
+/// are scheduled relative to when the previous run *started* while lastChecked
+/// is written a bit later, and the OS doesn't fire exactly on time either.
+/// This way no run is skipped on Android, where WorkManager already runs at
+/// the requested interval.
+Future<void> backgroundRun(ProviderContainer ref, {DateTime? now}) async {
+  final lastChecked = await mostRecentCheck(ref);
+  final interval = ref.read(checkFrequencyProvider).getDuration();
+  now ??= DateTime.now().toUtc();
+  if (interval == null) {
+    await writeLog('CheckFrequency.never: skipping this run');
+    return;
+  }
+  if (lastChecked != null && now.difference(lastChecked) < interval * 0.9) {
+    await writeLog('Last check was at $lastChecked: skipping this run');
+    return;
+  }
+
   // Phase 1: check every downloaded language for updates
   await backgroundCheck(ref);
 
   // Phase 2: download the languages that have updates, gated by the user's
   // AutomaticUpdates setting and (for onlyOnWifi) the current connection type
   await backgroundDownload(ref);
+}
+
+/// The most recent lastChecked timestamp of all downloaded languages (UTC),
+/// or null if no language is downloaded.
+///
+/// Most recent and not oldest (like [lastCheckedProvider]): [backgroundCheck]
+/// doesn't re-check languages that already have updates available, so their
+/// timestamps would stay old forever and [backgroundRun] would never skip.
+Future<DateTime?> mostRecentCheck(ProviderContainer ref) async {
+  DateTime? result;
+  for (String languageCode in ref.read(availableLanguagesProvider)) {
+    await ref.read(languageProvider(languageCode).notifier).lazyInit();
+    if (!ref.read(languageProvider(languageCode)).downloaded) continue;
+    final timestamp =
+        ref.read(languageStatusProvider(languageCode)).lastCheckedTimestamp;
+    if (result == null || timestamp.isAfter(result)) result = timestamp;
+  }
+  return result;
 }
 
 /// Download the languages that have updates available, honoring the user's
@@ -153,7 +198,9 @@ Future<void> backgroundTestMain() async {
       httpClientProvider.overrideWithValue(fakeNoUpdatesClient()),
     ],
   );
-  // Same two-phase flow as backgroundMain(): check, then settings-gated download
+  // Same two-phase flow as backgroundMain(): check, then settings-gated download.
+  // Deliberately not via backgroundRun(): German was just "downloaded", so it
+  // would skip this run because of the user's CheckFrequency.
   await backgroundCheck(ref);
   await backgroundDownload(ref);
 }
