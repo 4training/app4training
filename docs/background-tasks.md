@@ -30,7 +30,45 @@ void backgroundTask() {
 1. Gets a fresh `SharedPreferences` instance (the background isolate has its own memory).
 2. Resolves `getApplicationDocumentsDirectory()` and builds a real `LanguageDownloaderImpl` with a fresh `Dio` and the local `FileSystem`.
 3. Builds a new `ProviderContainer` with `sharedPrefsProvider`, `languageDownloaderProvider` **and** `connectivityServiceProvider` overridden — the background isolate has the same atomicity and concurrency guarantees as the foreground path, plus a way to check the connection type without a `BuildContext`.
-4. Runs the two-phase flow: **`backgroundCheck(ref)`** (phase 1) then **`backgroundDownload(ref)`** (phase 2).
+4. Calls **`backgroundRun(ref)`**, which first
+   [skips the run if the check frequency isn't due yet](#skipping-runs-before-the-check-frequency-is-due)
+   and otherwise runs the two-phase flow: **`backgroundCheck(ref)`** (phase 1) then **`backgroundDownload(ref)`** (phase 2).
+
+### Skipping runs before the check frequency is due
+`backgroundRun(ref, {now})` exits early — no check, no download, no network
+calls — unless the user's `CheckFrequency` interval has (roughly) elapsed:
+
+- `CheckFrequency.never` → always skip (a stray run, e.g. from the native iOS
+  registration, must not touch the network).
+- Otherwise it compares `now` with **`mostRecentCheck(ref)`**: the *most recent*
+  `lastCheckedTimestamp` over all downloaded languages. (Not the oldest like
+  `lastCheckedProvider`: `backgroundCheck` doesn't re-check languages that
+  already have `updatesAvailable`, so their timestamps stay old and no run
+  would ever be skipped.) No downloaded language → the run goes ahead.
+- The run is skipped only if **less than 90% of the interval** has elapsed. The
+  10% tolerance matters: the OS schedules the next run relative to when the
+  previous run *started*, while `lastChecked` is written a few seconds later —
+  a strict comparison would skip correctly-scheduled runs.
+
+**Why it exists — iOS runs at a fixed daily frequency.** On iOS the periodic
+task is registered natively in `AppDelegate.swift`
+(`WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "backgroundTask",
+frequency: 24h)`, the shortest `CheckFrequency`). The Dart
+`registerPeriodicTask(... initialDelay: interval ~/ 2)` only affects the first
+run; after that `workmanager_apple` reschedules the task daily regardless of
+the chosen frequency (and iOS may run it later than requested, never earlier).
+With `weekly`, the daily wake-ups on days 1–6 therefore exit early and the one
+on day ~7 checks. With `daily` nothing changes.
+
+**On Android no run is skipped**: WorkManager already runs the task at the
+requested interval, and the 10% tolerance absorbs the scheduling jitter.
+
+`backgroundTestMain()` deliberately doesn't go through `backgroundRun`: its fake
+language was just "downloaded", so the run the integration test needs would be
+skipped.
+The decision is unit-tested per `CheckFrequency` in
+`test/background_check_frequency_test.dart`, driving `backgroundRun` with an
+injected `now` and a counting `MockClient`.
 
 ### `backgroundCheck(ProviderContainer ref)` — phase 1
 For each language code in `availableLanguagesProvider`:
@@ -156,7 +194,7 @@ Two tests, both running on a real Android emulator (CI uses `reactivecircus/andr
 
 2. **"Test synchronization with main isolate"** — full happy-path: mount `App4Training` with `appLanguage='de'`, open settings to warm `languageStatusProvider`, fire the background task, then open a worksheet and verify the `foundBgActivity` snackbar appears.
 
-`backgroundTestMain()` mirrors `backgroundMain()`'s two-phase flow
+`backgroundTestMain()` mirrors `backgroundMain()`'s two-phase flow (without skipping runs based on `CheckFrequency`)
 (`backgroundCheck` then `backgroundDownload`) with a `FakeConnectivityService`,
 so the integration test exercises the full check-then-download path
 deterministically. The fixtures use `MemoryFileSystem`,
