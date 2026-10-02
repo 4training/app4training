@@ -178,6 +178,7 @@ class LanguageController extends Notifier<Language> {
   /// Returns true when the language is now available, false if not
   Future<bool> lazyInit() async {
     final downloader = ref.read(languageDownloaderProvider);
+    await downloader.restoreInterruptedDownload(languageCode);
     String path = join(
       downloader.pathFor(languageCode),
       Globals.getResourcesDir(languageCode),
@@ -220,6 +221,7 @@ class LanguageController extends Notifier<Language> {
     final fileSystem = ref.watch(fileSystemProvider);
 
     try {
+      await downloader.restoreInterruptedDownload(languageCode);
       // Now we store the full path to the language
       String path = join(
         downloader.pathFor(languageCode),

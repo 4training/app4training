@@ -166,6 +166,20 @@ void main() {
     );
   });
 
+  test(
+    'Killed while cleaning up the old version: the leftover is removed '
+    'and the new version kept, so the next download can swap again',
+    () async {
+      await fs.file('/app-docs/assets-it/new.txt').create(recursive: true);
+      await fs.file('/app-docs/assets-it.old/old.txt').create(recursive: true);
+
+      await downloader.restoreInterruptedDownload('it');
+
+      expect(await fs.file('/app-docs/assets-it/new.txt').exists(), true);
+      expect(await fs.directory('/app-docs/assets-it.old').exists(), false);
+    },
+  );
+
   test('Different languages download in parallel', () async {
     final deHtmlGate = Completer<void>();
     final frHtmlGate = Completer<void>();

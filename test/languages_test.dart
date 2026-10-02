@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:app4training/background/background_test.dart';
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
+import 'package:app4training/data/language_downloader.dart';
+import 'package:dio/dio.dart';
 import 'package:file/chroot.dart';
 import 'package:file/local.dart';
 import 'package:file/memory.dart';
@@ -386,5 +388,42 @@ void main() {
       ],
     );
     expect(ref.read(countDownloadedLanguagesProvider), 3);
+  });
+
+  group('A download killed between its two renames (e.g. by iOS expiring '
+      'the background task) restores the previous version', () {
+    /// German was moved to assets-de.old, but staging never replaced it
+    Future<ProviderContainer> interruptedSwap() async {
+      final fileSystem = await createTestFileSystem();
+      await fileSystem.directory('assets-de').rename('assets-de.old');
+      return ProviderContainer(
+        overrides: [
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+          languageDownloaderProvider.overrideWithValue(
+            LanguageDownloaderImpl(
+              root: '',
+              dio: Dio(),
+              fileSystem: fileSystem,
+            ),
+          ),
+        ],
+      );
+    }
+
+    test('lazyInit()', () async {
+      final ref = await interruptedSwap();
+      expect(await ref.read(languageProvider('de').notifier).lazyInit(), true);
+      expect(ref.read(languageProvider('de')).downloaded, true);
+      expect(
+        await ref.read(fileSystemProvider).directory('assets-de.old').exists(),
+        false,
+      );
+    });
+
+    test('init()', () async {
+      final ref = await interruptedSwap();
+      expect(await ref.read(languageProvider('de').notifier).init(), true);
+      expect(ref.read(languageProvider('de')).downloaded, true);
+    });
   });
 }

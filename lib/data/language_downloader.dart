@@ -53,6 +53,12 @@ abstract interface class LanguageDownloader {
   String pathFor(String langCode);
   Future<bool> isDownloaded(String langCode);
   Future<void> download(String langCode);
+
+  /// Bring back the previous version of a language if a [download] was
+  /// killed (e.g. iOS expiring the background task) after moving it aside
+  /// but before the new version took its place. Call this before looking
+  /// at the language on disk.
+  Future<void> restoreInterruptedDownload(String langCode);
   Future<void> delete(String langCode);
 }
 
@@ -80,6 +86,21 @@ class LanguageDownloaderImpl implements LanguageDownloader {
   @override
   Future<bool> isDownloaded(String langCode) =>
       _fileSystem.directory(pathFor(langCode)).exists();
+
+  @override
+  Future<void> restoreInterruptedDownload(String langCode) async {
+    // A download in progress is mid-swap on purpose - leave it alone
+    if (_inFlightByLang.containsKey(langCode)) return;
+    final dest = pathFor(langCode);
+    final oldDir = _fileSystem.directory('$dest.old');
+    if (!await oldDir.exists()) return;
+    if (await _fileSystem.directory(dest).exists()) {
+      // The swap completed, only the cleanup of the old version is missing
+      await oldDir.delete(recursive: true);
+    } else {
+      await oldDir.rename(dest);
+    }
+  }
 
   @override
   Future<void> download(String langCode) async {

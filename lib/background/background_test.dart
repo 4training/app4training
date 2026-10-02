@@ -51,6 +51,9 @@ class FakeLanguageDownloader implements LanguageDownloader {
   }
 
   @override
+  Future<void> restoreInterruptedDownload(String langCode) async {}
+
+  @override
   Future<void> delete(String langCode) async {
     deleteCalls += 1;
     final dir = fileSystem.directory(pathFor(langCode));
