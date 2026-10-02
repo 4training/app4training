@@ -33,6 +33,66 @@ void backgroundTask() {
 4. Calls **`backgroundRun(ref)`**, which first
    [skips the run if the check frequency isn't due yet](#skipping-runs-before-the-check-frequency-is-due)
    and otherwise runs the two-phase flow: **`backgroundCheck(ref)`** (phase 1) then **`backgroundDownload(ref)`** (phase 2).
+   On iOS phase 2 doesn't run here — see
+   [iOS: downloads run in a separate processing task](#ios-downloads-run-in-a-separate-processing-task).
+
+### iOS: downloads run in a separate processing task
+On iOS the periodic task is a `BGAppRefreshTask`, which gets roughly **30
+seconds** — enough to start the headless engine and check every language, but
+not to download whole languages. So the work is split into two iOS tasks:
+
+1. **`backgroundTask`** (refresh task, daily): `backgroundMain()` calls
+   `backgroundRun(ref, deferDownload: ...)`. After phase 1, instead of
+   downloading, it calls `deferDownload` if
+   - `AutomaticUpdates` is `onlyOnWifi` or `yesAlways`, **and**
+   - at least one language has `updatesAvailable`.
+
+   `deferDownload` submits the processing task with
+   `Workmanager().registerProcessingTask('backgroundDownload', ...,
+   constraints: Constraints(networkType: NetworkType.connected))`
+   (→ `requiresNetworkConnectivity`). Submitting again replaces a pending
+   request, so repeated runs don't pile up tasks.
+2. **`backgroundDownload`** (`BGProcessingTask`, `processing` background mode):
+   iOS runs it when it sees fit — usually while the device is idle, often
+   charging and on WiFi — and gives it several minutes. `backgroundTask()`
+   routes it to `backgroundDownloadMain()`, which builds a fresh container and
+   runs **`backgroundDownload(ref)`** (phase 2). That re-reads
+   `AutomaticUpdates` and, for `onlyOnWifi`, the connection type *at that
+   moment*.
+
+`onlyOnWifi` on mobile data during the check still schedules the processing
+task: it typically runs later, likely on WiFi, and checks the connection
+before downloading anything.
+
+Native setup: `ios/Runner/Info.plist` lists `processing` in
+`UIBackgroundModes` and `backgroundDownload` in
+`BGTaskSchedulerPermittedIdentifiers`; `AppDelegate.swift` calls
+`WorkmanagerPlugin.registerBGProcessingTask(withIdentifier:
+"backgroundDownload")`. The identifier must match `backgroundDownloadTask` in
+`background_task.dart`.
+
+**Android is unchanged**: `backgroundMain()` passes no `deferDownload`, so
+WorkManager's task downloads right after checking (it has no comparable time
+limit).
+
+#### When iOS cancels a download
+If iOS expires the processing task, the process is suspended or killed
+mid-download. `LanguageDownloaderImpl.download` never touches the installed
+version until the very end: it extracts into `assets-<lang>.staging`, then
+swaps with two renames (`assets-<lang>` → `assets-<lang>.old`, staging →
+`assets-<lang>`). A kill before the swap only leaves a staging dir, which the
+next download removes. A kill **between the two renames** would leave only
+`assets-<lang>.old` — the language would look deleted. So
+`LanguageDownloader.restoreInterruptedDownload(lang)` renames `.old` back
+(or, if the swap already finished, deletes the leftover `.old`, which would
+otherwise make the next swap fail). `LanguageController.lazyInit()` and
+`init()` call it before looking at the language on disk, so the previous
+version is back the first time the app (or the next background run) looks at
+the language.
+
+The split is unit-tested in `test/background_ios_download_split_test.dart`
+(`backgroundRun` with a counting `deferDownload`); the recovery in
+`test/languages_test.dart` and `test/language_downloader_test.dart`.
 
 ### Skipping runs before the check frequency is due
 `backgroundRun(ref, {now})` exits early — no check, no download, no network
