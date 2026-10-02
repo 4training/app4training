@@ -43,6 +43,8 @@ void backgroundTask() {
         // Send a message to indicate we're finished
         final sendPort = IsolateNameServer.lookupPortByName('test');
         if (sendPort != null) sendPort.send('success');
+      } else if (task == backgroundDownloadTask) {
+        await backgroundDownloadMain();
       } else {
         await backgroundMain();
       }
@@ -53,8 +55,36 @@ void backgroundTask() {
   });
 }
 
+/// Unique name of the iOS processing task that downloads the updates found by
+/// the periodic task. Must match Info.plist's
+/// BGTaskSchedulerPermittedIdentifiers and the registration in AppDelegate.
+const backgroundDownloadTask = 'backgroundDownload';
+
 Future<void> backgroundMain() async {
   await writeLog("Background task is starting...");
+  final ref = await _createBackgroundContainer();
+  await backgroundRun(
+    ref,
+    deferDownload: Platform.isIOS ? _scheduleDownloadTask : null,
+  );
+}
+
+/// iOS processing task: download the updates the periodic task found
+Future<void> backgroundDownloadMain() async {
+  await writeLog("Background download task is starting...");
+  final ref = await _createBackgroundContainer();
+  await backgroundDownload(ref);
+}
+
+/// iOS: hand the downloads over to a BGProcessingTask, which may run for
+/// several minutes (usually while the device is idle).
+Future<void> _scheduleDownloadTask() => Workmanager().registerProcessingTask(
+  backgroundDownloadTask,
+  backgroundDownloadTask,
+  constraints: Constraints(networkType: NetworkType.connected),
+);
+
+Future<ProviderContainer> _createBackgroundContainer() async {
   final prefs = await SharedPreferences.getInstance();
   final appDocsDir = await getApplicationDocumentsDirectory();
   final languageDownloader = LanguageDownloaderImpl(
@@ -63,15 +93,13 @@ Future<void> backgroundMain() async {
     fileSystem: const LocalFileSystem(),
   );
 
-  final ref = ProviderContainer(
+  return ProviderContainer(
     overrides: [
       sharedPrefsProvider.overrideWithValue(prefs),
       languageDownloaderProvider.overrideWithValue(languageDownloader),
       connectivityServiceProvider.overrideWithValue(ConnectivityServiceImpl()),
     ],
   );
-
-  await backgroundRun(ref);
 }
 
 /// One run of the background task: check for updates, then download them.
@@ -85,7 +113,15 @@ Future<void> backgroundMain() async {
 /// is written a bit later, and the OS doesn't fire exactly on time either.
 /// This way no run is skipped on Android, where WorkManager already runs at
 /// the requested interval.
-Future<void> backgroundRun(ProviderContainer ref, {DateTime? now}) async {
+///
+/// With [deferDownload] (iOS), updates aren't downloaded here: the refresh
+/// task only gets ~30 seconds. Instead [deferDownload] is called when the
+/// AutomaticUpdates setting may allow downloading them.
+Future<void> backgroundRun(
+  ProviderContainer ref, {
+  DateTime? now,
+  Future<void> Function()? deferDownload,
+}) async {
   final lastChecked = await mostRecentCheck(ref);
   final interval = ref.read(checkFrequencyProvider).getDuration();
   now ??= DateTime.now().toUtc();
@@ -100,6 +136,24 @@ Future<void> backgroundRun(ProviderContainer ref, {DateTime? now}) async {
 
   // Phase 1: check every downloaded language for updates
   await backgroundCheck(ref);
+
+  if (deferDownload != null) {
+    // iOS: the refresh task only gets ~30 seconds, too little to download
+    // whole languages. Leave that to a processing task, which re-checks the
+    // setting and (for onlyOnWifi) the connection type once it runs.
+    final automaticUpdates = ref.read(automaticUpdatesProvider);
+    final mayDownload =
+        automaticUpdates == AutomaticUpdates.onlyOnWifi ||
+        automaticUpdates == AutomaticUpdates.yesAlways;
+    final updatesAvailable = ref
+        .read(availableLanguagesProvider)
+        .any((code) => ref.read(languageStatusProvider(code)).updatesAvailable);
+    if (mayDownload && updatesAvailable) {
+      await writeLog('Deferring downloads to a processing task');
+      await deferDownload();
+    }
+    return;
+  }
 
   // Phase 2: download the languages that have updates, gated by the user's
   // AutomaticUpdates setting and (for onlyOnWifi) the current connection type

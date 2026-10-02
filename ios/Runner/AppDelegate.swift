@@ -19,6 +19,11 @@ import workmanager_apple
       withIdentifier: "backgroundTask",
       frequency: NSNumber(value: 24 * 60 * 60)
     )
+    // The periodic task above only checks for updates; it schedules this
+    // processing task to download them, as that takes longer than the ~30
+    // seconds a refresh task gets. Must match backgroundDownloadTask in
+    // background_task.dart and Info.plist's BGTaskSchedulerPermittedIdentifiers.
+    WorkmanagerPlugin.registerBGProcessingTask(withIdentifier: "backgroundDownload")
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
