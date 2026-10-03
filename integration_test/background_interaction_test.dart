@@ -33,8 +33,10 @@ void main() async {
       completer.complete(data);
     });
     await Workmanager().initialize(backgroundTask);
+    // On iOS the background isolate receives the unique name as task name,
+    // on Android the task name - so use 'testTask' for both
     await Workmanager().registerOneOffTask(
-      "task-identifier",
+      "testTask",
       "testTask",
       initialDelay: const Duration(seconds: 2),
     );
@@ -102,8 +104,10 @@ void main() async {
     await tester.pumpAndSettle();
 
     await Workmanager().initialize(backgroundTask);
+    // On iOS the background isolate receives the unique name as task name,
+    // on Android the task name - so use 'testTask' for both
     await Workmanager().registerOneOffTask(
-      "task-identifier",
+      "testTask",
       "testTask",
       initialDelay: const Duration(seconds: 2),
     );
