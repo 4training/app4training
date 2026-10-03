@@ -11,18 +11,19 @@ class LoadingAnimation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Center(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          const Spacer(flex: 10),
-          const Expanded(child: CircularProgressIndicator()),
-          const Spacer(),
-          Expanded(child: caption),
-          const Spacer(flex: 10)
-        ],
+      body: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            const Spacer(flex: 10),
+            const Expanded(child: CircularProgressIndicator()),
+            const Spacer(),
+            Expanded(child: caption),
+            const Spacer(flex: 10),
+          ],
+        ),
       ),
-    ));
+    );
   }
 }
 

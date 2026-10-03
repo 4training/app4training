@@ -22,10 +22,11 @@ class TestViewPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.read(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const ViewPage('Healing', 'de'));
+      locale: ref.read(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const ViewPage('Healing', 'de'),
+    );
   }
 }
 
@@ -33,11 +34,16 @@ void main() {
   testWidgets('Test normal behaviour', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      pageContentProvider.overrideWith((ref, page) async => 'TestContent'),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ], child: const TestViewPage()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          pageContentProvider.overrideWith((ref, page) async => 'TestContent'),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: const TestViewPage(),
+      ),
+    );
 
     expect(prefs.getString('recentPage'), isNull);
     expect(prefs.getString('recentLang'), isNull);
@@ -58,81 +64,119 @@ void main() {
     expect(find.byType(ShareButton), findsOneWidget);
   });
 
-  testWidgets('Test LanguageNotDownloadedException handling',
-      (WidgetTester tester) async {
+  testWidgets('Test LanguageNotDownloadedException handling', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      pageContentProvider.overrideWith(
-          (ref, arg) async => throw LanguageNotDownloadedException('de')),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ], child: const TestViewPage()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          pageContentProvider.overrideWith(
+            (ref, arg) async => throw LanguageNotDownloadedException('de'),
+          ),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: const TestViewPage(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Now we should see a warning (in German)
     expect(find.byIcon(Icons.warning_amber), findsOneWidget);
     expect(find.text('Warnung'), findsOneWidget);
     expect(
-        find.textContaining(
-            'Kann Seite "Healing" nicht auf Deutsch (de) anzeigen'),
-        findsOneWidget);
+      find.textContaining(
+        'Kann Seite "Healing" nicht auf Deutsch (de) anzeigen',
+      ),
+      findsOneWidget,
+    );
     expect(find.textContaining('Sprache ist nicht verfügbar'), findsOneWidget);
   });
 
-  testWidgets('Test PageNotFoundException handling',
-      (WidgetTester tester) async {
+  testWidgets('Test PageNotFoundException handling', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      pageContentProvider.overrideWith(
-          (ref, page) async => throw PageNotFoundException('Healing', 'de')),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ], child: const TestViewPage()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          pageContentProvider.overrideWith(
+            (ref, page) async => throw PageNotFoundException('Healing', 'de'),
+          ),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: const TestViewPage(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Now we should see a warning (in German)
     expect(find.byIcon(Icons.warning_amber), findsOneWidget);
     expect(find.text('Warnung'), findsOneWidget);
     expect(
-        find.textContaining(
-            'Kann Seite "Healing" nicht auf Deutsch (de) anzeigen'),
-        findsOneWidget);
-    expect(find.textContaining('Seite Healing/de konnte nicht gefunden werden'),
-        findsOneWidget);
+      find.textContaining(
+        'Kann Seite "Healing" nicht auf Deutsch (de) anzeigen',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Seite Healing/de konnte nicht gefunden werden'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('Test LanguageCorruptedException handling',
-      (WidgetTester tester) async {
+  testWidgets('Test LanguageCorruptedException handling', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      pageContentProvider.overrideWith((ref, page) async =>
-          throw LanguageCorruptedException('de', 'BadLuck')),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ], child: const TestViewPage()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+          pageContentProvider.overrideWith(
+            (ref, page) async =>
+                throw LanguageCorruptedException('de', 'BadLuck'),
+          ),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: const TestViewPage(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Now we should see an error message in German
     expect(find.byIcon(Icons.error), findsOneWidget);
     expect(find.text('Error'), findsOneWidget);
     expect(
-        find.textContaining(
-            "Language data for 'German (de)' seems to be corrupted"),
-        findsOneWidget);
+      find.textContaining(
+        "Language data for 'German (de)' seems to be corrupted",
+      ),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('Test unexpected exception handling',
-      (WidgetTester tester) async {
+  testWidgets('Test unexpected exception handling', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      pageContentProvider.overrideWith((ref, arg) async => throw TestFailure),
-      sharedPrefsProvider.overrideWith((ref) => prefs)
-    ], child: const TestViewPage()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          pageContentProvider.overrideWith(
+            (ref, arg) async => throw TestFailure,
+          ),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: const TestViewPage(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Now we should see an error (internalError in German)

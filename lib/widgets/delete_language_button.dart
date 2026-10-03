@@ -23,29 +23,35 @@ class DeleteLanguageButton extends ConsumerWidget {
     LanguageController lang = ref.read(languageProvider(languageCode).notifier);
 
     return IconButton(
-        onPressed: () async {
-          // snackbar to be shown after the resources are deleted
-          final snackBar = SnackBar(
-            content: Text(context.l10n
-                .deletedLanguage(context.l10n.getLanguageName(languageCode))),
-            duration: snackBarQuickSuccessDuration,
+      onPressed: () async {
+        // snackbar to be shown after the resources are deleted
+        final snackBar = SnackBar(
+          content: Text(
+            context.l10n.deletedLanguage(
+              context.l10n.getLanguageName(languageCode),
+            ),
+          ),
+          duration: snackBarQuickSuccessDuration,
+        );
+        if (isDiscouraged) {
+          bool result = await showDialog(
+            context: context,
+            builder: (context) {
+              return const ConfirmDeletionDialog();
+            },
           );
-          if (isDiscouraged) {
-            bool result = await showDialog(
-                context: context,
-                builder: (context) {
-                  return const ConfirmDeletionDialog();
-                });
-            if (!result) return;
-          }
-          await lang.deleteResources();
-          ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
-        },
-        icon: const Icon(Icons.delete),
-        color: isDiscouraged
-            ? Theme.of(context).colorScheme.inversePrimary
-            : Theme.of(context).colorScheme.primary,
-        padding: EdgeInsets.zero);
+          if (!result) return;
+        }
+        await lang.deleteResources();
+        ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
+      },
+      icon: const Icon(Icons.delete),
+      color:
+          isDiscouraged
+              ? Theme.of(context).colorScheme.inversePrimary
+              : Theme.of(context).colorScheme.primary,
+      padding: EdgeInsets.zero,
+    );
   }
 }
 
@@ -57,38 +63,40 @@ class DeleteAllLanguagesButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return IconButton(
-        onPressed: () async {
-          // snackbar to be shown after the resources are deleted
-          // Get l10n now as we can't access context after async gap later
-          AppLocalizations l10n = context.l10n;
-          int countDeleted = 0;
-          String lastLanguage = '';
-          for (var languageCode in ref.read(availableLanguagesProvider)) {
-            // Delete all languages except the current app language
-            if (languageCode == ref.read(appLanguageProvider).languageCode) {
-              continue;
-            }
-            if (ref.watch(languageProvider(languageCode)).downloaded) {
-              await ref
-                  .read(languageProvider(languageCode).notifier)
-                  .deleteResources();
-              countDeleted++;
-              lastLanguage = languageCode;
-            }
+      onPressed: () async {
+        // snackbar to be shown after the resources are deleted
+        // Get l10n now as we can't access context after async gap later
+        AppLocalizations l10n = context.l10n;
+        int countDeleted = 0;
+        String lastLanguage = '';
+        for (var languageCode in ref.read(availableLanguagesProvider)) {
+          // Delete all languages except the current app language
+          if (languageCode == ref.read(appLanguageProvider).languageCode) {
+            continue;
           }
+          if (ref.watch(languageProvider(languageCode)).downloaded) {
+            await ref
+                .read(languageProvider(languageCode).notifier)
+                .deleteResources();
+            countDeleted++;
+            lastLanguage = languageCode;
+          }
+        }
 
-          if (countDeleted > 0) {
-            // Show info message in snackbar
-            String text = (countDeleted == 1)
-                ? l10n.deletedLanguage(l10n.getLanguageName(lastLanguage))
-                : l10n.deletedNLanguages(countDeleted);
-            final snackBar = SnackBar(content: Text(text));
-            ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
-          }
-        },
-        icon: const Icon(Icons.delete),
-        color: Theme.of(context).colorScheme.primary,
-        padding: EdgeInsets.zero);
+        if (countDeleted > 0) {
+          // Show info message in snackbar
+          String text =
+              (countDeleted == 1)
+                  ? l10n.deletedLanguage(l10n.getLanguageName(lastLanguage))
+                  : l10n.deletedNLanguages(countDeleted);
+          final snackBar = SnackBar(content: Text(text));
+          ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
+        }
+      },
+      icon: const Icon(Icons.delete),
+      color: Theme.of(context).colorScheme.primary,
+      padding: EdgeInsets.zero,
+    );
   }
 }
 
@@ -100,19 +108,22 @@ class ConfirmDeletionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: Text(context.l10n.warning),
-        content: Text(context.l10n.warnBeforeDelete),
-        actions: <Widget>[
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: Text(context.l10n.cancel)),
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: Text(context.l10n.delete))
-        ]);
+      title: Text(context.l10n.warning),
+      content: Text(context.l10n.warnBeforeDelete),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(false);
+          },
+          child: Text(context.l10n.cancel),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(true);
+          },
+          child: Text(context.l10n.delete),
+        ),
+      ],
+    );
   }
 }

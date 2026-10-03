@@ -7,16 +7,21 @@ import 'package:app4training/data/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('Test DropdownButtonAutomaticUpdates with yesAlways',
-      (WidgetTester tester) async {
+  testWidgets('Test DropdownButtonAutomaticUpdates with yesAlways', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({'automaticUpdates': 'yesAlways'});
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(
+    await tester.pumpWidget(
+      ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
         child: const MaterialApp(
-            // We need the following to access l10n; Locale is default en_US
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            home: Scaffold(body: DropdownButtonAutomaticUpdates()))));
+          // We need the following to access l10n; Locale is default en_US
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: Scaffold(body: DropdownButtonAutomaticUpdates()),
+        ),
+      ),
+    );
 
     // Verify initial value
     expect(prefs.getString('automaticUpdates'), 'yesAlways');
@@ -38,17 +43,23 @@ void main() {
     expect(prefs.getString('automaticUpdates'), 'never');
   });
 
-  testWidgets('Test DropdownButtonAutomaticUpdates with requireConfirmation',
-      (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues(
-        {'automaticUpdates': 'requireConfirmation'});
+  testWidgets('Test DropdownButtonAutomaticUpdates with requireConfirmation', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'automaticUpdates': 'requireConfirmation',
+    });
     final prefs = await SharedPreferences.getInstance();
-    await tester.pumpWidget(ProviderScope(
+    await tester.pumpWidget(
+      ProviderScope(
         overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
         child: const MaterialApp(
-            // We need the following to access l10n; Locale is default en_US
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            home: Scaffold(body: DropdownButtonAutomaticUpdates()))));
+          // We need the following to access l10n; Locale is default en_US
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: Scaffold(body: DropdownButtonAutomaticUpdates()),
+        ),
+      ),
+    );
 
     // Verify initial value
     expect(prefs.getString('automaticUpdates'), 'requireConfirmation');

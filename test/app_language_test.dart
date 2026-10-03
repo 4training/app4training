@@ -71,7 +71,8 @@ void main() {
       SharedPreferences.setMockInitialValues({'appLanguage': 'de'});
       final prefs = await SharedPreferences.getInstance();
       final ref = ProviderContainer(
-          overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
+        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+      );
 
       expect(prefs.getString('appLanguage'), equals('de'));
       expect(ref.read(appLanguageProvider).languageCode, equals('de'));
@@ -89,7 +90,8 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final ref = ProviderContainer(
-          overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
+        overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+      );
 
       expect(prefs.getString('appLanguage'), isNull);
       expect(ref.read(appLanguageProvider).isSystemDefault, true);
@@ -104,9 +106,11 @@ void main() {
   });
 
   test('Test TestAppLanguage class', () {
-    final ref = ProviderContainer(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de'))
-    ]);
+    final ref = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+      ],
+    );
     expect(ref.read(appLanguageProvider).languageCode, 'de');
     ref.read(appLanguageProvider.notifier).setLocale('en');
     expect(ref.read(appLanguageProvider).languageCode, 'en');

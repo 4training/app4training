@@ -47,11 +47,15 @@ class LanguageCorruptedException extends App4TrainingException
   LanguageCorruptedException(this.languageCode, this.message, [this.exception]);
 
   @override
-  String toString() => AppLocalizationsEn().languageCorrupted(languageCode,
-      (exception == null) ? message : '$message (${exception.toString()})');
+  String toString() => AppLocalizationsEn().languageCorrupted(
+    languageCode,
+    (exception == null) ? message : '$message (${exception.toString()})',
+  );
 
   @override
   String toLocalizedString(BuildContext context) =>
-      context.l10n.languageCorrupted(context.l10n.getLanguageName(languageCode),
-          (exception == null) ? message : '$message (${exception.toString()})');
+      context.l10n.languageCorrupted(
+        context.l10n.getLanguageName(languageCode),
+        (exception == null) ? message : '$message (${exception.toString()})',
+      );
 }

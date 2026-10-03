@@ -51,14 +51,16 @@ class BackgroundResultNotifier extends Notifier<BackgroundResult> {
       DateTime lcTimestampOrig =
           ref.read(languageStatusProvider(languageCode)).lastCheckedTimestamp;
       DateTime? lcTimestamp;
-      String? lcRaw =
-          ref.read(sharedPrefsProvider).getString('lastChecked-$languageCode');
+      String? lcRaw = ref
+          .read(sharedPrefsProvider)
+          .getString('lastChecked-$languageCode');
       if (lcRaw != null) {
         try {
           lcTimestamp = DateTime.parse(lcRaw).toUtc();
         } on FormatException {
           debugPrint(
-              'Error while trying to parse lastChecked timestamp: $lcRaw');
+            'Error while trying to parse lastChecked timestamp: $lcRaw',
+          );
           lcTimestamp = null;
         }
       }
@@ -66,15 +68,19 @@ class BackgroundResultNotifier extends Notifier<BackgroundResult> {
           (lcTimestamp.compareTo(DateTime.now()) <= 0) &&
           lcTimestamp.compareTo(lcTimestampOrig) > 0) {
         // It looks like there has been background activity!
-        debugPrint("Background activity detected for language '$languageCode': "
-            'lastChecked was $lcTimestampOrig, sharedPrefs says $lcTimestamp');
+        debugPrint(
+          "Background activity detected for language '$languageCode': "
+          'lastChecked was $lcTimestampOrig, sharedPrefs says $lcTimestamp',
+        );
         foundBgActivity = true;
         // invalidate the languageStatusProvider so it re-reads its value
         // from the shared preferences on next access
         ref.invalidate(languageStatusProvider(languageCode));
       } else {
-        debugPrint("No background activity for language '$languageCode'. "
-            'lastChecked: $lcTimestampOrig, sharedPrefs says $lcRaw');
+        debugPrint(
+          "No background activity for language '$languageCode'. "
+          'lastChecked: $lcTimestampOrig, sharedPrefs says $lcRaw',
+        );
       }
     }
     debugPrint('Checking for background activity done');
@@ -85,5 +91,5 @@ class BackgroundResultNotifier extends Notifier<BackgroundResult> {
 
 final backgroundResultProvider =
     NotifierProvider<BackgroundResultNotifier, BackgroundResult>(() {
-  return BackgroundResultNotifier();
-});
+      return BackgroundResultNotifier();
+    });

@@ -35,7 +35,7 @@ List<ArchiveEntry> decodeZipEntries(Uint8List zipBytes) {
   final archive = ZipDecoder().decodeBytes(zipBytes);
   return [
     for (final file in archive)
-      (path: file.name, bytes: file.isFile ? file.content : null)
+      (path: file.name, bytes: file.isFile ? file.content : null),
   ];
 }
 
@@ -53,6 +53,12 @@ abstract interface class LanguageDownloader {
   String pathFor(String langCode);
   Future<bool> isDownloaded(String langCode);
   Future<void> download(String langCode);
+
+  /// Bring back the previous version of a language if a [download] was
+  /// killed (e.g. iOS expiring the background task) after moving it aside
+  /// but before the new version took its place. Call this before looking
+  /// at the language on disk.
+  Future<void> restoreInterruptedDownload(String langCode);
   Future<void> delete(String langCode);
 }
 
@@ -82,6 +88,21 @@ class LanguageDownloaderImpl implements LanguageDownloader {
       _fileSystem.directory(pathFor(langCode)).exists();
 
   @override
+  Future<void> restoreInterruptedDownload(String langCode) async {
+    // A download in progress is mid-swap on purpose - leave it alone
+    if (_inFlightByLang.containsKey(langCode)) return;
+    final dest = pathFor(langCode);
+    final oldDir = _fileSystem.directory('$dest.old');
+    if (!await oldDir.exists()) return;
+    if (await _fileSystem.directory(dest).exists()) {
+      // The swap completed, only the cleanup of the old version is missing
+      await oldDir.delete(recursive: true);
+    } else {
+      await oldDir.rename(dest);
+    }
+  }
+
+  @override
   Future<void> download(String langCode) async {
     // Serialize per language; different languages may download in parallel
     while (_inFlightByLang.containsKey(langCode)) {
@@ -103,17 +124,18 @@ class LanguageDownloaderImpl implements LanguageDownloader {
 
       // Download both zips concurrently
       final results = await PerfLogger.span(
-          'download.fetchZips',
-          () => Future.wait([
-                _dio.get<List<int>>(
-                  Globals.getRemoteUrlHtml(langCode),
-                  options: Options(responseType: ResponseType.bytes),
-                ),
-                _dio.get<List<int>>(
-                  Globals.getRemoteUrlPdf(langCode),
-                  options: Options(responseType: ResponseType.bytes),
-                ),
-              ]));
+        'download.fetchZips',
+        () => Future.wait([
+          _dio.get<List<int>>(
+            Globals.getRemoteUrlHtml(langCode),
+            options: Options(responseType: ResponseType.bytes),
+          ),
+          _dio.get<List<int>>(
+            Globals.getRemoteUrlPdf(langCode),
+            options: Options(responseType: ResponseType.bytes),
+          ),
+        ]),
+      );
 
       // Extract both zips into staging
       for (final response in results) {
@@ -155,9 +177,11 @@ class LanguageDownloaderImpl implements LanguageDownloader {
     final bytes = zipData is Uint8List ? zipData : Uint8List.fromList(zipData);
     // The span includes time spent queueing for a decode slot - on a slow
     // device that wait is part of what the user experiences
-    final entries = await PerfLogger.span('download.decodeZip',
-        () => _zipDecodeLimit.run(() => _decodeZip(bytes)),
-        data: () => {'zipBytes': bytes.length});
+    final entries = await PerfLogger.span(
+      'download.decodeZip',
+      () => _zipDecodeLimit.run(() => _decodeZip(bytes)),
+      data: () => {'zipBytes': bytes.length},
+    );
 
     await PerfLogger.span('download.writeFiles', () async {
       // An archive holds hundreds of files in a handful of directories, so

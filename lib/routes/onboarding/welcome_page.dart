@@ -14,8 +14,9 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text(Globals.appTitle)),
-        body: const SafeArea(child: WelcomeScreen()));
+      appBar: AppBar(title: const Text(Globals.appTitle)),
+      body: const SafeArea(child: WelcomeScreen()),
+    );
   }
 }
 
@@ -33,48 +34,58 @@ class WelcomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints viewportConstraints) {
-      return SingleChildScrollView(
+      builder: (BuildContext context, BoxConstraints viewportConstraints) {
+        return SingleChildScrollView(
           child: ConstrainedBox(
-              constraints:
-                  BoxConstraints(minHeight: viewportConstraints.maxHeight),
-              child: IntrinsicHeight(
-                  child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Spacer(),
-                          Text(context.l10n.welcome,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontSize: 40, fontWeight: FontWeight.bold)),
-                          const Spacer(),
-                          Text(context.l10n.selectAppLanguage),
-                          const SizedBox(height: 20),
-                          const DropdownButtonAppLanguage(),
-                          const Spacer(),
-                          const Divider(),
-                          const PromoBlock(),
-                          const Spacer(flex: 2),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: const StadiumBorder(),
-                            ),
-                            onPressed: () {
-                              // Make sure appLanguage is now saved
-                              // so that WelcomePage won't be shown again next time
-                              ref
-                                  .read(appLanguageProvider.notifier)
-                                  .persistNow();
-                              Navigator.pushReplacementNamed(
-                                  context, '/onboarding/2');
-                            },
-                            child: Text(context.l10n.continueText),
-                          ),
-                        ],
-                      )))));
-    });
+            constraints: BoxConstraints(
+              minHeight: viewportConstraints.maxHeight,
+            ),
+            child: IntrinsicHeight(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Spacer(),
+                    Text(
+                      context.l10n.welcome,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(context.l10n.selectAppLanguage),
+                    const SizedBox(height: 20),
+                    const DropdownButtonAppLanguage(),
+                    const Spacer(),
+                    const Divider(),
+                    const PromoBlock(),
+                    const Spacer(flex: 2),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: const StadiumBorder(),
+                      ),
+                      onPressed: () {
+                        // Make sure appLanguage is now saved
+                        // so that WelcomePage won't be shown again next time
+                        ref.read(appLanguageProvider.notifier).persistNow();
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/onboarding/2',
+                        );
+                      },
+                      child: Text(context.l10n.continueText),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -101,8 +112,11 @@ class PromoBlock extends StatelessWidget {
         const SizedBox(height: 10),
         Image.asset('assets/for_training.png', width: 100, height: 100),
         Center(
-            child: Text(context.l10n.appName,
-                style: Theme.of(context).textTheme.headlineMedium)),
+          child: Text(
+            context.l10n.appName,
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+        ),
         const SizedBox(height: 10),
         Align(
           alignment: Alignment.center,
@@ -125,10 +139,10 @@ class PromoBlock extends StatelessWidget {
               Text(
                 '• ${context.l10n.promoFeature3}',
                 style: Theme.of(context).textTheme.bodyLarge,
-              )
+              ),
             ],
           ),
-        )
+        ),
       ],
     );
   }

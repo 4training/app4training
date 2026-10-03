@@ -16,11 +16,14 @@ class LanguageSelectionButton extends ConsumerWidget {
     final List<MenuItemButton> menuItems = [];
 
     // Sort languages alphabetically
-    List<String> sortedLanguages =
-        List.from(ref.read(availableLanguagesProvider));
-    sortedLanguages.sort((a, b) => context.l10n
-        .getLanguageName(a)
-        .compareTo(context.l10n.getLanguageName(b)));
+    List<String> sortedLanguages = List.from(
+      ref.read(availableLanguagesProvider),
+    );
+    sortedLanguages.sort(
+      (a, b) => context.l10n
+          .getLanguageName(a)
+          .compareTo(context.l10n.getLanguageName(b)),
+    );
 
     // Construct items for all available translations of the current page
     for (var langCode in sortedLanguages) {
@@ -30,24 +33,25 @@ class LanguageSelectionButton extends ConsumerWidget {
           context.findAncestorWidgetOfExactType<ViewPage>()!.page;
       if (!language.pages.containsKey(currentPage)) continue;
 
-      menuItems.add(MenuItemButton(
-        onPressed: () {
-          Navigator.pushNamed(context, "/view/$currentPage/$langCode");
-        },
-        child: Text(context.l10n.getLanguageName(langCode)),
-      ));
+      menuItems.add(
+        MenuItemButton(
+          onPressed: () {
+            Navigator.pushNamed(context, "/view/$currentPage/$langCode");
+          },
+          child: Text(context.l10n.getLanguageName(langCode)),
+        ),
+      );
     }
 
     final menuController = MenuController();
     return MenuAnchor(
-      style: MenuStyle(
-        maximumSize: WidgetStatePropertyAll(
-          Size(400, 500),
-        ),
-      ),
+      style: MenuStyle(maximumSize: WidgetStatePropertyAll(Size(400, 500))),
       controller: menuController,
-      builder:
-          (BuildContext context, MenuController controller, Widget? child) {
+      builder: (
+        BuildContext context,
+        MenuController controller,
+        Widget? child,
+      ) {
         return IconButton(
           onPressed: () {
             if (controller.isOpen) {
@@ -71,22 +75,21 @@ class LanguageSelectionButton extends ConsumerWidget {
               // TODO better 2-column design for odd numbers of languages
               menuItems.length > 10
                   ? Row(
-                      children: [
-                        Flexible(
-                          fit: FlexFit.loose,
-                          child: Column(
-                            children:
-                                menuItems.sublist(0, menuItems.length ~/ 2),
-                          ),
+                    children: [
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: Column(
+                          children: menuItems.sublist(0, menuItems.length ~/ 2),
                         ),
-                        Flexible(
-                          fit: FlexFit.loose,
-                          child: Column(
-                              children:
-                                  menuItems.sublist(menuItems.length ~/ 2)),
-                        )
-                      ],
-                    )
+                      ),
+                      Flexible(
+                        fit: FlexFit.loose,
+                        child: Column(
+                          children: menuItems.sublist(menuItems.length ~/ 2),
+                        ),
+                      ),
+                    ],
+                  )
                   : Column(children: menuItems),
               const Divider(),
               ListTile(

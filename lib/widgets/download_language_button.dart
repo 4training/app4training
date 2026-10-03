@@ -14,8 +14,11 @@ class DownloadLanguageButton extends ConsumerStatefulWidget {
 
   /// Should the button be highlighted?
   final bool highlight;
-  const DownloadLanguageButton(this.languageCode,
-      {this.highlight = false, super.key});
+  const DownloadLanguageButton(
+    this.languageCode, {
+    this.highlight = false,
+    super.key,
+  });
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -28,44 +31,62 @@ class _DownloadLanguageButtonState
 
   @override
   Widget build(BuildContext context) {
-    LanguageController lang =
-        ref.watch(languageProvider(widget.languageCode).notifier);
+    LanguageController lang = ref.watch(
+      languageProvider(widget.languageCode).notifier,
+    );
 
-    Widget ourWidget = _isLoading
-        ? const Center(
-            child: SizedBox(
-                height: 24, width: 24, child: CircularProgressIndicator()))
-        : IconButton(
-            onPressed: () async {
-              setState(() {
-                _isLoading = true;
-              });
-              // Get l10n now as we can't access context after async gap later
-              AppLocalizations l10n = context.l10n;
+    Widget ourWidget =
+        _isLoading
+            ? const Center(
+              child: SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(),
+              ),
+            )
+            : IconButton(
+              onPressed: () async {
+                setState(() {
+                  _isLoading = true;
+                });
+                // Get l10n now as we can't access context after async gap later
+                AppLocalizations l10n = context.l10n;
 
-              bool success = await lang.download();
+                bool success = await lang.download();
 
-              ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
-                  duration: success
-                      ? snackBarQuickSuccessDuration
-                      : snackBarErrorDuration,
-                  content: Text(success
-                      ? l10n.downloadedLanguage(
-                          l10n.getLanguageName(widget.languageCode))
-                      : l10n.downloadError)));
-              setState(() {
-                _isLoading = false;
-              });
-            },
-            icon: const Icon(Icons.download),
-            padding: EdgeInsets.zero);
+                ref
+                    .watch(scaffoldMessengerProvider)
+                    .showSnackBar(
+                      SnackBar(
+                        duration:
+                            success
+                                ? snackBarQuickSuccessDuration
+                                : snackBarErrorDuration,
+                        content: Text(
+                          success
+                              ? l10n.downloadedLanguage(
+                                l10n.getLanguageName(widget.languageCode),
+                              )
+                              : l10n.downloadError,
+                        ),
+                      ),
+                    );
+                setState(() {
+                  _isLoading = false;
+                });
+              },
+              icon: const Icon(Icons.download),
+              padding: EdgeInsets.zero,
+            );
 
     return widget.highlight
         ? Container(
-            decoration: BoxDecoration(
-                color: Theme.of(context).highlightColor,
-                borderRadius: BorderRadius.circular(8.0)),
-            child: ourWidget)
+          decoration: BoxDecoration(
+            color: Theme.of(context).highlightColor,
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: ourWidget,
+        )
         : ourWidget;
   }
 }
@@ -93,65 +114,82 @@ class _DownloadAllLanguagesButtonState
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Row(mainAxisSize: MainAxisSize.min, children: [
-        SizedBox(
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
             height: 24,
             width: 24,
             child: CircularProgressIndicator(
-                value: _total == 0 ? null : _completed / _total)),
-        const SizedBox(width: 4),
-        Text(context.l10n.downloadProgress(_completed, _total),
-            style: Theme.of(context).textTheme.bodyMedium),
-      ]);
+              value: _total == 0 ? null : _completed / _total,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            context.l10n.downloadProgress(_completed, _total),
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      );
     }
     // Same footprint as the other header buttons while idle - the table cell
     // deliberately has no fixed width so that the row above can grow
     return SizedBox(
-        width: 32,
-        child: IconButton(
-            onPressed: () async {
-              // Get l10n now as we can't access context after async gap later
-              final l10n = context.l10n;
-              final codesToDownload = [
-                for (final languageCode in ref.read(availableLanguagesProvider))
-                  if (!ref.read(languageProvider(languageCode)).downloaded)
-                    languageCode,
-              ];
-              setState(() {
-                _isLoading = true;
-                _completed = 0;
-                _total = codesToDownload.length;
-              });
-              final result = await downloadLanguagesInParallel(
-                codesToDownload,
-                download: (code) =>
-                    ref.read(languageProvider(code).notifier).download(),
-                onProgress: (progress) {
-                  if (!mounted) return;
-                  setState(() => _completed = progress.completed);
-                },
-              );
-              if (result.successCount > 0) {
-                // Show info message in snackbar
-                String text = (result.successCount == 1)
-                    ? l10n.downloadedLanguage(
-                        l10n.getLanguageName(result.lastSuccessCode))
-                    : l10n.downloadedNLanguages(result.successCount);
-                final snackBar = SnackBar(
-                    content: Text(text),
-                    duration: snackBarQuickSuccessDuration);
-                ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
-              }
-              if (result.errorCount > 0) {
-                ref.watch(scaffoldMessengerProvider).showSnackBar(SnackBar(
-                    content: Text(l10n.downloadError),
-                    duration: snackBarErrorDuration));
-              }
-              setState(() {
-                _isLoading = false;
-              });
+      width: 32,
+      child: IconButton(
+        onPressed: () async {
+          // Get l10n now as we can't access context after async gap later
+          final l10n = context.l10n;
+          final codesToDownload = [
+            for (final languageCode in ref.read(availableLanguagesProvider))
+              if (!ref.read(languageProvider(languageCode)).downloaded)
+                languageCode,
+          ];
+          setState(() {
+            _isLoading = true;
+            _completed = 0;
+            _total = codesToDownload.length;
+          });
+          final result = await downloadLanguagesInParallel(
+            codesToDownload,
+            download:
+                (code) => ref.read(languageProvider(code).notifier).download(),
+            onProgress: (progress) {
+              if (!mounted) return;
+              setState(() => _completed = progress.completed);
             },
-            icon: const Icon(Icons.download),
-            padding: EdgeInsets.zero));
+          );
+          if (result.successCount > 0) {
+            // Show info message in snackbar
+            String text =
+                (result.successCount == 1)
+                    ? l10n.downloadedLanguage(
+                      l10n.getLanguageName(result.lastSuccessCode),
+                    )
+                    : l10n.downloadedNLanguages(result.successCount);
+            final snackBar = SnackBar(
+              content: Text(text),
+              duration: snackBarQuickSuccessDuration,
+            );
+            ref.watch(scaffoldMessengerProvider).showSnackBar(snackBar);
+          }
+          if (result.errorCount > 0) {
+            ref
+                .watch(scaffoldMessengerProvider)
+                .showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.downloadError),
+                    duration: snackBarErrorDuration,
+                  ),
+                );
+          }
+          setState(() {
+            _isLoading = false;
+          });
+        },
+        icon: const Icon(Icons.download),
+        padding: EdgeInsets.zero,
+      ),
+    );
   }
 }

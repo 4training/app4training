@@ -10,16 +10,17 @@ class DropdownButtonCheckFrequency extends ConsumerWidget {
     final CheckFrequency checkFrequency = ref.watch(checkFrequencyProvider);
 
     return DropdownButton(
-        value: checkFrequency.name,
-        items: [
-          for (var frequency in CheckFrequency.values)
-            DropdownMenuItem<String>(
-              value: frequency.name,
-              child: Text(CheckFrequency.getLocalized(context, frequency)),
-            )
-        ],
-        onChanged: (String? value) {
-          ref.read(checkFrequencyProvider.notifier).setCheckFrequency(value);
-        });
+      value: checkFrequency.name,
+      items: [
+        for (var frequency in CheckFrequency.values)
+          DropdownMenuItem<String>(
+            value: frequency.name,
+            child: Text(CheckFrequency.getLocalized(context, frequency)),
+          ),
+      ],
+      onChanged: (String? value) {
+        ref.read(checkFrequencyProvider.notifier).setCheckFrequency(value);
+      },
+    );
   }
 }

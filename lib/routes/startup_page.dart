@@ -72,15 +72,17 @@ class _StartupPageState extends ConsumerState<StartupPage> {
 
     // Step 1: Which languages are on the device?
     stage.report(StartupStage.checkingLanguages);
-    final List<String> availableLanguages =
-        ref.read(availableLanguagesProvider);
+    final List<String> availableLanguages = ref.read(
+      availableLanguagesProvider,
+    );
     await PerfLogger.span(
-        'startup.lazyInitAll',
-        () => Future.wait([
-              for (String languageCode in availableLanguages)
-                ref.read(languageProvider(languageCode).notifier).lazyInit()
-            ]),
-        data: () => {'languages': availableLanguages.length});
+      'startup.lazyInitAll',
+      () => Future.wait([
+        for (String languageCode in availableLanguages)
+          ref.read(languageProvider(languageCode).notifier).lazyInit(),
+      ]),
+      data: () => {'languages': availableLanguages.length},
+    );
 
     // Check whether app language is downloaded
     final String appLangCode = ref.read(appLanguageProvider).languageCode;
@@ -88,17 +90,17 @@ class _StartupPageState extends ConsumerState<StartupPage> {
       return '/onboarding/2'; // Go to DownloadLanguagesPage
     }
 
-    /*  TODO for version 0.9
     // Check whether user completed third onboarding step
     if (ref.read(sharedPrefsProvider).getString('checkFrequency') == null) {
       return '/onboarding/3';
-    }*/
+    }
 
     // Go to recently opened page or to /home
     String navigateTo = '/home';
     String page = ref.read(sharedPrefsProvider).getString('recentPage') ?? '';
     String lang = ref.read(sharedPrefsProvider).getString('recentLang') ?? '';
-    final bool resumeRecentPage = (page != '') &&
+    final bool resumeRecentPage =
+        (page != '') &&
         (lang != '') &&
         ref.read(languageProvider(lang)).downloaded;
     if (resumeRecentPage) navigateTo = '/view/$page/$lang';
@@ -115,34 +117,46 @@ class _StartupPageState extends ConsumerState<StartupPage> {
       // waiting for is the worksheet's language - but only say so if that
       // one is in fact still loading.
       bool recentLanguageLoaded = false;
-      loads.add(ref
-          .read(languageProvider(lang).notifier)
-          .init()
-          .whenComplete(() => recentLanguageLoaded = true));
-      unawaited(appLanguageLoaded.then((_) {
-        if (!recentLanguageLoaded) stage.report(StartupStage.loadingRecentPage);
-      }, onError: (_) {})); // errors surface through the Future.wait below
+      loads.add(
+        ref
+            .read(languageProvider(lang).notifier)
+            .init()
+            .whenComplete(() => recentLanguageLoaded = true),
+      );
+      unawaited(
+        appLanguageLoaded.then((_) {
+          if (!recentLanguageLoaded)
+            stage.report(StartupStage.loadingRecentPage);
+        }, onError: (_) {}),
+      ); // errors surface through the Future.wait below
     }
     // TODO: look at the return values and show snackBar on error
-    await PerfLogger.span('startup.initNeededNow', () => Future.wait(loads),
-        data: () => {'languages': neededNow.length});
+    await PerfLogger.span(
+      'startup.initNeededNow',
+      () => Future.wait(loads),
+      data: () => {'languages': neededNow.length},
+    );
 
     // Step 3: Everything else may take its time. We hand over the controllers
     // rather than the WidgetRef: this page is disposed as soon as we navigate
     // away, and a disposed WidgetRef must not be used any more.
-    unawaited(_loadRemainingLanguages([
-      for (String languageCode in availableLanguages)
-        if (!neededNow.contains(languageCode) &&
-            ref.read(languageProvider(languageCode)).downloaded)
-          ref.read(languageProvider(languageCode).notifier)
-    ]));
+    unawaited(
+      _loadRemainingLanguages([
+        for (String languageCode in availableLanguages)
+          if (!neededNow.contains(languageCode) &&
+              ref.read(languageProvider(languageCode)).downloaded)
+            ref.read(languageProvider(languageCode).notifier),
+      ]),
+    );
 
     // Start the periodic background task
     unawaited(ref.read(backgroundSchedulerProvider.notifier).schedule());
 
     // Only the kind of destination - never which page/language (no PII)
-    PerfLogger.event('startup.navigate',
-        data: {'destination': resumeRecentPage ? 'view' : 'home'});
+    PerfLogger.event(
+      'startup.navigate',
+      data: {'destination': resumeRecentPage ? 'view' : 'home'},
+    );
     return navigateTo;
   }
 
@@ -152,7 +166,8 @@ class _StartupPageState extends ConsumerState<StartupPage> {
   /// limit so we don't flood the IO queue of a slow device while it is still
   /// busy rendering that screen.
   Future<void> _loadRemainingLanguages(
-      List<LanguageController> controllers) async {
+    List<LanguageController> controllers,
+  ) async {
     final pending = Queue<LanguageController>.of(controllers);
 
     Future<void> worker() async {
@@ -162,10 +177,12 @@ class _StartupPageState extends ConsumerState<StartupPage> {
     }
 
     await PerfLogger.span(
-        'startup.loadRemaining',
-        () => Future.wait(
-            [for (var i = 0; i < _maxParallelLanguageLoads; i++) worker()]),
-        data: () => {'languages': controllers.length});
+      'startup.loadRemaining',
+      () => Future.wait([
+        for (var i = 0; i < _maxParallelLanguageLoads; i++) worker(),
+      ]),
+      data: () => {'languages': controllers.length},
+    );
   }
 
   @override
@@ -195,6 +212,7 @@ class _StartupCaption extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Text(
-        StartupStage.getLocalized(context, ref.watch(startupStageProvider)));
+      StartupStage.getLocalized(context, ref.watch(startupStageProvider)),
+    );
   }
 }
