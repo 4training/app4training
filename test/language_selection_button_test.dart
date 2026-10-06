@@ -20,24 +20,36 @@ class TestLanguagesButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-        locale: ref.watch(appLanguageProvider).locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        // we need ViewPage here because LanguagesButton uses
-        // context.findAncestorWidgetOfExactType<ViewPage>() to get current page
-        home: const ViewPage('Healing', 'de'));
+      locale: ref.watch(appLanguageProvider).locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      // we need ViewPage here because LanguagesButton uses
+      // context.findAncestorWidgetOfExactType<ViewPage>() to get current page
+      home: const ViewPage('Healing', 'de'),
+    );
   }
 }
 
 void main() {
-  testWidgets('Test with only German downloaded, English as appLanguage',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
-      languageProvider.overrideWith2((languageCode) => TestLanguageController(
-          downloadedLanguages: ['de'],
-          pages: {'Healing': const Page('test', 'test', 'test', '1.0', null)}))
-    ], child: const TestLanguagesButton()));
+  testWidgets('Test with only German downloaded, English as appLanguage', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+          languageProvider.overrideWith2(
+            (languageCode) => TestLanguageController(
+              downloadedLanguages: ['de'],
+              pages: {
+                'Healing': const Page('test', 'test', 'test', '1.0', null),
+              },
+            ),
+          ),
+        ],
+        child: const TestLanguagesButton(),
+      ),
+    );
 
     expect(find.byIcon(Icons.translate), findsOneWidget);
     expect(find.text('German (de)'), findsNothing);
@@ -53,14 +65,25 @@ void main() {
     expect(find.text('Manage languages'), findsOneWidget);
   });
 
-  testWidgets('Test with 5 languages downloaded, German as appLanguage',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(ProviderScope(overrides: [
-      appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-      languageProvider.overrideWith2((languageCode) => TestLanguageController(
-          downloadedLanguages: ['de', 'en', 'fr', 'es', 'ar'],
-          pages: {'Healing': const Page('test', 'test', 'test', '1.0', null)}))
-    ], child: const TestLanguagesButton()));
+  testWidgets('Test with 5 languages downloaded, German as appLanguage', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          languageProvider.overrideWith2(
+            (languageCode) => TestLanguageController(
+              downloadedLanguages: ['de', 'en', 'fr', 'es', 'ar'],
+              pages: {
+                'Healing': const Page('test', 'test', 'test', '1.0', null),
+              },
+            ),
+          ),
+        ],
+        child: const TestLanguagesButton(),
+      ),
+    );
 
     expect(find.byIcon(Icons.translate), findsOneWidget);
     expect(find.text('Deutsch (de)'), findsNothing);
@@ -79,7 +102,7 @@ void main() {
       'Deutsch (de)',
       'Englisch (en)',
       'Französisch (fr)',
-      'Spanisch (es)'
+      'Spanisch (es)',
     ];
 
     List<double> offsets = [];
@@ -96,16 +119,25 @@ void main() {
     final container = ProviderContainer();
     final availableLanguages = container.read(availableLanguagesProvider);
 
-    await tester.pumpWidget(UncontrolledProviderScope(
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
         container: container,
-        child: ProviderScope(overrides: [
-          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
-          languageProvider.overrideWith2((languageCode) => TestLanguageController(
-                  downloadedLanguages: availableLanguages,
-                  pages: {
-                    'Healing': const Page('test', 'test', 'test', '1.0', null)
-                  }))
-        ], child: const TestLanguagesButton())));
+        child: ProviderScope(
+          overrides: [
+            appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+            languageProvider.overrideWith2(
+              (languageCode) => TestLanguageController(
+                downloadedLanguages: availableLanguages,
+                pages: {
+                  'Healing': const Page('test', 'test', 'test', '1.0', null),
+                },
+              ),
+            ),
+          ],
+          child: const TestLanguagesButton(),
+        ),
+      ),
+    );
 
     expect(find.byIcon(Icons.translate), findsOneWidget);
     expect(find.text('Deutsch (de)'), findsNothing);

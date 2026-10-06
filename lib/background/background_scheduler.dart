@@ -1,4 +1,7 @@
+import 'package:app4training/data/updates.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:workmanager/workmanager.dart';
 
 /// The state indicates whether our background task is scheduled or not.
 /// The schedule() method gets called
@@ -17,26 +20,30 @@ class BackgroundScheduler extends Notifier<bool> {
   ///
   /// Make sure TestBackgroundScheduler.schedule() has the same logic
   Future<void> schedule() async {
-    /* TODO Enable this with version 0.9
+    // Cancel any previously scheduled task first so re-scheduling is idempotent
     debugPrint('Cancelling all currently scheduled background tasks');
     await Workmanager().cancelByUniqueName('backgroundTask');
     Duration? interval = ref.read(checkFrequencyProvider).getDuration();
     if (interval == null) {
+      // CheckFrequency.never: leave the task cancelled
       state = false;
       return;
     }
-    await Workmanager().registerPeriodicTask('backgroundTask', 'backgroundTask',
-        constraints: Constraints(networkType: NetworkType.connected),
-        initialDelay: interval ~/ 2);
-    debugPrint('Succesfully scheduled the background task: $interval');
+    await Workmanager().registerPeriodicTask(
+      'backgroundTask',
+      'backgroundTask',
+      constraints: Constraints(networkType: NetworkType.connected),
+      initialDelay: interval ~/ 2,
+    );
+    debugPrint('Successfully scheduled the background task: $interval');
     state = true;
-    */
   }
 }
 
 /// Our central access to scheduling the background task.
 /// The state of it indicates whether the background task is scheduled or not.
-final backgroundSchedulerProvider =
-    NotifierProvider<BackgroundScheduler, bool>(() {
-  return BackgroundScheduler();
-});
+final backgroundSchedulerProvider = NotifierProvider<BackgroundScheduler, bool>(
+  () {
+    return BackgroundScheduler();
+  },
+);

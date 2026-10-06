@@ -854,6 +854,18 @@ abstract class AppLocalizations {
   /// **'Searched for updates in the background'**
   String get foundBgActivity;
 
+  /// Prompt shown on the settings page when automatic updates require confirmation and updates were found
+  ///
+  /// In en, this message translates to:
+  /// **'Updates are available for your languages.'**
+  String get updatesReadyToDownload;
+
+  /// Button to download the available updates after the user confirms
+  ///
+  /// In en, this message translates to:
+  /// **'Download now'**
+  String get downloadUpdatesNow;
+
   /// No description provided for @sharePdf.
   ///
   /// In en, this message translates to:

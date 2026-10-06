@@ -13,7 +13,7 @@ The app uses **Navigator 1.0** with **named routes** — no `go_router`, no nest
 | `/about` | `AboutPage` | About text + license + version |
 | `/onboarding` or `/onboarding/1` | `WelcomePage` | App language selection |
 | `/onboarding/2` | `DownloadLanguagesPage` | Download required language(s) |
-| `/onboarding/3` | `SetUpdatePrefsPage` | Update preferences (currently bypassed in startup flow — gated for v0.9) |
+| `/onboarding/3` | `SetUpdatePrefsPage` | Update preferences (reached while `checkFrequency` is unset) |
 | anything else | `ErrorPage('Unknown route ...')` | Final fallback |
 
 `/view` malformed (missing parts) redirects to `/home`. The dispatcher logs every incoming route via `debugPrint`.
@@ -38,7 +38,8 @@ StartupPage.init():
   if app language is not yet downloaded:
       return '/onboarding/2'                 # resume onboarding
 
-  # (commented out for v0.9: third onboarding step on missing checkFrequency)
+  if SharedPreferences['checkFrequency'] is null:
+      return '/onboarding/3'                 # third onboarding step
 
   if SharedPreferences['recentPage'] && 'recentLang' && language is downloaded:
       navigateTo = '/view/<recentPage>/<recentLang>'   # resume last worksheet

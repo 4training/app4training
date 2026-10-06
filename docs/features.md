@@ -25,7 +25,7 @@ The main reading screen.
 Three sections:
 1. **App language** — `DropdownButtonAppLanguage`.
 2. **`LanguageSettings`** — title + explanation text + `LanguagesTable` (the per-language download/update/delete table).
-3. **`UpdateSettings`** — "Last check" timestamp + `CheckNowButton`. The check-frequency and automatic-updates dropdowns are commented out (for v0.9).
+3. **`UpdateSettings`** — the `DropdownButtonCheckFrequency` (how often the background task runs) and `DropdownButtonAutomaticUpdates` (whether/when it downloads), "Last check" timestamp, `CheckNowButton`, and a `ConfirmUpdatesPrompt` shown under `requireConfirmation` when updates are waiting.
 
 ### `AboutPage` (`/about`)
 Static text + version. Renders localized strings via `flutter_linkify` so URLs in the strings become tappable (`url_launcher`).

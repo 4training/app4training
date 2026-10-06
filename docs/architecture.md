@@ -19,11 +19,14 @@ There is no app-owned backend; all content comes from public GitHub repos and th
 - **Background isolate**:
   - Spawned by `workmanager`. Runs `backgroundTask()` in `lib/background/background_task.dart`,
     builds its own `ProviderContainer`, checks each downloaded language for new GitHub commits,
-    persists results to `SharedPreferences`.
+    persists results to `SharedPreferences`, and — depending on the `AutomaticUpdates` setting and
+    connectivity — downloads the languages that have updates.
     The main isolate later detects the activity by reloading shared prefs (see `BackgroundResultNotifier.checkForActivity`).
 
-> **Note:** Currently the periodic registration of the background task is **commented out** (gated behind "version 0.9").
-> The task is wired up and tested in the integration test, but is not actually being scheduled at app launch.
+> **Note:** The periodic task is scheduled by `BackgroundScheduler.schedule()`
+> at the `CheckFrequency` interval (not scheduled when `never`), and its run is
+> gated by the `AutomaticUpdates` setting (check-only, or download on WiFi /
+> always). See `docs/background-tasks.md`.
 
 ## Layered overview
 

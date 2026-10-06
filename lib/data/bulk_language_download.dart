@@ -74,18 +74,18 @@ Future<BulkDownloadResult> downloadLanguagesInParallel(
       } else {
         errorCount++;
       }
-      onProgress?.call(BulkDownloadProgress(
-        completed: successCount + errorCount,
-        total: total,
-        languageCode: code,
-        success: success,
-      ));
+      onProgress?.call(
+        BulkDownloadProgress(
+          completed: successCount + errorCount,
+          total: total,
+          languageCode: code,
+          success: success,
+        ),
+      );
     }
   }
 
-  await Future.wait([
-    for (var i = 0; i < maxConcurrent; i++) worker(),
-  ]);
+  await Future.wait([for (var i = 0; i < maxConcurrent; i++) worker()]);
 
   return BulkDownloadResult(
     successCount: successCount,

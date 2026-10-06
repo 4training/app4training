@@ -99,7 +99,7 @@ Disk usage is deliberately **not** part of `Language`: computing it means listin
 | Provider | Type | Purpose |
 | --- | --- | --- |
 | `backgroundResultProvider` | `NotifierProvider<BackgroundResultNotifier, BackgroundResult>` | Tracks whether the background task did something we should surface |
-| `backgroundSchedulerProvider` | `NotifierProvider<BackgroundScheduler, bool>` | State = "task currently scheduled?" (Currently always `false` — body of `schedule()` is commented out for v0.9) |
+| `backgroundSchedulerProvider` | `NotifierProvider<BackgroundScheduler, bool>` | State = "task currently scheduled?" — `true` after `schedule()` registers a periodic task, `false` when `CheckFrequency.never` cancels it |
 
 `BackgroundResultNotifier.checkForActivity()` is the trick that lets the foreground detect background work without IPC: it calls `prefs.reload()` and compares persisted `lastChecked-<lang>` to the in-memory `LanguageStatus.lastCheckedTimestamp`. If the persisted value is newer, it invalidates the corresponding `languageStatusProvider`.
 
