@@ -50,6 +50,25 @@ class _HtmlViewState extends State<HtmlView> {
         data: () => {'htmlBytes': widget.content.length},
       );
       _documentIsDarkMode = isDarkMode;
+      // Building and laying out the flutter_html tree for a new document is
+      // the expensive part (hundreds of ms on slow devices). Record the page
+      // structure (no identity) to tell which kind of content is to blame.
+      final htmldom.Document document = _document!;
+      // Routes covered by another screen get their tickers disabled by the
+      // Overlay. Reading the notifier (unlike TickerMode.valuesOf) adds no
+      // dependency, so this doesn't cause rebuilds of its own.
+      final bool hidden = !TickerMode.getValuesNotifier(context).value.enabled;
+      PerfLogger.spanToEndOfFrame(
+        'page.render',
+        data:
+            () => {
+              'hidden': hidden,
+              'tables': document.querySelectorAll('table').length,
+              'rows': document.querySelectorAll('tr').length,
+              'cells': document.querySelectorAll('td, th').length,
+              'images': document.querySelectorAll('img').length,
+            },
+      );
     }
     return _document!;
   }

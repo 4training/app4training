@@ -254,6 +254,28 @@ class PerfLogger {
     }
   }
 
+  /// Measure from now until the end of the current frame, i.e. including
+  /// the build, layout and paint work that whatever triggered it causes.
+  ///
+  /// Wrapping a widget's construction in [spanSync] measures next to nothing:
+  /// the expensive part happens later in the frame pipeline. Call this from
+  /// build() instead to attribute that cost.
+  static void spanToEndOfFrame(
+    String name, {
+    Map<String, Object?> Function()? data,
+  }) {
+    if (!enabled) return;
+    try {
+      if (!_clock.isRunning) _clock.start();
+      final int startUs = _clock.elapsedMicroseconds;
+      SchedulerBinding.instance.addPostFrameCallback(
+        (_) => _endSpan(name, startUs, true, data),
+      );
+    } catch (e) {
+      debugPrint('PerfLogger: starting span $name failed: $e');
+    }
+  }
+
   static void _endSpan(
     String name,
     int startUs,
