@@ -3,12 +3,14 @@ import 'dart:async';
 
 import 'package:app4training/data/language_downloader.dart';
 import 'package:app4training/features/perf/perf_logger.dart';
+import 'package:app4training/features/perf/perf_navigator_observer.dart';
 import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:dio/dio.dart';
 import 'package:file/local.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:app4training/routes/route_stack_limiter.dart';
 import 'package:app4training/routes/routes.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
@@ -191,6 +193,15 @@ void main() async {
 class App4Training extends ConsumerWidget {
   const App4Training({super.key});
 
+  /// One instance each for the app's lifetime: new ones on every rebuild
+  /// would make the Navigator detach and re-attach its observers each time
+  /// (and the limiter would lose track of the stack)
+  static final RouteStackLimiter _routeStackLimiter = RouteStackLimiter(
+    maxDepth: 5,
+  );
+  static final PerfNavigatorObserver _perfNavigatorObserver =
+      PerfNavigatorObserver();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLanguage appLanguage = ref.watch(appLanguageProvider);
@@ -201,6 +212,7 @@ class App4Training extends ConsumerWidget {
       themeMode: ThemeMode.system,
       initialRoute: '/',
       onGenerateRoute: (settings) => generateRoutes(settings),
+      navigatorObservers: [_routeStackLimiter, _perfNavigatorObserver],
       locale: appLanguage.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
