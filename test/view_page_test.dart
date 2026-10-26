@@ -6,12 +6,31 @@ import 'package:app4training/features/share/share_button.dart';
 import 'package:app4training/l10n/generated/app_localizations.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:app4training/widgets/language_selection_button.dart';
-import 'package:flutter/material.dart';
+import 'package:file/memory.dart';
+import 'package:flutter/material.dart' hide Page;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_language_test.dart';
+
+/// German is on the device and knows the page 'Healing',
+/// but its HTML file can't be read from local storage
+class LanguageWithMissingHtml extends LanguageController {
+  @override
+  Language build() {
+    return Language(
+      'de',
+      const {
+        'Healing': Page('Healing', 'Heilung', 'Heilung.html', '1.0', null),
+      },
+      const ['Healing'],
+      const {},
+      '/de',
+      DateTime.utc(2023),
+    );
+  }
+}
 
 /// Simplify testing of the ViewPage widget
 class TestViewPage extends ConsumerWidget {
@@ -184,5 +203,65 @@ void main() {
     expect(find.text('Fehler'), findsOneWidget);
     expect(find.textContaining('Ups, das tut uns leid.'), findsOneWidget);
     expect(find.textContaining('TestFailure'), findsOneWidget);
+  });
+
+  testWidgets('Shows an error instead of loading forever when the HTML file '
+      "can't be read", (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+          fileSystemProvider.overrideWith((ref) => MemoryFileSystem()),
+          languageProvider.overrideWith2(
+            (langCode) => LanguageWithMissingHtml(),
+          ),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: const TestViewPage(),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(
+      find.textContaining(
+        "Language data for 'German (de)' seems to be corrupted",
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets("Doesn't keep trying to read an HTML file that can't be read", (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    int readAttempts = 0;
+    final fileSystem = MemoryFileSystem(
+      opHandle: (String context, FileSystemOp operation) {
+        if (operation == FileSystemOp.read && context.endsWith('.html')) {
+          readAttempts++;
+        }
+      },
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('en')),
+          fileSystemProvider.overrideWith((ref) => fileSystem),
+          languageProvider.overrideWith2(
+            (langCode) => LanguageWithMissingHtml(),
+          ),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: const TestViewPage(),
+      ),
+    );
+    // Long enough for any retry to have happened
+    await tester.pump(const Duration(minutes: 2));
+
+    expect(readAttempts, 1);
   });
 }

@@ -4,6 +4,7 @@ import 'package:app4training/background/background_test.dart';
 import 'package:app4training/data/exceptions.dart';
 import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/language_downloader.dart';
+import 'package:app4training/features/perf/perf_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:file/chroot.dart';
 import 'package:file/local.dart';
@@ -13,6 +14,8 @@ import 'package:riverpod/misc.dart' show ProviderException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:path/path.dart' as path;
+
+import 'perf_logger_test.dart' show readRecords, startLogger;
 // ignore: implementation_imports, invalid_use_of_internal_member
 import 'package:riverpod/src/framework.dart' show $RefArg;
 
@@ -348,6 +351,42 @@ void main() {
       if (error is ProviderException) error = error.exception;
       expect(error, isA<PageNotFoundException>());
     });
+  });
+
+  test('page.loadContent spans tell apart why loading a page failed', () async {
+    final perfFileSystem = startLogger();
+    addTearDown(PerfLogger.reset);
+    final fileSystem = ChrootFileSystem(
+      const LocalFileSystem(),
+      path.canonicalize('test/'),
+    );
+    final ref = ProviderContainer(
+      overrides: [
+        fileSystemProvider.overrideWith((ref) => fileSystem),
+        languageDownloaderProvider.overrideWithValue(
+          FakeLanguageDownloader(fileSystem: fileSystem),
+        ),
+      ],
+    );
+    expect(await ref.read(languageProvider('de').notifier).init(), true);
+
+    for (final name in ['Invalid', 'MissingTest']) {
+      await expectLater(
+        ref.read(pageContentProvider((name: name, langCode: 'de')).future),
+        throwsA(anything),
+      );
+    }
+    await PerfLogger.flush();
+
+    final spans =
+        (await readRecords(
+          perfFileSystem,
+        )).where((r) => r['name'] == 'page.loadContent').toList();
+    expect(spans, hasLength(2));
+    expect(spans[0]['errorType'], 'PageNotFoundException');
+    expect(spans[0].containsKey('errorCause'), false);
+    expect(spans[1]['errorType'], 'LanguageCorruptedException');
+    expect(spans[1]['errorCause'], 'PathNotFoundException');
   });
 
   test('Test languageSizeProvider and diskUsageProvider', () async {

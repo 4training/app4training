@@ -16,6 +16,11 @@ final fileSystemProvider = Provider<FileSystem>((ref) {
   return const LocalFileSystem();
 });
 
+/// Retry policy for providers that must report a failure right away.
+/// Note: `retry: null` doesn't do that, it falls back to Riverpod's default
+/// of retrying for up to a minute - and meanwhile `.future` doesn't complete.
+Duration? _noRetry(int retryCount, Object error) => null;
+
 /// Unique identifier of an image or a page
 typedef Resource = ({String name, String langCode});
 
@@ -44,7 +49,7 @@ final imageContentProvider = FutureProvider.family<String, Resource>((
     debugPrint("Couldn't load ${res.name}: $e");
     return '';
   }
-}, retry: null);
+}, retry: _noRetry);
 
 /// Provide HTML content of a specific page in a specific language
 /// throws [LanguageNotDownloadedException]: just download the language again
@@ -57,20 +62,28 @@ final pageContentProvider = FutureProvider.family<String, Resource>((
 ) async {
   final fileSystem = ref.watch(fileSystemProvider);
   final lang = ref.watch(languageProvider(page.langCode));
-  if (!lang.downloaded) {
-    throw LanguageNotDownloadedException(page.langCode);
-  }
-  Page? pageDetails = lang.pages[page.name];
-  if (pageDetails == null) {
-    throw PageNotFoundException(page.name, page.langCode);
-  }
-  if (lang.path == '') {
-    throw LanguageCorruptedException(page.langCode, 'Empty path');
-  }
-
-  debugPrint("Fetching content of '${page.name}/${page.langCode}'...");
   int htmlBytes = 0, imageCount = 0;
+  // What went wrong underneath a LanguageCorruptedException
+  Object? errorCause;
+  Map<String, Object?> perfData() => {
+    'htmlBytes': htmlBytes,
+    'images': imageCount,
+    // e.g. a missing file vs. one that isn't valid UTF-8
+    if (errorCause != null) 'errorCause': errorCause.runtimeType.toString(),
+  };
   return PerfLogger.span('page.loadContent', () async {
+    if (!lang.downloaded) {
+      throw LanguageNotDownloadedException(page.langCode);
+    }
+    Page? pageDetails = lang.pages[page.name];
+    if (pageDetails == null) {
+      throw PageNotFoundException(page.name, page.langCode);
+    }
+    if (lang.path == '') {
+      throw LanguageCorruptedException(page.langCode, 'Empty path');
+    }
+
+    debugPrint("Fetching content of '${page.name}/${page.langCode}'...");
     try {
       String content =
           await fileSystem
@@ -112,14 +125,15 @@ final pageContentProvider = FutureProvider.family<String, Resource>((
         return 'src="data:image/png;base64,${imageData[name]}"';
       });
     } on FileSystemException catch (e) {
+      errorCause = e;
       throw LanguageCorruptedException(
         page.langCode,
         'Error while reading from local storage.',
         e,
       );
     }
-  }, data: () => {'htmlBytes': htmlBytes, 'images': imageCount});
-}, retry: null);
+  }, data: perfData);
+}, retry: _noRetry);
 
 /// Usage:
 /// ref.watch(languageProvider('de')) -> get German Language object
