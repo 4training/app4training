@@ -210,7 +210,8 @@ class PerfLogger {
   }
 
   /// Measure an asynchronous operation. Returns whatever [body] returns and
-  /// rethrows whatever it throws (recording the span with `error: true`).
+  /// rethrows whatever it throws (recording the span with `error: true` and
+  /// the `errorType`).
   ///
   /// [data] is only evaluated after [body] completed, so it can report
   /// results of the operation (e.g. how many pages were parsed).
@@ -222,14 +223,14 @@ class PerfLogger {
     if (!enabled) return body();
     if (!_clock.isRunning) _clock.start();
     final int startUs = _clock.elapsedMicroseconds;
-    bool ok = true;
+    Object? error;
     try {
       return await body();
-    } catch (_) {
-      ok = false;
+    } catch (e) {
+      error = e;
       rethrow;
     } finally {
-      _endSpan(name, startUs, ok, data);
+      _endSpan(name, startUs, error, data);
     }
   }
 
@@ -242,21 +243,21 @@ class PerfLogger {
     if (!enabled) return body();
     if (!_clock.isRunning) _clock.start();
     final int startUs = _clock.elapsedMicroseconds;
-    bool ok = true;
+    Object? error;
     try {
       return body();
-    } catch (_) {
-      ok = false;
+    } catch (e) {
+      error = e;
       rethrow;
     } finally {
-      _endSpan(name, startUs, ok, data);
+      _endSpan(name, startUs, error, data);
     }
   }
 
   static void _endSpan(
     String name,
     int startUs,
-    bool ok,
+    Object? error,
     Map<String, Object?> Function()? data,
   ) {
     try {
@@ -267,7 +268,11 @@ class PerfLogger {
         'durUs': _clock.elapsedMicroseconds - startUs,
         'rssMB': (_rssBytes() / (1024 * 1024)).round(),
       };
-      if (!ok) rec['error'] = true;
+      if (error != null) {
+        rec['error'] = true;
+        // Only the type: messages may contain page names / language codes
+        rec['errorType'] = error.runtimeType.toString();
+      }
       if (data != null) rec.addAll(data());
       _record(rec);
     } catch (e) {
