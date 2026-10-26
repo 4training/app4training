@@ -88,6 +88,35 @@ void main() {
     expect(span['error'], true);
   });
 
+  test(
+    'a failing span records the type of the error, not its message',
+    () async {
+      final fileSystem = startLogger();
+
+      await expectLater(
+        PerfLogger.span<void>(
+          'test.failing',
+          () async => throw const FormatException('page Healing/de'),
+        ),
+        throwsFormatException,
+      );
+      expect(
+        () => PerfLogger.spanSync<void>(
+          'test.failingSync',
+          () => throw StateError('boom'),
+        ),
+        throwsStateError,
+      );
+      await PerfLogger.flush();
+
+      final records = await readRecords(fileSystem);
+      final spans = records.where((r) => r['t'] == 'span').toList();
+      expect(spans[0]['errorType'], 'FormatException');
+      expect(spans[1]['errorType'], 'StateError');
+      expect(jsonEncode(records), isNot(contains('Healing')));
+    },
+  );
+
   test('does nothing when disabled', () async {
     final fileSystem = MemoryFileSystem();
     PerfLogger.enabled = false;
