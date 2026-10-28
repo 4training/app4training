@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io' show gzip;
+import 'dart:ui' show FrameTiming;
 
 import 'package:app4training/features/perf/perf_logger.dart';
 import 'package:file/file.dart';
@@ -206,6 +207,32 @@ void main() {
       gzip.decode(await fileSystem.file(path!).readAsBytes()),
     );
     expect(jsonDecode(content.trim())['t'], 'header');
+  });
+
+  testWidgets('only frames over two frame budgets get a jank record', (
+    tester,
+  ) async {
+    final fileSystem = startLogger();
+    PerfLogger.attachToApp();
+    FrameTiming frame(int totalMs) => FrameTiming(
+      vsyncStart: 0,
+      buildStart: 0,
+      buildFinish: totalMs * 1000 ~/ 2,
+      rasterStart: totalMs * 1000 ~/ 2,
+      rasterFinish: totalMs * 1000,
+      rasterFinishWallTime: totalMs * 1000,
+    );
+
+    // As reported by the engine: a slightly slow scrolling frame, a slow one
+    tester.binding.platformDispatcher.onReportTimings!([frame(25), frame(50)]);
+    await PerfLogger.flush();
+
+    final records = await readRecords(fileSystem);
+    final janks = records.where((r) => r['t'] == 'jank').toList();
+    expect(janks, hasLength(1));
+    expect(janks.single['totalUs'], 50000);
+    // The histogram still counts every frame
+    expect(records.lastWhere((r) => r['t'] == 'frames')['total'], 2);
   });
 
   test('timestampSlug formats with ASCII digits and padding', () {

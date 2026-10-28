@@ -26,8 +26,13 @@ const bool kPerfLoggingEnabled = bool.fromEnvironment('ENABLE_PERF_LOGGING');
 /// Keep at most this many session files on the device
 const int kMaxStoredPerfSessions = 20;
 
-/// Frames slower than this count as jank and get their own record
-const int kJankThresholdUs = 16700; // ~ one 60Hz frame budget
+/// Frames slower than this count as jank and get their own record.
+///
+/// Two 60Hz frame budgets, not one: on slow devices plain scrolling produces
+/// hundreds of ~20 ms frames, which used up [kMaxJankRecords] within minutes
+/// and left no records for the long frames later in the session. The frame
+/// histogram still counts every frame.
+const int kJankThresholdUs = 33400;
 
 /// At most this many individual jank records per session
 /// (the frame histogram keeps counting beyond that)
