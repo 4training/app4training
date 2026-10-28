@@ -26,8 +26,13 @@ const bool kPerfLoggingEnabled = bool.fromEnvironment('ENABLE_PERF_LOGGING');
 /// Keep at most this many session files on the device
 const int kMaxStoredPerfSessions = 20;
 
-/// Frames slower than this count as jank and get their own record
-const int kJankThresholdUs = 16700; // ~ one 60Hz frame budget
+/// Frames slower than this count as jank and get their own record.
+///
+/// Two 60Hz frame budgets, not one: on slow devices plain scrolling produces
+/// hundreds of ~20 ms frames, which used up [kMaxJankRecords] within minutes
+/// and left no records for the long frames later in the session. The frame
+/// histogram still counts every frame.
+const int kJankThresholdUs = 33400;
 
 /// At most this many individual jank records per session
 /// (the frame histogram keeps counting beyond that)
@@ -251,6 +256,28 @@ class PerfLogger {
       rethrow;
     } finally {
       _endSpan(name, startUs, error, data);
+    }
+  }
+
+  /// Measure from now until the end of the current frame, i.e. including
+  /// the build, layout and paint work that whatever triggered it causes.
+  ///
+  /// Wrapping a widget's construction in [spanSync] measures next to nothing:
+  /// the expensive part happens later in the frame pipeline. Call this from
+  /// build() instead to attribute that cost.
+  static void spanToEndOfFrame(
+    String name, {
+    Map<String, Object?> Function()? data,
+  }) {
+    if (!enabled) return;
+    try {
+      if (!_clock.isRunning) _clock.start();
+      final int startUs = _clock.elapsedMicroseconds;
+      SchedulerBinding.instance.addPostFrameCallback(
+        (_) => _endSpan(name, startUs, true, data),
+      );
+    } catch (e) {
+      debugPrint('PerfLogger: starting span $name failed: $e');
     }
   }
 

@@ -18,11 +18,27 @@ import 'package:app4training/widgets/language_selection_button.dart';
 
 /// The standard view of this app:
 /// Show a page (worksheet)
-class ViewPage extends ConsumerWidget {
+class ViewPage extends ConsumerStatefulWidget {
   final String page; // Name of the currently selected page
   final String langCode;
 
   const ViewPage(this.page, this.langCode, {super.key});
+
+  @override
+  ConsumerState<ViewPage> createState() => _ViewPageState();
+}
+
+class _ViewPageState extends ConsumerState<ViewPage> {
+  /// Result of [checkAndLoad], kept across builds.
+  ///
+  /// The route builds a new ViewPage whenever its dependencies change (e.g.
+  /// the theme on a dark mode switch, also while the page is hidden under
+  /// another screen). Starting a new load on each of these builds flashed the
+  /// loading spinner and rebuilt the whole flutter_html tree from scratch.
+  Future<String>? _content;
+
+  String get page => widget.page;
+  String get langCode => widget.langCode;
 
   /// First check whether the background process did something since
   /// the last time we checked.
@@ -39,14 +55,26 @@ class ViewPage extends ConsumerWidget {
             .watch(scaffoldMessengerProvider)
             .showSnackBar(SnackBar(content: Text(l10n.foundBgActivity)));
       }
-      return ref.watch(
+      // build() listens to this provider, which also keeps it alive
+      return ref.read(
         pageContentProvider((name: page, langCode: langCode)).future,
       );
     });
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    // ...but load again when a finished result (content or error) changes,
+    // e.g. the language got updated or downloaded while the page is open.
+    // Not on the first load: that one is still loading.
+    ref.listen(pageContentProvider((name: page, langCode: langCode)), (
+      previous,
+      next,
+    ) {
+      if ((previous != null) && !previous.isLoading) {
+        setState(() => _content = null);
+      }
+    });
     return Scaffold(
       appBar: AppBar(
         title: const Text(Globals.appTitle),
@@ -54,7 +82,7 @@ class ViewPage extends ConsumerWidget {
       ),
       drawer: MainDrawer(page, langCode),
       body: FutureBuilder(
-        future: checkAndLoad(context, ref),
+        future: _content ??= checkAndLoad(context, ref),
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (kDebugMode) debugPrint(snapshot.connectionState.toString());
 

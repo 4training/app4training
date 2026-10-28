@@ -4,6 +4,7 @@ import 'package:app4training/data/globals.dart';
 import 'package:app4training/data/languages.dart';
 import 'package:app4training/features/share/share_button.dart';
 import 'package:app4training/l10n/generated/app_localizations.dart';
+import 'package:app4training/routes/routes.dart';
 import 'package:app4training/routes/view_page.dart';
 import 'package:app4training/widgets/language_selection_button.dart';
 import 'package:file/memory.dart';
@@ -81,6 +82,114 @@ void main() {
     // Our two action buttons should be visible
     expect(find.byType(LanguageSelectionButton), findsOneWidget);
     expect(find.byType(ShareButton), findsOneWidget);
+  });
+
+  testWidgets('switching to dark mode keeps the page on screen', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+          pageContentProvider.overrideWith((ref, page) async => 'TestContent'),
+          sharedPrefsProvider.overrideWith((ref) => prefs),
+        ],
+        child: MaterialApp(
+          theme: ThemeData(brightness: Brightness.light),
+          darkTheme: ThemeData(brightness: Brightness.dark),
+          themeMode: ThemeMode.system,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          // Through the app's routes: they build a new ViewPage whenever the
+          // route's dependencies (like the theme) change
+          onGenerateRoute: generateRoutes,
+          onGenerateInitialRoutes:
+              (_) => [
+                generateRoutes(const RouteSettings(name: '/view/Healing/de')),
+              ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('TestContent'), findsOneWidget);
+
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    // Every frame of the theme animation: no loading spinner, no reload
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 30));
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.textContaining('TestContent'), findsOneWidget);
+    }
+  });
+
+  testWidgets('shows the new content when the page gets updated', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final version = NotifierProvider<_Version, int>(_Version.new);
+    final container = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        pageContentProvider.overrideWith(
+          (ref, page) async => 'Content version ${ref.watch(version)}',
+        ),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const TestViewPage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Content version 1'), findsOneWidget);
+
+    // e.g. a language update while the page is open
+    container.read(version.notifier).increment();
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Content version 2'), findsOneWidget);
+  });
+
+  testWidgets('recovers from an error once the content is available', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final version = NotifierProvider<_Version, int>(_Version.new);
+    final container = ProviderContainer(
+      overrides: [
+        appLanguageProvider.overrideWith(() => TestAppLanguage('de')),
+        pageContentProvider.overrideWith((ref, page) async {
+          if (ref.watch(version) == 1) {
+            throw LanguageNotDownloadedException('de');
+          }
+          return 'Downloaded content';
+        }),
+        sharedPrefsProvider.overrideWith((ref) => prefs),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const TestViewPage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Warnung'), findsOneWidget);
+
+    // e.g. the language finished downloading in the background
+    container.read(version.notifier).increment();
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Downloaded content'), findsOneWidget);
   });
 
   testWidgets('Test LanguageNotDownloadedException handling', (
@@ -264,4 +373,11 @@ void main() {
 
     expect(readAttempts, 1);
   });
+}
+
+class _Version extends Notifier<int> {
+  @override
+  int build() => 1;
+
+  void increment() => state++;
 }
